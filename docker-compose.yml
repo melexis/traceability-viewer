@@ -1,0 +1,12 @@
+---
+services:
+  neo4j:
+    image: neo4j:5.7.0
+    environment:
+      - NEO4J_AUTH=none
+    volumes:
+      - '$HOME/neo4j/data:/data'
+    ports:
+      - 7474:7474
+      - 7687:7687
+    restart: on-failure
