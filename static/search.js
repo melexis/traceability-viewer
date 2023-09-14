@@ -53,7 +53,7 @@ d3.select("#search_button").on("click", function() {
 });
 
 /**
- * This function define a query for showing the V-model of the given ID.
+ * This function defines a query for showing the V-model of the given ID.
  * @param {string} search The search ID
  */
 function search_update(search){
