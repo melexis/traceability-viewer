@@ -1,5 +1,5 @@
 """
-Python module to make the html files of the traceabilitytool with the accompanying data to start with.
+Python module to make the html files of the traceability tool with the accompanying data to start with.
 Copyright (c) 2022 Melexis
 """
 
