@@ -1,5 +1,5 @@
 /**
- * @fileoverview This file contains variables that are needed for the traceablility vieuwer.
+ * @fileoverview This file contains variables that are needed for the traceability viewer.
  */
 
 let path = window.location.pathname;
