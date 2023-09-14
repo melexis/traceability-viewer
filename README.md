@@ -10,7 +10,7 @@ Next, run the next command to set up a Neo4j database environment:
 
 `docker-compose up`
 
-Change the `BASE_URL` in the `config.yml` file to the correct path on you're computer.
+Change the `BASE_URL` in the `config.yml` file to the correct path on your computer.
 This is the path to the JSON database of a local build (doc folder) of a Melexis product.
 
 Next, run the `make_neo4j_db.py` file to make the database, when completed, run the `make_html.py` file to make the html.
