@@ -285,7 +285,7 @@ function query_update(query) {
 
 
 /**
- * This function will update the graph with the new nodes and links. It will restart the simulation.
+ * Updates the nodes and links of the graph and restarts the simulation.
  */
 function update() {
   updateLegend()
