@@ -12,99 +12,114 @@ autocompleteWord(document.getElementById("search"), searchIDs)
  * @param {object} arr The array of possible autocompleted values
  */
 function autocomplete(inp, arr) {
-    /*the autocomplete function takes two arguments,
-    the text field element and an array of possible autocompleted values:*/
     var currentFocus;
-    /*execute a function when someone writes in the text field:*/
+    /**
+     * When someone writes in the text field, it will search for autocompletion words and show them.
+     * @param {object} e the input event
+     */
     inp.addEventListener("input", function(e) {
         // var a, b, i, val = this.value;
         var a, b, i, val = lastWord(this.value);
-        /*close any already open lists of autocompleted values*/
+        /* close any already open lists of autocompleted values */
         closeAllLists();
         if (!val) { return false;}
         currentFocus = -1;
-        /*create a DIV element that will contain the items (values):*/
+        /* create a DIV element that will contain the items (values) */
         a = document.createElement("DIV");
         a.setAttribute("id", this.id + "autocomplete-list");
         a.setAttribute("class", "autocomplete-items");
-        /*append the DIV element as a child of the autocomplete container:*/
+        /* append the DIV element as a child of the autocomplete container */
         this.parentNode.appendChild(a);
-        /*for each item in the array...*/
+        /* for each item in the array... */
         for (i = 0; i < arr.length; i++) {
-          /*check if the item starts with the same letters as the text field value:*/
+          /* check if the item starts with the same letters as the text field value */
           if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
-            /*create a DIV element for each matching element:*/
+            /* create a DIV element for each matching element */
             b = document.createElement("DIV");
-            /*make the matching letters bold:*/
+            /* make the matching letters bold */
             b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
             b.innerHTML += arr[i].substr(val.length);
-            /*insert a input field that will hold the current array item's value:*/
+            /* insert a input field that will hold the current array item's value */
             b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
-            /*execute a function when someone clicks on the item value (DIV element):*/
+            /**
+             * Insert the value for the autocomplete text field
+             * @param {object} e the click event
+             */
             b.addEventListener("click", function(e) {
-                /*insert the value for the autocomplete text field:*/
                 inp.value = removeLastWord(inp.value) + " " + this.getElementsByTagName("input")[0].value;
-                // inp.value = this.getElementsByTagName("input")[0].value;
-                /*close the list of autocompleted values,
-                (or any other open lists of autocompleted values:*/
+                /* close the list of autocompleted values,
+                (or any other open lists of autocompleted values */
                 closeAllLists();
             });
             a.appendChild(b);
           }
         }
     });
-    /*execute a function presses a key on the keyboard:*/
+    /**
+     * When the down key is used, the next element will be highlighted
+     * @param {object} e the down key event
+     */
     inp.addEventListener("keydown", function(e) {
         var x = document.getElementById(this.id + "autocomplete-list");
         if (x) x = x.getElementsByTagName("div");
         if (e.keyCode == 40) {
-          /*If the arrow DOWN key is pressed,
-          increase the currentFocus variable:*/
+          /* If the arrow DOWN key is pressed,
+          increase the currentFocus variable */
           currentFocus++;
-          /*and and make the current item more visible:*/
+          /* and and make the current item more visible */
           addActive(x);
         } else if (e.keyCode == 38) { //up
-          /*If the arrow UP key is pressed,
-          decrease the currentFocus variable:*/
+          /* If the arrow UP key is pressed,
+          decrease the currentFocus variable */
           currentFocus--;
-          /*and and make the current item more visible:*/
+          /* and and make the current item more visible */
           addActive(x);
         } else if (e.keyCode == 13) {
-          /*If the ENTER key is pressed, prevent the form from being submitted,*/
+          /* If the ENTER key is pressed, prevent the form from being submitted,*/
           e.preventDefault();
           if (currentFocus > -1) {
-            /*and simulate a click on the "active" item:*/
+            /* and simulate a click on the "active" item */
             if (x) x[currentFocus].click();
           }
         }
         else if (e.keyCode == 9) {
-            /*If the TAB key is pressed,*/
+            /* If the TAB key is pressed,*/
             e.preventDefault();
             if (currentFocus > -1) {
-              /*and simulate a click on the "active" item:*/
+              /* and simulate a click on the "active" item */
               if (x) x[currentFocus].click();
             }
           }
     });
+
+    /**
+     * Classify an item as "active"
+     * @param {HTMLCollection} x All DIV autocomplete items
+     */
     function addActive(x) {
-      /*a function to classify an item as "active":*/
+      /* a function to classify an item as "active" */
       if (!x) return false;
-      /*start by removing the "active" class on all items:*/
+      /* start by removing the "active" class on all items */
       removeActive(x);
       if (currentFocus >= x.length) currentFocus = 0;
       if (currentFocus < 0) currentFocus = (x.length - 1);
-      /*add class "autocomplete-active":*/
+      /* add class "autocomplete-active" */
       x[currentFocus].classList.add("autocomplete-active");
     }
+    /**
+     * Remove the "active" class from all autocomplete items
+     * @param {HTMLCollection} x All DIV autocomplete items
+     */
     function removeActive(x) {
-      /*a function to remove the "active" class from all autocomplete items:*/
       for (var i = 0; i < x.length; i++) {
         x[i].classList.remove("autocomplete-active");
       }
     }
+    /**
+     * Close all autocomplete lists in the document, except the one passed as an argument
+     * @param {HTMLDivElement} elmnt autocomplete item (DIV) where is clicked on
+     */
     function closeAllLists(elmnt) {
-      /*close all autocomplete lists in the document,
-      except the one passed as an argument:*/
       var x = document.getElementsByClassName("autocomplete-items");
       for (var i = 0; i < x.length; i++) {
         if (elmnt != x[i] && elmnt != inp) {
@@ -112,7 +127,10 @@ function autocomplete(inp, arr) {
       }
     }
   }
-  /* execute a function when someone clicks in the document */
+  /**
+   * Close all lists when someone clicks on an autocomplete item.
+   * @param {object} e The click event
+   */
   document.addEventListener("click", function (e) {
       closeAllLists(e.target);
   });
@@ -146,7 +164,10 @@ function removeLastWord(input){
  */
 function autocompleteWord(inp, arr) {
   var currentFocus;
-  /* execute a function when someone writes in the text field */
+  /**
+   * When someone writes in the text field, it will search for autocompletion words and show them.
+   * @param {object} e the event
+   */
   inp.addEventListener("input", function(e) {
       var a, b, i, val = this.value;
       /* close any already open lists of autocompleted values */
@@ -171,9 +192,11 @@ function autocompleteWord(inp, arr) {
             b.innerHTML += arr[i].substr(val.length);
             /* insert a input field that will hold the current array item's value */
             b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
-            /* execute a function when someone clicks on the item value (DIV element) */
+            /**
+             * Insert the value for the autocomplete text field
+             * @param {object} e the click event
+             */
             b.addEventListener("click", function(e) {
-              /* insert the value for the autocomplete text field:*/
               inp.value = this.getElementsByTagName("input")[0].value;
               /* close the list of autocompleted values,
               (or any other open lists of autocompleted values */
@@ -201,30 +224,36 @@ function autocompleteWord(inp, arr) {
             /* insert a input field that will hold the current array item's value */
             b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
             /* execute a function when someone clicks on the item value (DIV element) */
-                b.addEventListener("click", function(e) {
-                /* insert the value for the autocomplete text field */
-                inp.value = this.getElementsByTagName("input")[0].value;
-                /* close the list of autocompleted values,
-                (or any other open lists of autocompleted values */
-                closeAllLists();
+            /**
+             * Insert the value for the autocomplete text field
+             * @param {object} e the click event
+             */
+            b.addEventListener("click", function(e) {
+              inp.value = this.getElementsByTagName("input")[0].value;
+              /* close the list of autocompleted values,
+              (or any other open lists of autocompleted values */
+              closeAllLists();
             });
             a.appendChild(b);
           }
       }
   });
-  /* execute a function presses a key on the keyboard */
+  /**
+   * When the down key is used, the next element will be highlighted.
+   * @param {object} e the down key event
+   */
   inp.addEventListener("keydown", function(e) {
       var x = document.getElementById(this.id + "autocomplete-list");
       if (x) x = x.getElementsByTagName("div");
       if (e.keyCode == 40) {
-        /*If the arrow DOWN key is pressed,
-        increase the currentFocus variable:*/
+        /* If the arrow DOWN key is pressed,
+        increase the currentFocus variable */
         currentFocus++;
-        /* make the current item more visible:*/
+        /* make the current item more visible */
         addActive(x);
       } else if (e.keyCode == 38) {
-        /*If the arrow UP key is pressed,
-        decrease the currentFocus variable:*/
+        /* If the arrow UP key is pressed,
+        decrease the currentFocus variable */
         currentFocus--;
         /* make the current item more visible */
         addActive(x);
@@ -239,8 +268,8 @@ function autocompleteWord(inp, arr) {
   });
 
   /**
-   * Classify an item as "active"
-   * @param {object} x div element
+   * Classify an item as "active".
+   * @param {HTMLCollection} x All DIV autocomplete items
    */
   function addActive(x) {
     if (!x) return false;
@@ -254,7 +283,7 @@ function autocompleteWord(inp, arr) {
 
   /**
    * Remove the "active" class from all autocomplete items
-   * @param {object} x div element
+   * @param {HTMLCollection} x All DIV autocomplete items
    */
   function removeActive(x) {
     for (var i = 0; i < x.length; i++) {
@@ -262,9 +291,9 @@ function autocompleteWord(inp, arr) {
     }
   }
 
-
   /**
-   * Close all autocomplete lists in the document, except the one passed as an argument.
+   * Close all autocomplete lists in the document, except the one passed as an argument
+   * @param {HTMLDivElement} elmnt autocomplete item (DIV) where is clicked on
    */
   function closeAllLists(elmnt) {
     var x = document.getElementsByClassName("autocomplete-items");
@@ -276,7 +305,8 @@ function autocompleteWord(inp, arr) {
   }
 
   /**
-   * Execute a function when someone clicks in the document
+   * Close all lists when someone clicks on an autocomplete item.
+   * @param {object} e The click event
    */
   document.addEventListener("click", function (e) {
       closeAllLists(e.target);

@@ -2,7 +2,6 @@
 Python module that is needed for the autocompletion. One is for the query input field that contains all node IDs,
 links and words that are often used in a Cypher query. The second one is for the search input field.
 This contains all the node IDs where the group is a main group of the V model (not the group "Others").
-Copyright (c) 2022 Melexis
 """
 
 import json
@@ -55,5 +54,8 @@ with graphdb.session() as session:
                 link_types.append(record["r"].type)
 
 # add the words of a query that are used the most.
-words.append(["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"])
-words.append(link_types)
+for w in ["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"]:
+    words.append(w)
+
+for l in link_types:
+    words.append(l)
