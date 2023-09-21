@@ -14,20 +14,20 @@ let legend_links = d3.select("#legend_links")
   .attr("width", width)
   .attr("height", heightLinks);
 
-let colour_legend = d3.scaleOrdinal()
+let color_legend = d3.scaleOrdinal()
   .domain(legend_groups)
-  .range(legend_colours);
+  .range(legend_colors);
 
-let colour_links = d3.scaleOrdinal()
+let color_links = d3.scaleOrdinal()
   .domain(legend_links_labels)
-  .range(legend_links_colours);
+  .range(legend_links_colors);
 
 let legendItemSize = 20;
 let legendSpacing = 5;
 let yOffset = 10;
 
-let x_colour_group = 0;
-let y_colour_group = yOffset;
+let x_color_group = 0;
+let y_color_group = yOffset;
 
 // legend for groups
 legend.selectAll("legend")
@@ -36,17 +36,17 @@ legend.selectAll("legend")
   .append("rect")
   .attr('transform', function (d, i) {
     let translate
-    if (x_colour_group >= Math.min(1000, window.innerWidth - 150)) {
+    if (x_color_group >= Math.min(1000, window.innerWidth - 150)) {
       heightGroups = heightGroups + legendItemSize + legendSpacing;
       d3.select("#legend").select("svg").attr("height", heightGroups);
-      x_colour_group = 0;
-      y_colour_group = yOffset + legendItemSize + legendSpacing;
-      translate = `translate(${x_colour_group}, ${y_colour_group})`;
-      x_colour_group = x_colour_group + (d.length * 11) + legendItemSize + legendSpacing;
+      x_color_group = 0;
+      y_color_group = yOffset + legendItemSize + legendSpacing;
+      translate = `translate(${x_color_group}, ${y_color_group})`;
+      x_color_group = x_color_group + (d.length * 11) + legendItemSize + legendSpacing;
     }
     else {
-      translate = `translate(${x_colour_group}, ${y_colour_group})`;
-      x_colour_group = x_colour_group + (d.length * 11) + legendItemSize + legendSpacing;
+      translate = `translate(${x_color_group}, ${y_color_group})`;
+      x_color_group = x_color_group + (d.length * 11) + legendItemSize + legendSpacing;
     }
     return translate;
   })
@@ -58,7 +58,7 @@ legend.selectAll("legend")
   })
   .attr("show", true)
   .style("fill", function (d) {
-    return colour_legend(d)
+    return color_legend(d)
   })
   .on('click', function (e, d) {
 
@@ -81,7 +81,7 @@ legend.selectAll("legend")
 let x_label_group = legendItemSize + legendSpacing;
 let y_label_group = yOffset + legendItemSize - 5;
 
-// Add labels to the group colours.
+// Add labels to the group colors.
 legend.selectAll("legend_labels")
   .data(legend_groups)
   .enter()
@@ -108,34 +108,34 @@ legend.selectAll("legend_labels")
     return d
   })
 
-let x_colour = 0;
-let y_colour = yOffset;
-// add colour for each link
-legend_links.selectAll("links_colour")
+let x_color = 0;
+let y_color = yOffset;
+// add color for each link
+legend_links.selectAll("links_color")
   .data(legend_links_labels)
   .enter()
   .append("rect")
   .attr('transform', function (d, i) {
     let translate
-    if (x_colour >= Math.min(1000, window.innerWidth - 200)) {
+    if (x_color >= Math.min(1000, window.innerWidth - 200)) {
       heightLinks = heightLinks + legendItemSize + legendSpacing;
       d3.select("#legend_links").select("svg").attr("height", heightLinks);
       // next line
-      x_colour = 0;
-      y_colour = y_colour + legendItemSize + legendSpacing;
-      translate = `translate(${x_colour}, ${y_colour})`;
-      x_colour = x_colour + (d.length * 11) + legendItemSize + legendSpacing;
+      x_color = 0;
+      y_color = y_color + legendItemSize + legendSpacing;
+      translate = `translate(${x_color}, ${y_color})`;
+      x_color = x_color + (d.length * 11) + legendItemSize + legendSpacing;
     }
     else {
-      translate = `translate(${x_colour}, ${y_colour})`;
-      x_colour = x_colour + (d.length * 11) + legendItemSize + legendSpacing;
+      translate = `translate(${x_color}, ${y_color})`;
+      x_color = x_color + (d.length * 11) + legendItemSize + legendSpacing;
     }
     return translate;
   })
   .attr("width", legendItemSize)
   .attr("height", legendItemSize)
   .style("fill", function (d) {
-    return colour_links(d)
+    return color_links(d)
   });
 
 let x_label = legendItemSize + legendSpacing;
@@ -174,21 +174,21 @@ function updateLegend() {
   heightLinks = 40;
   d3.select("#legend_links").select("svg").attr("height", heightLinks);
   legend_links_labels = [];
-  legend_links_colours = [];
+  legend_links_colors = [];
   x_label = legendItemSize + legendSpacing;
   y_label = yOffset + legendItemSize - 5;
-  x_colour = 0;
-  y_colour = yOffset;
+  x_color = 0;
+  y_color = yOffset;
   types = Array.from(new Set(graph.links.map(d => d.label)));
-  for (let [key, value] of Object.entries(config["link_colours"])) {
+  for (let [key, value] of Object.entries(config["link_colors"])) {
     if (types.includes(key) && filtered_links.includes(key)) {
       legend_links_labels.push(key);
-      legend_links_colours.push(value);
+      legend_links_colors.push(value);
     }
   }
-  colour_links = d3.scaleOrdinal()
+  color_links = d3.scaleOrdinal()
     .domain(legend_links_labels)
-    .range(legend_links_colours);
+    .range(legend_links_colors);
 
   d3.select("#legend_links").select("svg").remove();
   for (let prop in legend_links) delete legend_links[prop];
@@ -200,31 +200,31 @@ function updateLegend() {
     .attr("viewBox", "0 0 1300 40")
     .style("overflow-x", "scroll");
 
-  legend_links.selectAll("links_colour")
+  legend_links.selectAll("links_color")
     .data(legend_links_labels)
     .enter()
     .append("rect")
     .attr('transform', function (d, i) {
       let translate
-      if (x_colour >= Math.min(1000, window.innerWidth - 200)) {
+      if (x_color >= Math.min(1000, window.innerWidth - 200)) {
         heightLinks = heightLinks + legendItemSize + legendSpacing;
         d3.select("#legend_links").select("svg").attr("height", heightLinks);
         // next line
-        x_colour = 0;
-        y_colour = y_colour + legendItemSize + legendSpacing;
-        translate = `translate(${x_colour}, ${y_colour})`;
-        x_colour = x_colour + (d.length * 11) + legendItemSize + legendSpacing;
+        x_color = 0;
+        y_color = y_color + legendItemSize + legendSpacing;
+        translate = `translate(${x_color}, ${y_color})`;
+        x_color = x_color + (d.length * 11) + legendItemSize + legendSpacing;
       }
       else {
-        translate = `translate(${x_colour}, ${y_colour})`;
-        x_colour = x_colour + (d.length * 11) + legendItemSize + legendSpacing;
+        translate = `translate(${x_color}, ${y_color})`;
+        x_color = x_color + (d.length * 11) + legendItemSize + legendSpacing;
       }
       return translate;
     })
     .attr("width", legendItemSize)
     .attr("height", legendItemSize)
     .style("fill", function (d) {
-      return colour_links(d)
+      return color_links(d)
     });
 
   // Add one dot in the legend for each name.

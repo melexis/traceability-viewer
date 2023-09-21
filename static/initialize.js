@@ -19,20 +19,20 @@ let filtered_links = ["impacts_on", "fulfilled_by", "validates", "configurable_b
 
 // variables for the legend
 let legend_groups = [];
-let legend_colours = [];
-let legend_links_colours = []
+let legend_colors = [];
+let legend_links_colors = []
 let legend_links_labels = [];
 
 // The group and corresponding colors for the legend
-for (let [key, value] of Object.entries(config["group_colours"])) {
+for (let [key, value] of Object.entries(config["group_colors"])) {
   legend_groups.push(key);
-  legend_colours.push(value);
+  legend_colors.push(value);
 }
 
 // Nodes that are not grouped to one of the groups in group_colors of the config file are grouped as "Others"
 // and get a black color
 legend_groups.push("Others");
-legend_colours.push("#000000");
+legend_colors.push("#000000");
 
 // the types of links
 let types = Array.from(new Set(graph.links.map(d => d.label)));
@@ -52,10 +52,10 @@ try {
 }
 
 // The link types with the corresponding colors for the legend
-for (let [key, value] of Object.entries(config["link_colours"])) {
+for (let [key, value] of Object.entries(config["link_colors"])) {
   if (types.includes(key) && filtered_links.includes(key)) {
     legend_links_labels.push(key);
-    legend_links_colours.push(value);
+    legend_links_colors.push(value);
   }
 }
 
@@ -108,8 +108,8 @@ d3.select("#buttons")
   .attr("id", function (d) { return d; })
   .attr("value", function (d) { return d; })
   .style("background-color", function (d) {
-    if (config["group_colours"].hasOwnProperty(d)) {
-      return config["group_colours"][d];
+    if (config["group_colors"].hasOwnProperty(d)) {
+      return config["group_colors"][d];
     }
     else {
       return "#c2c2c2";

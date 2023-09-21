@@ -20,7 +20,7 @@ filters:
   - UTEST
 
 # Keep this order !
-group_colours:
+group_colors:
   SYSRQT: "#fc851c"
   SWRQT: "#FF33CC"
   SWARCH: "#7777FF"
@@ -29,7 +29,7 @@ group_colours:
   SWITEST: "#00FF00"
   UTEST: "#00FF00"
 
-link_colours:
+link_colors:
   impacts_on: "#fc0303"
   fulfilled_by: "#13a300"
   depends_on: "#00a396"

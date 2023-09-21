@@ -60,7 +60,7 @@ let y_scale = d3.scaleOrdinal()
 graph.nodes.forEach(node => {
   node.globalAlpha = 1;
 
-  for (let [key, value] of Object.entries(config["group_colours"])) {
+  for (let [key, value] of Object.entries(config["group_colors"])) {
     if (node.id.startsWith(key)) {
       node.y = y_scale(key)
     }
@@ -430,7 +430,7 @@ function add_node_and_links(node_id) {
           if (types[type].__isRelationship__) {
             let rel = {
               source: types[type].properties.source, target: types[type].properties.target,
-              label: types[type].type, colour: types[type].properties.colour
+              label: types[type].type, color: types[type].properties.color
             };
             if (!graph.links.includes(rel)) {
               console.log(rel);
@@ -548,11 +548,11 @@ function drawNode(d) {
     context.arc(d.x, d.y, nodeRadius, 0, 2 * Math.PI);
     context.strokeStyle = "white";
   }
-  if (d.colour == undefined) {
+  if (d.color == undefined) {
     context.fillStyle = "black";
   }
   else {
-    context.fillStyle = d.colour;
+    context.fillStyle = d.color;
   }
 
   context.closePath();
@@ -575,7 +575,7 @@ function drawLine(d) {
   link.moveTo(d.source.x, d.source.y);
   link.lineTo(d.target.x, d.target.y);
   link.lineWidth = 1.5;
-  context.strokeStyle = d.colour;
+  context.strokeStyle = d.color;
   context.stroke(link);
   const arrow = new Path2D();
   if (d.target.id == selectedNodeID) {
@@ -592,7 +592,7 @@ function drawLine(d) {
   arrow.lineTo(targetX - arrowWidth * Math.cos(slope + Math.PI / 7),
     targetY - arrowWidth * Math.sin(slope + Math.PI / 7));
   arrow.closePath();
-  context.fillStyle = d.colour;
+  context.fillStyle = d.color;
   context.globalAlpha = d.globalAlpha;
   context.stroke(arrow);
   context.fill(arrow);

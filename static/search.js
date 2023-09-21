@@ -62,7 +62,7 @@ function search_update(search) {
   selectedNodeID = search;
 
   let group;
-  for (let [key, value] of Object.entries(config["group_colours"])) {
+  for (let [key, value] of Object.entries(config["group_colors"])) {
     if (search.startsWith(key)) {
       group = key;
     }
@@ -186,7 +186,7 @@ function addConnectedNodes(query) {
             }
             if (types[type].__isRelationship__) {
               if (!links_made.includes(types[type].properties.source.id + "," + types[type].properties.target.id)) {
-                graph.links.push({ source: types[type].properties.source, target: types[type].properties.target, label: types[type].type, colour: types[type].properties.colour });
+                graph.links.push({ source: types[type].properties.source, target: types[type].properties.target, label: types[type].type, color: types[type].properties.color });
                 links_made.push(types[type].properties.source.id + "," + types[type].properties.target.id);
               }
             }
@@ -205,7 +205,7 @@ function addConnectedNodes(query) {
                     }
                     if (types[type].segments[pathsegment][t].__isRelationship__) {
                       if (!links_made.includes(types[type].segments[pathsegment][t].properties.source + "," + types[type].segments[pathsegment][t].properties.target)) {
-                        graph.links.push({ source: types[type].segments[pathsegment][t].properties.source, target: types[type].segments[pathsegment][t].properties.target, label: types[type].segments[pathsegment][t].type, colour: types[type].segments[pathsegment][t].properties.colour })
+                        graph.links.push({ source: types[type].segments[pathsegment][t].properties.source, target: types[type].segments[pathsegment][t].properties.target, label: types[type].segments[pathsegment][t].type, color: types[type].segments[pathsegment][t].properties.color })
                         links_made.push(types[type].segments[pathsegment][t].properties.source + "," + types[type].segments[pathsegment][t].properties.target);
                       }
                     }
@@ -250,7 +250,7 @@ function query_update(query) {
             }
           }
           if (types[type].__isRelationship__) {
-            graph.links.push({ source: types[type].properties.source, target: types[type].properties.target, label: types[type].type, colour: types[type].properties.colour })
+            graph.links.push({ source: types[type].properties.source, target: types[type].properties.target, label: types[type].type, color: types[type].properties.color })
           }
           if (types[type].__isPath__) {
             console.log("path")
@@ -263,7 +263,7 @@ function query_update(query) {
                   }
                 }
                 if (types[type].segments[pathsegment][t].__isRelationship__) {
-                  graph.links.push({ source: types[type].segments[pathsegment][t].properties.source, target: types[type].segments[pathsegment][t].properties.target, label: types[type].segments[pathsegment][t].type, colour: types[type].segments[pathsegment][t].properties.colour })
+                  graph.links.push({ source: types[type].segments[pathsegment][t].properties.source, target: types[type].segments[pathsegment][t].properties.target, label: types[type].segments[pathsegment][t].type, color: types[type].segments[pathsegment][t].properties.color })
                 }
               }
             }

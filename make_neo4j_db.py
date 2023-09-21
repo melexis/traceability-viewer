@@ -13,7 +13,7 @@ with open("config.yml", "r", encoding="utf-8") as open_file:
 
 config_dict = json.loads(json.dumps(config))
 
-groups = list(config_dict["group_colours"].keys())
+groups = list(config_dict["group_colors"].keys())
 
 # ensure that a working connection is established
 with GraphDatabase.driver(URI, encrypted=False) as graphdb:
@@ -65,31 +65,31 @@ def add_attributes(tx, id_item, attributes):
     )
 
 
-def add_group_and_colour(tx, id_item, group, colour):
-    """Add the group and colour of that group to the document item in the graph database.
+def add_group_and_color(tx, id_item, group, color):
+    """Add the group and color of that group to the document item in the graph database.
     Args:
         id_item (str): ID of the document item
         group (str): The group where the document item belongs to.
-        colour (str): The colour of that group.
+        color (str): The color of that group.
     """
     tx.run(
         """MATCH (n:DocItem)
            WHERE n.id = $id
            SET n.group = $group,
-               n.colour = $colour""",
+               n.color = $color""",
         id=id_item,
         group=group,
-        colour=colour,
+        color=color,
     )
 
 
-def add_relationship(tx, source_id, target_id, relation_type, colour):
+def add_relationship(tx, source_id, target_id, relation_type, color):
     """Add relationship between two document items in the graph database.
     Args:
         source_id (str): ID of the source
         target_id (str): ID of the target
         relation_type (str): The type of relationship between those document items
-        colour (str): The colour of that type of relationship
+        color (str): The color of that type of relationship
     """
     query = (
         "MATCH (a:DocItem), (b:DocItem) WHERE a.id = '"
@@ -102,8 +102,8 @@ def add_relationship(tx, source_id, target_id, relation_type, colour):
         + source_id
         + "', target: '"
         + target_id
-        + "', colour: '"
-        + colour
+        + "', color: '"
+        + color
         + "'}]->(b)"
     )
     tx.run(query)
@@ -133,8 +133,8 @@ with graphdb.session() as session:
                     if id2 not in nodes_made:
                         session.execute_write(add_item, id2)
                         nodes_made.append(id2)
-                    if rel in list(config_dict["link_colours"].keys()):
-                        session.execute_write(add_relationship, id1, id2, rel, config_dict["link_colours"][rel])
+                    if rel in list(config_dict["link_colors"].keys()):
+                        session.execute_write(add_relationship, id1, id2, rel, config_dict["link_colors"][rel])
                     else:
                         session.execute_write(add_relationship, id1, id2, rel, "#808080")
         del props["targets"]
@@ -143,18 +143,18 @@ with graphdb.session() as session:
         session.execute_write(add_properties, id1, props)
 
         if id1.startswith(groups[0]):
-            session.execute_write(add_group_and_colour, id1, groups[0], config_dict["group_colours"][groups[0]])
+            session.execute_write(add_group_and_color, id1, groups[0], config_dict["group_colors"][groups[0]])
         elif id1.startswith(groups[1]):
-            session.execute_write(add_group_and_colour, id1, groups[1], config_dict["group_colours"][groups[1]])
+            session.execute_write(add_group_and_color, id1, groups[1], config_dict["group_colors"][groups[1]])
         elif id1.startswith(groups[2]):
-            session.execute_write(add_group_and_colour, id1, groups[2], config_dict["group_colours"][groups[2]])
+            session.execute_write(add_group_and_color, id1, groups[2], config_dict["group_colors"][groups[2]])
         elif id1.startswith(groups[3]):
-            session.execute_write(add_group_and_colour, id1, groups[3], config_dict["group_colours"][groups[3]])
+            session.execute_write(add_group_and_color, id1, groups[3], config_dict["group_colors"][groups[3]])
         elif id1.startswith(groups[4]):
-            session.execute_write(add_group_and_colour, id1, groups[4], config_dict["group_colours"][groups[4]])
+            session.execute_write(add_group_and_color, id1, groups[4], config_dict["group_colors"][groups[4]])
         elif id1.startswith(groups[5]):
-            session.execute_write(add_group_and_colour, id1, groups[5], config_dict["group_colours"][groups[5]])
+            session.execute_write(add_group_and_color, id1, groups[5], config_dict["group_colors"][groups[5]])
         elif id1.startswith(groups[6]):
-            session.execute_write(add_group_and_colour, id1, groups[6], config_dict["group_colours"][groups[6]])
+            session.execute_write(add_group_and_color, id1, groups[6], config_dict["group_colors"][groups[6]])
         else:
-            session.execute_write(add_group_and_colour, id1, "Others", "#000000")
+            session.execute_write(add_group_and_color, id1, "Others", "#000000")
