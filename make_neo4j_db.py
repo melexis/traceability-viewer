@@ -1,6 +1,5 @@
 """
 Python module to make the neo4j database with the exported json file of all items.
-Copyright (c) 2022 Melexis
 """
 
 import json

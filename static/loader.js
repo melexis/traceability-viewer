@@ -8,7 +8,7 @@ var lines = 16;
 /**
  * The loading image.
  */
-var loading = function() {
+var loading = function () {
     var w = 200;
     var rotation = parseInt(((new Date() - start) / 1000) * lines) / lines;
     context.save();

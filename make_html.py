@@ -1,6 +1,5 @@
 """
 Python module to make the html files of the traceability tool with the accompanying data to start with.
-Copyright (c) 2022 Melexis
 """
 
 from autocomplete import graphdb, words, search_ids, config, config_dict
