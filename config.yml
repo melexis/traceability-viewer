@@ -14,20 +14,20 @@ filters:
   - SYSRQT
   - SWRQT
   - SWARCH
-  - DESIGN
-  - QTEST
+  - SWDESIGN
+  - SWQTEST
   - SWITEST
-  - UTEST
+  - SWUTEST
 
 # Keep this order !
 group_colors:
   SYSRQT: "#fc851c"
   SWRQT: "#FF33CC"
   SWARCH: "#7777FF"
-  DESIGN: "#cf5402"
-  QTEST: "#00FF00"
+  SWDESIGN: "#cf5402"
+  SWQTEST: "#00FF00"
   SWITEST: "#00FF00"
-  UTEST: "#00FF00"
+  SWUTEST: "#00FF00"
 
 link_colors:
   impacts_on: "#fc0303"
