@@ -1,6 +1,6 @@
-# traceability-viewer
+# Traceability Viewer
 
-## Get started
+## Getting Started
 
 Firstly, install the python packages with command:
 
@@ -18,9 +18,10 @@ To fix issues with permission, run the code below:
 Change the `BASE_URL` in the `config.yml` file to the correct path on your computer.
 This is the path to the JSON database of a local build (doc folder) of a Melexis product.
 
-Next, run the `make_neo4j_db.py` file to make the database, when completed, run the `make_html.py` file to make the html.
+Next, run the `make_neo4j_db.py` file to make the database.
+When completed, run the `make_html.py` file to generate the HTML files.
 
-Finally, you can open one of the html files and start having fun.
+Finally, you can open one of the HTML files and start having fun.
 
 ## What?
 
@@ -34,24 +35,24 @@ The configuration takes the form of a YAML file.
 
 The product number and the BASE_URL contains the path to the build/doc folder of that product.
 
-# JSON folder
+# Location of Traceability Export
 
 The path to the exported database.json file. This is the BASE_URL followed by the product number, ending with /database.json.
 
 # URL
 
-The path to the html documentation. Depending on the file structure, the ending could be changed to `/rom/html/document.html#id` in case of ROM.
+The path to the HTML documentation. Depending on the file structure, the ending could be changed to `/rom/html/document.html#id` in case of ROM.
 
 # Filters
 
-The groups of the V-model. This is in order, beginning at the left side of the V-mdoel: from top to bottom and the right side (the test side) also from top to bottom.
+The groups of the V-model. This is in order, starting on the left side of the V-model: from top to bottom and the right
+side (the test side) also from top to bottom.
 These groups are also the filters.
 
-# Group colors
+# Group Colors
 
 The groups with their corresponding colors.
 
-# Link colors
+# Link Colors
 
-The colors of the links.
-If a links is not defined in this file, it will have a gray color.
+The colors of the links, i.e., the arrows. The default color is gray.
