@@ -1,5 +1,14 @@
 # Traceability Viewer
 
+## Goal
+
+This tool visualizes the relationships between traceable documentation items,
+[exported by mlx.traceability](https://melexis.github.io/sphinx-traceability-extension/configuration.html#export),
+as a network dependency graph. It can group items based on their ID and assign each group to a specific color and
+layer in the graph. Our goal is to visualize the items of the left half of the
+[V-model](https://en.wikipedia.org/wiki/V-model_(software_development)) in layers and let the test/verification items
+encircle the items they test/verify.
+
 ## Getting Started
 
 Firstly, install the python packages with command:
@@ -22,10 +31,6 @@ Next, run the `make_neo4j_db.py` file to make the database.
 When completed, run the `make_html.py` file to generate the HTML files.
 
 Finally, you can open one of the HTML files and start having fun.
-
-## What?
-
-This tool is made to see the relationships between textual items. They are layered as the V-model except for the test items.
 
 ## Configuration
 
