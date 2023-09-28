@@ -36,28 +36,28 @@ Finally, you can open one of the HTML files and start having fun.
 
 The configuration takes the form of a YAML file.
 
-# Variables
+### Variables
 
 The product number and the BASE_URL contains the path to the build/doc folder of that product.
 
-# Location of Traceability Export
+### Location of Traceability Export
 
 The path to the exported database.json file. This is the BASE_URL followed by the product number, ending with /database.json.
 
-# URL
+### URL
 
 The path to the HTML documentation. Depending on the file structure, the ending could be changed to `/rom/html/document.html#id` in case of ROM.
 
-# Filters
+### Filters
 
 The groups of the V-model. This is in order, starting on the left side of the V-model: from top to bottom and the right
 side (the test side) also from top to bottom.
 These groups are also the filters.
 
-# Group Colors
+### Group Colors
 
 The groups with their corresponding colors.
 
-# Link Colors
+### Link Colors
 
 The colors of the links, i.e., the arrows. The default color is gray.
