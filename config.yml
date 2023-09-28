@@ -31,14 +31,13 @@ group_colors:
 
 link_colors:
   impacts_on: "#fc0303"
-  fulfilled_by: "#13a300"
   depends_on: "#00a396"
-  configurable_by: "#001ea3"
   implements: "#b1ba02"
   implemented_by: "#6f0182"
   realizes: "#499161"
   realized_by: "#820101"
   fulfills: "#ff9b05"
+  fulfilled_by: "#13a300"
   validates: "#277a7a"
   validated_by: "#27597a"
   passed_by: "#8c00ff"
@@ -48,3 +47,4 @@ link_colors:
   ext_polarion_reference: "#01173b"
   test_setup_used: "#006699"
   is_attribute_of: "#009900"
+  configurable_by: "#001ea3"
