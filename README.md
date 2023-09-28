@@ -40,7 +40,7 @@ The configuration takes the form of a YAML file.
 
 The product number and the BASE_URL contains the path to the build/doc folder of that product.
 
-### Location of Traceability Export
+### JSON folder
 
 The path to the exported database.json file. This is the BASE_URL followed by the product number, ending with /database.json.
 
