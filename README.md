@@ -11,7 +11,7 @@ encircle the items they test/verify.
 
 ## Getting Started
 
-Firstly, install the python packages with command:
+Firstly, install the Python dependencies with [pip](https://pip.pypa.io/en/stable/):
 
 `pip install -r py-requirements.txt`
 
