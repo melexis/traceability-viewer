@@ -140,7 +140,7 @@ class Database:
         """Add the attributes of the document item in the graph database.
         Args:
             id_item (str): ID of the document item
-            attributes (json): JSON string of the attributes of the document item
+            attributes (str): JSON string of the attributes of the document item
         """
         tx.run(
             """MATCH (n:DocItem)
