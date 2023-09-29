@@ -19,7 +19,7 @@ Next, run the next command to set up a Neo4j database environment:
 
 `docker-compose up`
 
-If docker-compose is not istalled yet, install it with the `sudo apt install docker-compose` command.
+If docker-compose is not installed yet, install it with the `sudo apt install docker-compose` command.
 To fix issues with permission, run the code below:
 `sudo chmod 666 /var/run/docker.sock`
 `sudo setfacl --modify user::rw /var/run/docker.sock`
