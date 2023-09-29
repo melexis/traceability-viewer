@@ -7,7 +7,7 @@ project: MLX{product}
 
 json_folder: [*BASE_URL, *PRODUCT, /database.json]
 # URL: [*BASE_URL, *PRODUCT, /rom/html/document.html#id]
-URL: [*BASE_URL, *PRODUCT, /html/document.html#id]
+html_dir: [*BASE_URL, *PRODUCT, html]
 
 # Keep this order !
 filters:
