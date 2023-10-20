@@ -1,0 +1,49 @@
+---
+variables:
+  PRODUCT: &PRODUCT 90427
+  BASE_URL: &BASE_URL /home/joke/Documents/
+  #/path/to/product/build/doc/    # CHANGE THIS
+
+json_folder: [*BASE_URL, *PRODUCT, /database.json]
+# URL: [*BASE_URL, *PRODUCT, /rom/html/document.html#id]
+html_dir: [*BASE_URL, *PRODUCT, html]
+
+# Keep this order !
+filters:
+  - SYSRQT
+  - SWRQT
+  - SWARCH
+  - SWDESIGN
+  - SWQTEST
+  - SWITEST
+  - SWUTEST
+
+# Keep this order !
+group_colors:
+  SYSRQT: "#fc851c"
+  SWRQT: "#FF33CC"
+  SWARCH: "#7777FF"
+  SWDESIGN: "#cf5402"
+  SWQTEST: "#00FF00"
+  SWITEST: "#00FF00"
+  SWUTEST: "#00FF00"
+
+link_colors:
+  impacts_on: "#fc0303"
+  # depends_on: "#00a396"
+  implements: "#b1ba02"
+  # implemented_by: "#6f0182"
+  # realizes: "#499161"
+  realized_by: "#820101"
+  # fulfills: "#ff9b05"
+  fulfilled_by: "#13a300"
+  validates: "#277a7a"
+  validated_by: "#27597a"
+  passed_by: "#8c00ff"
+  passes: "#2b00ff"
+  guaranteed_by: "#ffdd00"
+  guaranteed: "#ff6f00"
+  ext_polarion_reference: "#01173b"
+  test_setup_used: "#006699"
+  is_attribute_of: "#009900"
+  configurable_by: "#001ea3"
