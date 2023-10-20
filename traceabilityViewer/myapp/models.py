@@ -18,18 +18,18 @@ class Rel(StructuredRel):
 
 class DocumentItem(StructuredNode):
     name = StringProperty(unique_index=True, required=True)
-    properties = StringProperty(required=False)
-    attributes = StringProperty(required=False)
+    properties = StringProperty()
+    attributes = StringProperty()
     group = StringProperty(required=True)
     color = StringProperty(required=True)
+    relations = RelationshipTo("DocumentItem", StringProperty(), model=Rel)
+    # def add_relation(self, relation_type):
+    #     """Add a relation between two document items.
 
-    def add_relation(self, relation_type):
-        """Add a relation between two document items.
-
-        Args:
-            relation_type (str): The type of the relationship
-        """
-        self.relations = RelationshipTo("DocumentItem", relation_type, model=Rel)
+    #     Args:
+    #         relation_type (str): The type of the relationship
+    #     """
+    #     self.relations = RelationshipTo("DocumentItem", relation_type, model=Rel)
 
 
 install_labels(DocumentItem)

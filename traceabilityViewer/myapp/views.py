@@ -3,6 +3,7 @@ from neo4j import GraphDatabase
 from ruamel.yaml import YAML
 from .models import DocumentItem
 import json
+import re
 
 
 def create_database():
@@ -18,6 +19,67 @@ def create_database():
 
     with open(path, encoding="utf-8") as json_file:
         data = json.load(json_file)
+
+    all_nodes = DocumentItem.nodes.all()
+    all_nodes.delete()
+
+    nodes_made = []
+    for _, item in enumerate(data):
+        targets = item["targets"]
+        attr = item["attributes"]
+        props = {}
+        props = item
+        del props["targets"]
+        del props["attributes"]
+        source = item["id"]
+        groups = configuration["filters"]
+        if source not in nodes_made:
+            source_group = None
+            for group in groups:
+                group = "^" + group
+                if re.search(group, source):
+                    source_group = group[1:]
+            if source_group == None:
+                source_group = "Others"
+            source_object = DocumentItem(name = source, 
+                                         properties = props, 
+                                         attributes = attr, 
+                                         group = source_group, 
+                                         color = configuration["group_colors"][source_group]
+                                        ).save()
+            nodes_made.append(source)
+
+        if targets != {}:
+            for rel in targets:
+                for target in targets[rel]:
+                    if target  not in nodes_made:
+                        target_group = None
+                        for group in groups:
+                            group = "^" + group
+                            if re.search(group, source):
+                                target_group = group[1:]
+                        if target_group == None:
+                            target_group = "Others"
+                        target_object = DocumentItem(name = target,
+                                                    group = target_group, 
+                                                    color = configuration["group_colors"][target_group]
+                                                    ).save()
+                        nodes_made.append(target)
+                        relation_object = source_object.relations.connect(target_object)
+                        relation_object.save()
+                    else:
+                        target_object = DocumentItem.nodes.get(name=target)
+                        relation_object = source_object.relations.connect(target_object)
+                        relation_object.save()
+                    
+                    # if target not in nodes_made:
+                    #     session.execute_write(self.add_item, target)
+                    #     # TODO : groep toevoegen
+                    #     nodes_made.append(target)
+                    # if rel in list(configuration["link_colors"].keys()):
+                    #     source_object.add_relation(rel)
+                    # else:
+                    #     session.execute_write(self.add_relationship, source, target, rel, "#808080")
 
 
 # Create your views here.
