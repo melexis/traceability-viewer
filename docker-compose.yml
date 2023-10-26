@@ -1,0 +1,15 @@
+---
+services:
+  neo4j:
+    # build: .
+    image: neo4j:5.7.0
+    volumes:
+      - '$HOME/neo4j/data:/data'
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - dbms.connector.bolt.listen_address=:7687
+      - dbms.connector.bolt.advertised_address=:7687
+    ports:
+      - 7474:7474
+      - 7687:7687
+    restart: on-failure

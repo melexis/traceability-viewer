@@ -1,0 +1,5 @@
+neomodel==5.1.2
+django-neomodel==0.1.1
+ruamel.yaml==0.18.2
+docker-compose==1.29.2
+django==4.2.6 
