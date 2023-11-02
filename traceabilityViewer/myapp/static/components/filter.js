@@ -3,7 +3,7 @@ app.component("groupfilter", {
     template:
     /*html*/
     `
-    <button class='button' :style="bgcolor" @click="clicked" >[[group]]</button>
+    <button class='button' :style="bgcolor" @click="clicked" :style="borderColor">[[group]]</button>
     `,
     data() {
         return {
@@ -24,7 +24,7 @@ app.component("groupfilter", {
         axios
             .get("/" + this.group)
             .then(function (response) {
-                console.log(response.data[0].nodes.nodes)
+                // console.log(response.data[0].nodes.nodes)
                 this.nodes = response.data[0].nodes.nodes
                 this.links = response.data[0].nodes.links
             })
@@ -44,6 +44,14 @@ app.component("groupfilter", {
             return {
                 'background-color': this.groupcolor
             }
+        },
+        borderColor(){
+            if (this.$root.getActiveGroup() == this.group){
+                return "border: 2px solid #000000"
+            }
+            else {
+                return "border: 2px solid #ffffff"
+            } 
         }
     }
 })
