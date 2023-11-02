@@ -20,26 +20,23 @@ app.component("groupfilter", {
             type: String
         }
     },
-    // mounted () {
-    //     axios
-    //         .get(this.group + "/")
-    //         .then(response => (this.nodes = response))
-    // },
+    mounted(){
+        axios
+            .get("/" + this.group)
+            .then(function (response) {
+                console.log(response.data[0].nodes.nodes)
+                this.nodes = response.data[0].nodes.nodes
+                this.links = response.data[0].nodes.links
+            })
+            .catch(function (error)  {
+                console.log(error);
+            })
+    },
     methods: {
         clicked() {
             // @set-active-group="setActiveGroup"
             // this.$emit("set-active-group", this.group)
-            this.$emit("setActiveGroup", this.group)
-            axios
-                .get("/" + this.group)
-                .then(function (response) {
-                    console.log(response.data[0].nodes.nodes)
-                    this.nodes = response.data[0].nodes.nodes
-                    this.links = response.data[0].nodes.links
-                })
-                .catch(function (error)  {
-                    console.log(error);
-                })
+            this.$root.setActiveGroup(this.group)
         }
     },
     computed: {
@@ -49,5 +46,4 @@ app.component("groupfilter", {
             }
         }
     }
-    
 })
