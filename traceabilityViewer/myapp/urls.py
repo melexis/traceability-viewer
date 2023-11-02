@@ -1,8 +1,12 @@
 # from django.urls import path
-from django.conf.urls import url
+from django.urls import path
 from . import views
 
 urlpatterns = [
-    # path("", views.index, name="index")
-    url(r"^$", views.index),
+    # path("", views.create_database, name="create_database"),
+    # path("", views.index, name="index"),
+    path("", views.BaseView.as_view(),  name="index"),
+    path("<str:filtergroup>/", views.filter),
+    path("data/", views.initialize)
+    # path("data/", views.create_database, name="data")
 ]

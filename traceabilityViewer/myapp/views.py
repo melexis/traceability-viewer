@@ -1,15 +1,22 @@
-from django.shortcuts import render
-from .models import DocumentItem
+from django.shortcuts import render, redirect, HttpResponse
+from .models import DocumentItem, Rel
 from neomodel import db, clear_neo4j_database
 from ruamel.yaml import YAML
-import json 
+import json
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.http import JsonResponse
+from django.views.generic.base import TemplateView
+import string
 
+with open("../config.yml", "r", encoding="utf-8") as open_file:
+        configuration = YAML().load(open_file)
 
 def define_color(dictionary, key):
     fallback_color = dictionary["others"]
-    dict((k.lower(), v) for k,v in dictionary.items())
+    dictionary = dict((k.lower(), v) for k,v in dictionary.items())
     return dictionary.get(key.lower(), fallback_color)
-    
+
 def define_group(groups, string):
     upper_case_groups = set(k.upper() for k in groups)
     group = None
@@ -19,13 +26,13 @@ def define_group(groups, string):
     if group == None:
         group = "others"
     return group
-    
+
+# @api_view(["POST"])
 def create_database():
     """Create a Neo4j database"""
     # yaml = YAML(typ="safe", pure=True)
     # configuration = yaml.load("../config.yml")
-    with open("../config.yml", "r", encoding="utf-8") as open_file:
-        configuration = YAML().load(open_file)
+    
 
     path = ""
     data = {}
@@ -41,9 +48,11 @@ def create_database():
         attr = item["attributes"]
         props = {}
         props = item
+        source = item["id"]
         del props["targets"]
         del props["attributes"]
-        source = item["id"]
+        del props["id"]
+        del props["name"]
         if source not in nodes_made:
             source_group = define_group(configuration["filters"], source)
             source_color = define_color(configuration["group_colors"], source_group)
@@ -89,8 +98,78 @@ def create_database():
                     #     source_object.add_relation(rel)
                     # else:
                     #     session.execute_write(self.add_relationship, source, target, rel, "#808080")
+    # serializer = TaskSerializer(data = DocumentItem.nodes.all())
+    # if serializer.is_valid():
+    #     serializer.save()
+    #     return Response(serializer.data)
+    # else:
+    #     return HttpResponse('Some Error Occured')
+    # nodes = []
+    # links = []
+    # for item in DocumentItem.nodes.all():
+    #     nodes.append(json.dumps(item.__properties__))
+    #     for rel in item.relations:
+    #         links.append(json.dumps(item.relations.relationship(rel).__properties__))
+    # return {"nodes": nodes, "links": links}
+    
 
-create_database()
+class BaseView(TemplateView):
+    template_name = "myapp/index.html"
+    
+    def get(self, request, **kwargs):
+        create_database()
+        nodes = []
+        links = []
+        filters = dict(configuration["group_colors"])
+        filters.popitem()
+        for item in DocumentItem.nodes.all():
+            node = item.serialize
+            nodes.append(node)
+            for rel in node["relations"]:
+                links.append(rel)
+        # length = len(nodes)
+        context = {"loading": "false", "filters": filters, "nodes": nodes, "links": links}
+        return render(request, "myapp/index.html", context)
+    
+    def get_filter_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = create_database()
+        # for item in DocumentItem.nodes.all():
+        #     if item.group == filtergroup:
+        #         nodes.append(json.dumps(item.__properties__))
+        #         for rel in item.relations:
+        #             links.append(json.dumps(item.relations.relationship(rel).__properties__))
+        context["data"] = [data]
+        return context
+        
 
 def index(request):
+    # filters = dict(configuration["group_colors"])
+    # filters.popitem()
     return render(request, "myapp/index.html")
+
+@api_view(["GET"])
+def initialize(request):
+    create_database()
+    nodes = []
+    links = []
+    for item in DocumentItem.nodes.first(group = configuration["filters"][0]):
+        node = item.serialize
+        nodes.append(node)
+        for rel in node["relations"]:
+            links.append(rel)
+    data = {"nodes": nodes, "links": links}
+	# serializer = serializers.serialize('json', data)
+    return Response({"loading": "false", "data": data})
+
+@api_view(["GET"])
+def filter(request, filtergroup):
+    nodes = []
+    links = []
+    for item in DocumentItem.nodes.filter(group = filtergroup):
+        node = item.serialize
+        nodes.append(node)
+        for rel in node["relations"]:
+            links.append(rel)
+    data = {"nodes": nodes, "links": links}
+    return Response([{"nodes": data}])

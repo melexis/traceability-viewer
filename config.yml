@@ -1,0 +1,68 @@
+---
+variables:
+  PRODUCT: &PRODUCT 90427
+  BASE_URL: &BASE_URL /home/joke/Documents/
+  #/path/to/product/build/doc/    # CHANGE THIS
+
+json_folder: [*BASE_URL, *PRODUCT, /database.json]
+# URL: [*BASE_URL, *PRODUCT, /rom/html/document.html#id]
+html_dir: [*BASE_URL, *PRODUCT, html]
+
+# Keep this order !
+filters:
+  - SYSRQT
+  - SWRQT
+  - SWARCH
+  - DESIGN
+  - QTEST
+  - SWITEST
+  - UTEST
+
+# Keep this order !
+group_colors:
+  SYSRQT: "#fc851c"
+  SWRQT: "#FF33CC"
+  SWARCH: "#7777FF"
+  DESIGN: "#cf5402"
+  QTEST: "#00FF00"
+  SWITEST: "#00FF00"
+  UTEST: "#00FF00"
+  others: "#000000"
+
+link_colors:
+  impacts_on: "#fc0303"
+  fulfilled_by: "#13a300"
+  realized_by: "#820101"
+  validated_by: "#27597a"
+  reported_by: "#00a396"
+  configurable_by: "#001ea3"
+  passed_by: "#8c00ff"
+  failed_by: "#2b00ff"
+  skipped_by: "#ff9b05"
+  is_attribute_of: "#009900"
+  ext_polarion_reference: "#01173b"
+  ext_polarion_revision: "#006699"
+  ext_jira_reference: "#b1ba02"
+  ext_robotframeworklog: "#6f0182"
+  raised_by: "#b1ba02"
+  guaranteed_by: "#ffdd00"
+  others: "#000000"
+
+backwards_relationships:
+  depends_on: 'impacts_on'
+  fulfills: 'fulfilled_by'
+  realizes: 'realized_by'
+  validates: 'validated_by'
+  reports_for: 'reported_by'
+  configures: 'configurable_by'
+  passes: 'passed_by'
+  fails: 'failed_by'
+  skipped: 'skipped_by'
+  has_attribute: 'is_attribute_of'
+  ext_polarion_reference: ''
+  ext_polarion_revision: ''
+  ext_jira_reference: ''
+  ext_robotframeworklog: ''
+  raises: 'raised_by'
+  guarantees: 'guaranteed_by'
+
