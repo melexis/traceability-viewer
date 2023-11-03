@@ -3,7 +3,7 @@ app.component("groupfilter", {
     template:
     /*html*/
     `
-    <button class='button' :style="bgcolor" @click="clicked" :style="borderColor">[[group]]</button>
+    <button class='button' :style="style" @click="clicked">[[group]]</button>
     `,
     data() {
         return {
@@ -40,18 +40,17 @@ app.component("groupfilter", {
         }
     },
     computed: {
-        bgcolor() {
-            return {
-                'background-color': this.groupcolor
-            }
-        },
-        borderColor(){
+        style() {
             if (this.$root.getActiveGroup() == this.group){
-                return "border: 2px solid #000000"
+                return {
+                    'background-color': this.groupcolor, "border": "2px solid #000000"
+                }
             }
             else {
-                return "border: 2px solid #ffffff"
-            } 
+                return {
+                    'background-color': this.groupcolor, "border": "2px solid #ffffff"
+                }
+            }
         }
     }
 })
