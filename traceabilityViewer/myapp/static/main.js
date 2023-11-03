@@ -25,6 +25,16 @@ const app = Vue.createApp({
                 .catch(function (error)  {
                     console.log(error);
                 })
+            axios
+                .get("/config")
+                .then(function (response) {
+                    console.log(response)
+                    this.config = response.data
+                    console.log(this.config)
+                })
+                .catch(function (error)  {
+                    console.log(error);
+                })
         }
     },
     mounted() {
@@ -35,6 +45,9 @@ const app = Vue.createApp({
             type: Object
         },
         links: {
+            type: Object
+        },
+        config: {
             type: Object
         }
     }
