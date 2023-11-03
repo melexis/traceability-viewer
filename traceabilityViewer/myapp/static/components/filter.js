@@ -36,12 +36,12 @@ app.component("groupfilter", {
         clicked() {
             // @set-active-group="setActiveGroup"
             // this.$emit("set-active-group", this.group)
-            this.$root.setActiveGroup(this.group)
+            this.$root.activeGroup = this.group
         }
     },
     computed: {
         style() {
-            if (this.$root.getActiveGroup() == this.group){
+            if (this.$root.activeGroup == this.group){
                 return {
                     'background-color': this.groupcolor, "border": "2px solid #000000"
                 }
