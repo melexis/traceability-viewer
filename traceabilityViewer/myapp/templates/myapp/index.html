@@ -28,8 +28,8 @@
                 <!-- Navbar -->
                 <div class="buttons">
                     <groupfilter groupcolor = "lightgray" group = "home"></groupfilter>
-                    {% for filter_name, filter_color in filters.items %}
-                        <groupfilter groupcolor = {{ filter_color }} group = {{ filter_name }} ></groupfilter>
+                    {% for group in groups %}
+                        <groupfilter group = {{ group }} ></groupfilter>
                     {% endfor %}
                 </div>
                 <!-- Checkboxes -->
@@ -37,7 +37,7 @@
                     <input type="checkbox" id="text"><label for="text"> Nodes with labels </label>
                 </div>
                 <!-- Input Fields -->
-                <div v-if="setActiveGroup==='home'">
+                <div v-if="activeGroup==='home'">
                     <br>
                     <label>Cypher query: </label>
                     <div class="autocomplete" style="width:100%;">

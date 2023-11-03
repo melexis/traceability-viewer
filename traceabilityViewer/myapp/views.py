@@ -8,9 +8,16 @@ from rest_framework.response import Response
 from django.http import JsonResponse
 from django.views.generic.base import TemplateView
 import string
+import re
+import exrex
 
 with open("../config.yml", "r", encoding="utf-8") as open_file:
         configuration = YAML().load(open_file)
+
+groups = set()
+for item,value in dict(configuration["groups"]).items():
+    groups.update(list(exrex.generate(item)))
+    groups.update(list(exrex.generate(value)))
 
 def define_color(dictionary, key):
     fallback_color = dictionary["others"]
@@ -54,8 +61,8 @@ def create_database():
         del props["id"]
         del props["name"]
         if source not in nodes_made:
-            source_group = define_group(configuration["filters"], source)
-            source_color = define_color(configuration["group_colors"], source_group)
+            source_group = define_group(configuration["groups"], source)
+            source_color = define_color(configuration["item_colors"], source_group)
             source_object = DocumentItem(name = source, 
                                         properties = props, 
                                         attributes = attr, 
@@ -74,8 +81,8 @@ def create_database():
                 link_color = define_color(configuration["link_colors"], rel)
                 for target in targets[rel]:
                     if target  not in nodes_made:
-                        target_group = define_group(configuration["filters"], target)
-                        target_color = define_color(configuration["group_colors"], target_group)
+                        target_group = define_group(configuration["groups"], target)
+                        target_color = define_color(configuration["item_colors"], target_group)
                         target_object = DocumentItem(name = target,
                                                     group = target_group, 
                                                     color = target_color
@@ -113,46 +120,42 @@ def create_database():
     # return {"nodes": nodes, "links": links}
     
 
-class BaseView(TemplateView):
-    template_name = "myapp/index.html"
+# class BaseView(TemplateView):
+#     template_name = "myapp/index.html"
     
-    def get(self, request, **kwargs):
-        create_database()
-        nodes = []
-        links = []
-        filters = dict(configuration["group_colors"])
-        filters.popitem()
-        for item in DocumentItem.nodes.all():
-            node = item.serialize
-            nodes.append(node)
-            for rel in node["relations"]:
-                links.append(rel)
-        # length = len(nodes)
-        context = {"loading": "false", "filters": filters, "nodes": nodes, "links": links}
-        return render(request, "myapp/index.html", context)
+#     def get(self, request, **kwargs):
+#         create_database()
+#         nodes = []
+#         links = []
+#         groups = dict(configuration["group_colors"])
+#         groups.popitem()
+#         for item in DocumentItem.nodes.all():
+#             node = item.serialize
+#             nodes.append(node)
+#             for rel in node["relations"]:
+#                 links.append(rel)
+#         # length = len(nodes)
+#         context = {"loading": "false", "groups": groups, "nodes": nodes, "links": links}
+#         return render(request, "myapp/index.html", context)
     
-    def get_filter_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        data = create_database()
-        # for item in DocumentItem.nodes.all():
-        #     if item.group == filtergroup:
-        #         nodes.append(json.dumps(item.__properties__))
-        #         for rel in item.relations:
-        #             links.append(json.dumps(item.relations.relationship(rel).__properties__))
-        context["data"] = [data]
-        return context
+#     def get_filter_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         data = create_database()
+#         # for item in DocumentItem.nodes.all():
+#         #     if item.group == filtergroup:
+#         #         nodes.append(json.dumps(item.__properties__))
+#         #         for rel in item.relations:
+#         #             links.append(json.dumps(item.relations.relationship(rel).__properties__))
+#         context["data"] = [data]
+#         return context
         
 
 def index(request):
-    # filters = dict(configuration["group_colors"])
-    # filters.popitem()
-    filters = dict(configuration["group_colors"])
-    filters.popitem()
-    return render(request, "myapp/index.html", {"loading": "false", "filters": filters, "config": configuration})
+    return render(request, "myapp/index.html", {"loading": "false", "groups": groups, "config": configuration})
 
 @api_view(["GET"])
 def initialize(request):
-    create_database()
+    # create_database()
     nodes = []
     links = []
     node = DocumentItem.nodes[0]
