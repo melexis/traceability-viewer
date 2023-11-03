@@ -189,3 +189,32 @@ def config(request):
     print(type(configuration))
     # config = serializers.serialize('json', configuration)
     return Response([{"config": configuration}])
+
+@api_view(["GET"])
+def autocomplete(request):
+    """
+    Request autocompletion words. One is for the query input field that contains all node IDs,
+    links and words that are often used in a Cypher query. The second one is for the search input field.
+    This contains all the node IDs where the group is a main group of the V model (not the group "Others").
+    """
+    # words will contain the autocomplete words for the query input field.
+    words = []
+    # search_ids will contain the node IDs for in the search input field.
+    search_ids = []
+    # link_types is used to check if a link type already exists and will in the end be added to words.
+    link_types = []
+    
+    for item in DocumentItem.nodes.filter(group__in = groups):
+        node = item.serialize
+        words.append(node.name)
+        search_ids.append(node.name)
+        for rel in node["relations"]:
+            label = rel.type
+            if label not in link_types:
+                link_types.append(label)
+    
+    # add the words of a query that are used the most.
+    words.extend(["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"])
+    words.extend(link_types)
+    
+    return Response([{"words": words, "searchIds": search_ids, "linkTypes": link_types}])

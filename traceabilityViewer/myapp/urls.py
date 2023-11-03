@@ -8,6 +8,6 @@ urlpatterns = [
     # path("", views.BaseView.as_view(),  name="index"),
     path("<str:filtergroup>/", views.filter),
     path("data/", views.initialize),
-    path("config/", views.config)
-    # path("data/", views.create_database, name="data")
+    path("config/", views.config),
+    path("autocomplete/", views.autocomplete),
 ]
