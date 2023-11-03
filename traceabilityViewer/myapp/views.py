@@ -146,21 +146,25 @@ class BaseView(TemplateView):
 def index(request):
     # filters = dict(configuration["group_colors"])
     # filters.popitem()
-    return render(request, "myapp/index.html")
+    filters = dict(configuration["group_colors"])
+    filters.popitem()
+    return render(request, "myapp/index.html", {"loading": "false", "filters": filters, "config": configuration})
 
 @api_view(["GET"])
 def initialize(request):
     create_database()
     nodes = []
     links = []
-    for item in DocumentItem.nodes.first(group = configuration["filters"][0]):
-        node = item.serialize
-        nodes.append(node)
-        for rel in node["relations"]:
-            links.append(rel)
+    node = DocumentItem.nodes[0]
+    nodes.append(node)
+    for rel in node["relations"]:
+        links.append(rel)
+        target = DocumentItem.nodes.get(name = rel["target"])
+        if target not in nodes:
+            nodes.append(target)
     data = {"nodes": nodes, "links": links}
 	# serializer = serializers.serialize('json', data)
-    return Response({"loading": "false", "data": data})
+    return Response({"data": data})
 
 @api_view(["GET"])
 def filter(request, filtergroup):
@@ -171,5 +175,14 @@ def filter(request, filtergroup):
         nodes.append(node)
         for rel in node["relations"]:
             links.append(rel)
+            target = DocumentItem.nodes.get(name = rel["target"])
+            if target not in nodes:
+                nodes.append(target)
     data = {"nodes": nodes, "links": links}
     return Response([{"nodes": data}])
+
+@api_view(["GET"])
+def config(request):
+    print(type(configuration))
+    # config = serializers.serialize('json', configuration)
+    return Response([{"config": configuration}])
