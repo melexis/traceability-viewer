@@ -14,8 +14,11 @@ class DocumentItem(StructuredNode):
     group = StringProperty()
     color = StringProperty()
     relations = RelationshipTo("DocumentItem", "REL", model=Rel)
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.serialized_data = {}
 
-    @property
     def serialize(self):
         links = []
         for rel in self.relations:
@@ -23,7 +26,7 @@ class DocumentItem(StructuredNode):
                 "source": self.relations.relationship(rel).start_node().name, 
                 "target": self.relations.relationship(rel).end_node().name, 
                 "type": self.relations.relationship(rel).type})
-        return {
+        self.serialized_data = {
             "name": self.name,
             "properties": self.properties,
             "attributes": self.attributes,
