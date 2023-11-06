@@ -58,9 +58,10 @@ def create_database():
     with open(path, encoding="utf-8") as json_file:
         data = json.load(json_file)
     clear_neo4j_database(db, clear_constraints=True, clear_indexes=True)
-    nodes_made = []
+    node_objects = {}
+    relationships = []
     for item in data:
-        targets = item["targets"]
+        targets_per_relationship = item["targets"]
         attr = item["attributes"]
         props = {}
         props = item
@@ -69,112 +70,63 @@ def create_database():
         del props["attributes"]
         del props["id"]
         del props["name"]
-        if source not in nodes_made:
-            source_group = define_group(configuration["groups"], source)
-            source_color = define_color(configuration["item_colors"], source_group)
-            source_object = DocumentItem(name = source, 
-                                        properties = props, 
-                                        attributes = attr, 
-                                        group = source_group, 
-                                        color = source_color
-                                        ).save()
-            nodes_made.append(source)
-        else:
-            source_object = DocumentItem.nodes.get(name=source)
-            source_object.properties = props
-            source_object.attributes = attr
-            source_object.save()
+        if source not in node_objects:
+            source_group = define_group(source)
+            source_color = get_value_by_regex(configuration["item_colors"], source)
+            node_objects[source] = DocumentItem(name=source, group=source_group, color=source_color)
+        source_object = node_objects[source]
+        source_object.properties = props
+        source_object.attributes = attr
 
-        for rel in targets:
-            if rel not in configuration["backwards_relationships"]:
-                link_color = define_color(configuration["link_colors"], rel)
-                for target in targets[rel]:
-                    if target  not in nodes_made:
-                        target_group = define_group(configuration["groups"], target)
-                        target_color = define_color(configuration["item_colors"], target_group)
-                        target_object = DocumentItem(name = target,
-                                                    group = target_group, 
-                                                    color = target_color
-                                                    ).save()
-                        nodes_made.append(target)
-                        relation_object = source_object.relations.connect(target_object, {"type": rel, 
-                                                                                          "color": link_color})
-                        relation_object.save()
-                    else:
-                        target_object = DocumentItem.nodes.get(name=target)
-                        relation_object = source_object.relations.connect(target_object, {"type": rel,
-                                                                                          "color": link_color})
-                        relation_object.save()
+        for link, targets in targets_per_relationship.items():
+            if link in configuration["backwards_relationships"].keys():
+                continue  # skip backwards relationships
+            link_color = define_linkcolor(configuration["link_colors"], link)
+            for target in targets:
+                if target not in node_objects:
+                    target_group = define_group(target)
+                    target_color = get_value_by_regex(configuration["item_colors"], target)
+                    node_objects[target] = DocumentItem(name=target, group=target_group, color=target_color)
+                relationships.append({
+                    "source": source_object, 
+                    "target": node_objects[target], 
+                    "type": link, 
+                    "link_color": link_color,
+                    })
                     
-                    # if target not in nodes_made:
-                    #     session.execute_write(self.add_item, target)
-                    #     # TODO : groep toevoegen
-                    #     nodes_made.append(target)
-                    # if rel in list(configuration["link_colors"].keys()):
-                    #     source_object.add_relation(rel)
-                    # else:
-                    #     session.execute_write(self.add_relationship, source, target, rel, "#808080")
-    # serializer = TaskSerializer(data = DocumentItem.nodes.all())
-    # if serializer.is_valid():
-    #     serializer.save()
-    #     return Response(serializer.data)
-    # else:
-    #     return HttpResponse('Some Error Occured')
-    # nodes = []
-    # links = []
-    # for item in DocumentItem.nodes.all():
-    #     nodes.append(json.dumps(item.__properties__))
-    #     for rel in item.relations:
-    #         links.append(json.dumps(item.relations.relationship(rel).__properties__))
-    # return {"nodes": nodes, "links": links}
-    
-
-# class BaseView(TemplateView):
-#     template_name = "myapp/index.html"
-    
-#     def get(self, request, **kwargs):
-#         create_database()
-#         nodes = []
-#         links = []
-#         groups = dict(configuration["group_colors"])
-#         groups.popitem()
-#         for item in DocumentItem.nodes.all():
-#             node = item.serialize
-#             nodes.append(node)
-#             for rel in node["relations"]:
-#                 links.append(rel)
-#         # length = len(nodes)
-#         context = {"loading": "false", "groups": groups, "nodes": nodes, "links": links}
-#         return render(request, "myapp/index.html", context)
-    
-#     def get_filter_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         data = create_database()
-#         # for item in DocumentItem.nodes.all():
-#         #     if item.group == filtergroup:
-#         #         nodes.append(json.dumps(item.__properties__))
-#         #         for rel in item.relations:
-#         #             links.append(json.dumps(item.relations.relationship(rel).__properties__))
-#         context["data"] = [data]
-#         return context
-        
+    for node_object in node_objects.values():
+        node_object.save()
+    for link in relationships:
+        source_object = link["source"]
+        link_properties = {"type": link["type"], "color": link["link_color"]}
+        relation_object = source_object.relations.connect(link["target"], link_properties)
+        relation_object.save()
+    for node_object in node_objects.values():
+        node_object.serialize()
+        node_object.save()
 
 def index(request):
-    return render(request, "myapp/index.html", {"loading": "false", "groups": groups, "config": configuration})
+    create_database()
+    breakpoint()
+    return render(request, "myapp/index.html", {"loading": "false", "groups": unique_groups, "config": configuration})
 
 @api_view(["GET"])
 def initialize(request):
     # create_database()
     nodes = []
     links = []
-    node = DocumentItem.nodes[0]
-    nodes.append(node)
-    for rel in node["relations"]:
-        links.append(rel)
-        target = DocumentItem.nodes.get(name = rel["target"])
-        if target not in nodes:
-            nodes.append(target)
+    
+    for item in DocumentItem.nodes.filter(group = unique_groups[0]):
+        node = item.serialized_data
+        nodes.append(node)
+        breakpoint()
+        for rel in node["relations"]:
+            links.append(rel)
+            target = DocumentItem.nodes.get(name = rel["target"])
+            if target not in nodes:
+                nodes.append(target.serialized_data)
     data = {"nodes": nodes, "links": links}
+    print(data)
 	# serializer = serializers.serialize('json', data)
     return Response({"data": data})
 
@@ -183,13 +135,13 @@ def filter(request, filtergroup):
     nodes = []
     links = []
     for item in DocumentItem.nodes.filter(group = filtergroup):
-        node = item.serialize
+        node = item.serialized_data
         nodes.append(node)
         for rel in node["relations"]:
             links.append(rel)
             target = DocumentItem.nodes.get(name = rel["target"])
             if target not in nodes:
-                nodes.append(target)
+                nodes.append(target.serialized_data)
     data = {"nodes": nodes, "links": links}
     return Response([{"nodes": data}])
 
@@ -211,14 +163,14 @@ def autocomplete(request):
     # search_ids will contain the node IDs for in the search input field.
     search_ids = []
     # link_types is used to check if a link type already exists and will in the end be added to words.
-    link_types = []
-    
-    for item in DocumentItem.nodes.filter(group__in = groups):
-        node = item.serialize
-        words.append(node.name)
-        search_ids.append(node.name)
+    link_types = [] # weg
+    # TODO: make set
+    for item in DocumentItem.nodes.filter(group__in = unique_groups):
+        node = item.serialized_data
+        words.append(node["name"])
+        search_ids.append(node["name"])
         for rel in node["relations"]:
-            label = rel.type
+            label = rel["type"]
             if label not in link_types:
                 link_types.append(label)
     
@@ -226,4 +178,4 @@ def autocomplete(request):
     words.extend(["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"])
     words.extend(link_types)
     
-    return Response([{"words": words, "searchIds": search_ids, "linkTypes": link_types}])
+    return Response([{"words": words, "searchIds": search_ids}])
