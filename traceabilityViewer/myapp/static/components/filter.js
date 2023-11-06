@@ -22,7 +22,7 @@ app.component("groupfilter", {
     },
     mounted(){
         axios
-            .get("/" + this.group)
+            .get("/data/" + this.group)
             .then(function (response) {
                 // console.log(response.data[0].nodes.nodes)
                 this.nodes = response.data[0].nodes.nodes
@@ -42,14 +42,10 @@ app.component("groupfilter", {
     computed: {
         style() {
             if (this.$root.activeGroup == this.group){
-                return {
-                    'background-color': this.groupcolor, "border": "2px solid #000000"
-                }
+                return {"border": "2px solid #000000"}
             }
             else {
-                return {
-                    'background-color': this.groupcolor, "border": "2px solid #ffffff"
-                }
+                return {"border": "2px solid #ffffff"}
             }
         }
     }
