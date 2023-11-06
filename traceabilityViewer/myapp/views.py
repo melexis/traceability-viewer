@@ -7,39 +7,48 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.http import JsonResponse
 from django.views.generic.base import TemplateView
-import string
 import re
-import exrex
 
 with open("../config.yml", "r", encoding="utf-8") as open_file:
         configuration = YAML().load(open_file)
 
-groups = set()
-for item,value in dict(configuration["groups"]).items():
-    groups.update(list(exrex.generate(item)))
-    groups.update(list(exrex.generate(value)))
+def validate(configuration):
+    # layers: dict
+    # layered = true
+    # layers: empty
+    # layered = false
+    
+    # colors: others?
+    
+    pass
 
-def define_color(dictionary, key):
-    fallback_color = dictionary["others"]
-    dictionary = dict((k.lower(), v) for k,v in dictionary.items())
-    return dictionary.get(key.lower(), fallback_color)
+validate(configuration)
 
-def define_group(groups, string):
-    upper_case_groups = set(k.upper() for k in groups)
-    group = None
-    for g in upper_case_groups:
-        if string.upper().startswith(g):
-            group = g
-    if group == None:
-        group = "others"
-    return group
+groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
+unique_groups = list(dict.fromkeys(groups_list))
 
-# @api_view(["POST"])
+def define_linkcolor(link_colors, rel):
+    fallback_color = link_colors["others"]
+    return link_colors.get(rel, fallback_color)
+
+def define_group(item_id):
+    for regex in unique_groups:
+        if re.match(regex, item_id):
+            return regex
+    return "others"
+
+def get_value_by_regex(item_colors, item_id):
+    for regex in item_colors:
+        if re.match(regex, item_id):
+            return item_colors[regex]
+    return item_colors["others"]
+
 def create_database():
     """Create a Neo4j database"""
     # yaml = YAML(typ="safe", pure=True)
     # configuration = yaml.load("../config.yml")
-    
+    with open("../config.yml", "r", encoding="utf-8") as open_file:
+        configuration = YAML().load(open_file)
 
     path = ""
     data = {}

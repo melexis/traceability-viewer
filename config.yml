@@ -1,7 +1,7 @@
 ---
 variables:
   PRODUCT: &PRODUCT 90427
-  BASE_URL: &BASE_URL /home/joke/
+  BASE_URL: &BASE_URL /home/joke/Documents/
   #/path/to/product/build/doc/    # CHANGE THIS
 
 json_folder: [*BASE_URL, *PRODUCT, /traceability_export.json]
@@ -9,8 +9,9 @@ json_folder: [*BASE_URL, *PRODUCT, /traceability_export.json]
 html_dir: [*BASE_URL, *PRODUCT, html]
 
 
-# Keep this order !
-groups:
+# Keep this order ! 
+# TODO: documentation
+layers:
   SYSRQT: "(SW|MSDE)(QTEST|INSPECTION)"
   SWRQT: "(SW|MSDE)(QTEST|INSPECTION)"
   SWARCH: "SWITEST"
