@@ -1,4 +1,4 @@
-from neomodel import StructuredNode, StringProperty, RelationshipTo, install_labels, StructuredRel
+from neomodel import JSONProperty, StructuredNode, StringProperty, RelationshipTo, install_labels, StructuredRel
 from django_neomodel import DjangoNode
 import json
 
@@ -13,11 +13,8 @@ class DocumentItem(StructuredNode):
     attributes = StringProperty()
     group = StringProperty()
     color = StringProperty()
+    serialized_data = JSONProperty()
     relations = RelationshipTo("DocumentItem", "REL", model=Rel)
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.serialized_data = {}
 
     def serialize(self):
         links = []
