@@ -43,8 +43,10 @@ def get_value_by_regex(item_colors, item_id):
             return item_colors[regex]
     return item_colors["others"]
 
-def create_database():
+@api_view(["GET", "POST"])
+def create_database(request):
     """Create a Neo4j database"""
+    from time import sleep
     # yaml = YAML(typ="safe", pure=True)
     # configuration = yaml.load("../config.yml")
     with open("../config.yml", "r", encoding="utf-8") as open_file:
@@ -104,11 +106,12 @@ def create_database():
     for node_object in node_objects.values():
         node_object.serialize()
         node_object.save()
+    sleep(3)
+    return Response({"loading": False})
 
 def index(request):
-    create_database()
-    breakpoint()
-    return render(request, "myapp/index.html", {"loading": "false", "groups": unique_groups, "config": configuration})
+    # create_database()
+    return render(request, "myapp/index.html", {"groups": json.dumps(unique_groups) ,"config": configuration})
 
 @api_view(["GET"])
 def initialize(request):
@@ -149,7 +152,7 @@ def filter(request, filtergroup):
 def config(request):
     print(type(configuration))
     # config = serializers.serialize('json', configuration)
-    return Response([{"config": configuration}])
+    return Response([{"config": configuration, "groups": unique_groups }])
 
 @api_view(["GET"])
 def autocomplete(request):
@@ -179,3 +182,4 @@ def autocomplete(request):
     words.extend(link_types)
     
     return Response([{"words": words, "searchIds": search_ids}])
+

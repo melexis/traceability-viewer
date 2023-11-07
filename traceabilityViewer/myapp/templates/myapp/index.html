@@ -20,69 +20,28 @@
     </head>
 
     <body>
-        <div id="app">
-            <div v-if="loading" >
-                {% comment %} [[getData()]] {% endcomment %}
-            </div>
-            <div v-if="!loading">
-                <!-- Navbar -->
-                <div class="buttons">
-                    <groupfilter groupcolor = "lightgray" group = "home"></groupfilter>
-                    {% for group in groups %}
-                        <groupfilter group = {{ group }} ></groupfilter>
-                    {% endfor %}
-                </div>
-                <!-- Checkboxes -->
-                <div id="checkboxes">
-                    <input type="checkbox" id="text"><label for="text"> Nodes with labels </label>
-                </div>
-                <!-- Input Fields -->
-                <div v-if="activeGroup==='home'">
-                    <br>
-                    <label>Cypher query: </label>
-                    <div class="autocomplete" style="width:100%;">
-                        <input placeholder="Enter Cypher query like: MATCH (source)<-[rel]->(target) WHERE source.id = 'string_id' RETURN source, rel, target"
-                        type="text" id="query" value="MATCH (source)<-[rel]->(target) WHERE source.id CONTAINS 'MEMORY' RETURN source,rel,target">
-                        <button class="btn" id="query_button">Submit query</button>
-                    </div>
-                    <!-- <input placeholder="MATCH (source)-[rel]->(target) WHERE source.id = 'string_id' RETURN source, rel, target" margin-left="100px" size="80%" type="text" id="query" value="MATCH (source)-[rel]->(target) WHERE source.id CONTAINS 'MEMORY' RETURN source,rel,target"> -->
-                    <br>
-                    <label>Search: </label>
-                    <div class="autocomplete" style="width:100%;">
-                        <input placeholder="SWARCH_" type="text" id="search">
-                        <button class="btn" id="search_button">Submit</button>
-                    </div>
-                </div>
-                <!-- Legend -->
-                <div id="legend"></div>
-                <div id="legend_links"></div>
-                <!-- Buttons -->
-                <button id="zoom_in">+</button>
-                <button id="zoom_out">-</button>
-                <button id="zoom_fit">Zoom fit</button>
-                <button id="show_connected_nodes" hidden="hidden" >&#x1F441;</button>
-                <button id="search_connected_nodes" hidden="hidden" >&#x2747;</button>
-                <br>
-                <!-- Info node -->
-                <div id="info"></div>
-                <!-- Graph -->
-                <div id="graphviz"> </div>
-                <div id="tooltip"></div>
-            </div>
-        </div>
+        {% comment %} {% for group in groups %}
 
+        {% endfor %} {% endcomment %}
+        <div id="app">
+            {% comment %} {% autoescape on %}  {% endcomment %}
+            {% comment %} config={{ config|slugify }} {% endcomment %}
+            {% comment %} {% endautoescape %} {% endcomment %}
+        </div>
         <!-- Import App -->
         <script src="{% static 'main.js' %}"></script>
+        <script src="{% static 'components/traceabilityViewer.js' %}"></script>
         <script src="{% static 'components/filter.js' %}"></script>
 
         <!-- Mount App -->
         <script>
-            const mountedApp = app.mount('#app')
-            if (typeof {{ loading }} !== 'undefined') {
+            app.mount('#app')
+            {% comment %} if (typeof {{ loading }} !== 'undefined') {
                 mountedApp.loading = {{ loading }}
             }
-            config = mountedApp.config
+            config = mountedApp.config {% endcomment %}
         </script>
+
         <!-- Scripts -->
         {% comment %} <script type = "text/javascript" src = "{% static 'initialize.js' %}" defer></script>
         <script type = "text/javascript" src = "{% static 'legend.js' %}" defer></script>
