@@ -1,45 +1,56 @@
+"""Python module to create the database using the config file"""
+
 import re
+import json
 from ruamel.yaml import YAML
 from neomodel import db, clear_neo4j_database
 from myapp.models import DocumentItem
-import json
+
+
+with open("../config.yml", "r", encoding="utf-8") as open_file:
+    configuration = YAML().load(open_file)
+
+groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
+unique_groups = list(dict.fromkeys(groups_list))
+
+
+def validate(conf):
+    """Validate the configuration file"""
+    # layers: dict
+    # layered = true
+    # layers: empty
+    # layered = false
+
+    # colors: others?
+
+    pass
+
+
+def define_linkcolor(link_colors, rel):
+    """str: Define the color of the link as configured in the configuration"""
+    fallback_color = link_colors["others"]
+    return link_colors.get(rel, fallback_color)
+
+
+def define_group(item_id):
+    """str: Define the group depending on the name of the node"""
+    for regex in unique_groups:
+        if re.match(regex, item_id):
+            return regex
+    return "others"
+
+
+def get_value_by_regex(item_colors, item_id):
+    """str: Get the value by a regex"""
+    for regex in item_colors:
+        if re.match(regex, item_id):
+            return item_colors[regex]
+    return item_colors["others"]
 
 
 def run():
     """Create a Neo4j database"""
-    with open("../config.yml", "r", encoding="utf-8") as open_file:
-        configuration = YAML().load(open_file)
-
-    def validate(configuration):
-        # layers: dict
-        # layered = true
-        # layers: empty
-        # layered = false
-
-        # colors: others?
-
-        pass
-
     validate(configuration)
-
-    groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
-    unique_groups = list(dict.fromkeys(groups_list))
-
-    def define_linkcolor(link_colors, rel):
-        fallback_color = link_colors["others"]
-        return link_colors.get(rel, fallback_color)
-
-    def define_group(item_id):
-        for regex in unique_groups:
-            if re.match(regex, item_id):
-                return regex
-        return "others"
-
-    def get_value_by_regex(item_colors, item_id):
-        for regex in item_colors:
-            if re.match(regex, item_id):
-                return item_colors[regex]
-        return item_colors["others"]
 
     path = ""
     data = {}

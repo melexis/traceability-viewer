@@ -1,14 +1,18 @@
-from neomodel import JSONProperty, StructuredNode, StringProperty, RelationshipTo, install_labels, StructuredRel
-from django_neomodel import DjangoNode
-import json
+"""Python module for the models that are used to create the database with Neomodel"""
+
+from neomodel import StructuredNode, StringProperty, RelationshipTo, install_labels, StructuredRel
 
 
 class Rel(StructuredRel):
+    """Class that represents the relationships between the nodes in the database"""
+
     type = StringProperty(required=True)
     color = StringProperty()
 
 
 class DocumentItem(StructuredNode):
+    """Class that represents a node in the database"""
+
     # uid = UniqueIdProperty()
     name = StringProperty(required=True)
     props = StringProperty()
@@ -19,6 +23,7 @@ class DocumentItem(StructuredNode):
     relations = RelationshipTo("DocumentItem", "REL", model=Rel)
 
     def to_json(self):
+        """dict: Return the node data as a dictionary"""
         links = []
         for rel in self.relations:
             links.append(
@@ -36,22 +41,6 @@ class DocumentItem(StructuredNode):
             "color": self.color,
             "relations": links,
         }
-
-    # def serialize(self):
-    #     links = []
-    #     for rel in self.relations:
-    #         links.append({
-    #             "source": self.relations.relationship(rel).start_node().name,
-    #             "target": self.relations.relationship(rel).end_node().name,
-    #             "type": self.relations.relationship(rel).type})
-    #     self.serialized_data = {
-    #         "name": self.name,
-    #         "properties": self.props,
-    #         "attributes": self.attributes,
-    #         "group": self.group,
-    #         "color": self.color,
-    #         "relations": links
-    #     }
 
 
 install_labels(DocumentItem)
