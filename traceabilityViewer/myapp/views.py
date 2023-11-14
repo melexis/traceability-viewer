@@ -1,158 +1,69 @@
 from django.shortcuts import render, redirect, HttpResponse
-from .models import DocumentItem, Rel
-from neomodel import db, clear_neo4j_database
-from ruamel.yaml import YAML
-import json
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.http import JsonResponse
 from django.views.generic.base import TemplateView
-import re
+import json
+
+# from traceabilityViewer.scripts.create_database import unique_groups, configuration
+from .models import DocumentItem
+from ruamel.yaml import YAML
 
 with open("../config.yml", "r", encoding="utf-8") as open_file:
-        configuration = YAML().load(open_file)
-
-def validate(configuration):
-    # layers: dict
-    # layered = true
-    # layers: empty
-    # layered = false
-    
-    # colors: others?
-    
-    pass
-
-validate(configuration)
+    configuration = YAML().load(open_file)
 
 groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
 unique_groups = list(dict.fromkeys(groups_list))
 
-def define_linkcolor(link_colors, rel):
-    fallback_color = link_colors["others"]
-    return link_colors.get(rel, fallback_color)
-
-def define_group(item_id):
-    for regex in unique_groups:
-        if re.match(regex, item_id):
-            return regex
-    return "others"
-
-def get_value_by_regex(item_colors, item_id):
-    for regex in item_colors:
-        if re.match(regex, item_id):
-            return item_colors[regex]
-    return item_colors["others"]
-
-@api_view(["GET", "POST"])
-def create_database(request):
-    """Create a Neo4j database"""
-    from time import sleep
-    # yaml = YAML(typ="safe", pure=True)
-    # configuration = yaml.load("../config.yml")
-    with open("../config.yml", "r", encoding="utf-8") as open_file:
-        configuration = YAML().load(open_file)
-
-    path = ""
-    data = {}
-    for i in configuration["json_folder"]:
-        path += str(i)
-
-    with open(path, encoding="utf-8") as json_file:
-        data = json.load(json_file)
-    clear_neo4j_database(db, clear_constraints=True, clear_indexes=True)
-    node_objects = {}
-    relationships = []
-    for item in data:
-        targets_per_relationship = item["targets"]
-        attr = item["attributes"]
-        props = {}
-        props = item
-        source = item["id"]
-        del props["targets"]
-        del props["attributes"]
-        del props["id"]
-        del props["name"]
-        if source not in node_objects:
-            source_group = define_group(source)
-            source_color = get_value_by_regex(configuration["item_colors"], source)
-            node_objects[source] = DocumentItem(name=source, group=source_group, color=source_color)
-        source_object = node_objects[source]
-        source_object.properties = props
-        source_object.attributes = attr
-
-        for link, targets in targets_per_relationship.items():
-            if link in configuration["backwards_relationships"].keys():
-                continue  # skip backwards relationships
-            link_color = define_linkcolor(configuration["link_colors"], link)
-            for target in targets:
-                if target not in node_objects:
-                    target_group = define_group(target)
-                    target_color = get_value_by_regex(configuration["item_colors"], target)
-                    node_objects[target] = DocumentItem(name=target, group=target_group, color=target_color)
-                relationships.append({
-                    "source": source_object, 
-                    "target": node_objects[target], 
-                    "type": link, 
-                    "link_color": link_color,
-                    })
-                    
-    for node_object in node_objects.values():
-        node_object.save()
-    for link in relationships:
-        source_object = link["source"]
-        link_properties = {"type": link["type"], "color": link["link_color"]}
-        relation_object = source_object.relations.connect(link["target"], link_properties)
-        relation_object.save()
-    for node_object in node_objects.values():
-        node_object.serialize()
-        node_object.save()
-    sleep(3)
-    return Response({"loading": False})
 
 def index(request):
     # create_database()
-    return render(request, "myapp/index.html", {"groups": json.dumps(unique_groups) ,"config": configuration})
+    return render(request, "myapp/index.html", {"groups": json.dumps(unique_groups), "config": configuration})
+
 
 @api_view(["GET"])
 def initialize(request):
     # create_database()
     nodes = []
     links = []
-    
-    for item in DocumentItem.nodes.filter(group = unique_groups[0]):
-        node = item.serialized_data
+
+    for item in DocumentItem.nodes.filter(group=unique_groups[0]):
+        node = item.to_json()
         nodes.append(node)
-        breakpoint()
+        # breakpoint()
         for rel in node["relations"]:
             links.append(rel)
-            target = DocumentItem.nodes.get(name = rel["target"])
+            target = DocumentItem.nodes.get(name=rel["target"])
             if target not in nodes:
-                nodes.append(target.serialized_data)
+                nodes.append(target.to_json())
     data = {"nodes": nodes, "links": links}
     print(data)
-	# serializer = serializers.serialize('json', data)
+    # serializer = serializers.serialize('json', data)
     return Response({"data": data})
+
 
 @api_view(["GET"])
 def filter(request, filtergroup):
     nodes = []
     links = []
-    for item in DocumentItem.nodes.filter(group = filtergroup):
-        node = item.serialized_data
+    for item in DocumentItem.nodes.filter(group=filtergroup):
+        node = item.to_json()
         nodes.append(node)
         for rel in node["relations"]:
             links.append(rel)
-            target = DocumentItem.nodes.get(name = rel["target"])
+            target = DocumentItem.nodes.get(name=rel["target"])
             if target not in nodes:
-                nodes.append(target.serialized_data)
+                nodes.append(target.to_json())
     data = {"nodes": nodes, "links": links}
     return Response([{"nodes": data}])
+
 
 @api_view(["GET"])
 def config(request):
     print(type(configuration))
     # config = serializers.serialize('json', configuration)
-    return Response([{"config": configuration, "groups": unique_groups }])
+    return Response([{"config": configuration, "groups": unique_groups}])
+
 
 @api_view(["GET"])
 def autocomplete(request):
@@ -162,24 +73,22 @@ def autocomplete(request):
     This contains all the node IDs where the group is a main group of the V model (not the group "Others").
     """
     # words will contain the autocomplete words for the query input field.
-    words = []
+    words = set()
     # search_ids will contain the node IDs for in the search input field.
-    search_ids = []
-    # link_types is used to check if a link type already exists and will in the end be added to words.
-    link_types = [] # weg
+    search_ids = set()
     # TODO: make set
-    for item in DocumentItem.nodes.filter(group__in = unique_groups):
-        node = item.serialized_data
-        words.append(node["name"])
-        search_ids.append(node["name"])
+    counter = 0
+    # sleep(5)
+    for item in DocumentItem.nodes.filter(group__in=unique_groups).all():
+        counter = +1
+        node = item.to_json()
+        words.add(node["name"])
+        search_ids.add(node["name"])
         for rel in node["relations"]:
             label = rel["type"]
-            if label not in link_types:
-                link_types.append(label)
-    
-    # add the words of a query that are used the most.
-    words.extend(["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"])
-    words.extend(link_types)
-    
-    return Response([{"words": words, "searchIds": search_ids}])
+            words.add(label)
 
+    # add the words of a query that are used the most.
+    words.update(["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"])
+    breakpoint()
+    return Response([{"words": words, "searchIds": search_ids}])
