@@ -13,17 +13,42 @@ with open("../config.yml", "r", encoding="utf-8") as open_file:
 groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
 unique_groups = list(dict.fromkeys(groups_list))
 
+def validate_keyword(configuration, keyword, expected_type):
+    if configuration.get(keyword) is None:
+        raise TypeError(f"Expected {keyword} to be in the configuration file; got 'None'")
+    elif not isinstance(configuration[keyword], expected_type):
+        conf = configuration[keyword]
+        raise TypeError(f"Expected the {keyword} in the configuration file to be a {expected_type}; got {type(conf)} ")
 
 def validate(conf):
     """Validate the configuration file"""
-    # layers: dict
-    # layered = true
-    # layers: empty
-    # layered = false
+    
+    validate_keyword(conf, "variables", dict)
+    validate_keyword(conf["variables"], "BASE_URL", str)
+    # variables = conf["variables"]
+    # if variables.get("BASE_URL") is None:
+    #     raise TypeError(f"Expected 'BASE_URL' to be in 'variables' of the configuration file; got 'None'")
+    # elif not isinstance(variables, dict):
+    #     raise TypeError(f"Expected the 'variables' in the configuration file to be a dict; got {type(variables)} ")
+    
+    validate_keyword(conf, "json_folder", list)
+    validate_keyword(conf, "html_dir", list)
+    validate_keyword(conf, "layered", bool)
+    if conf["layered"]:
+        validate_keyword(conf, "layers", dict )
 
-    # colors: others?
-
-    pass
+    validate_keyword(conf, "item_colors", dict)
+    if conf["item_colors"].get("others") is None:
+        with open("../config.yml", "w", encoding="utf-8") as config_file:
+                conf["item_colors"]["others"] = "black"
+                YAML().dump(conf, config_file)
+                
+    validate_keyword(conf, "link_colors", dict)
+    if conf["link_colors"].get("others") is None:
+        with open("../config.yml", "w", encoding="utf-8") as config_file:
+                conf["link_colors"]["others"] = "black"
+                YAML().dump(conf, config_file)
+    print(conf["link_colors"]["others"])
 
 
 def define_linkcolor(link_colors, rel):
