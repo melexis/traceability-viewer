@@ -97,7 +97,7 @@ def run():
     relationships = []
     for item in data:
         targets_per_relationship = item["targets"]
-        attr = item["attributes"]
+        attributes = item["attributes"]
         props = {}
         props = item
         source = item["id"]
@@ -111,7 +111,7 @@ def run():
             node_objects[source] = DocumentItem(name=source, group=source_group, color=source_color)
         source_object = node_objects[source]
         source_object.props = props
-        source_object.attributes = attr
+        source_object.attributes = attributes
 
         for link, targets in targets_per_relationship.items():
             if link in configuration["backwards_relationships"].keys():
