@@ -1,7 +1,22 @@
----
 services:
+  app:
+    build: 
+      context: .
+      args:
+        - CONFIG_FILE="../config.yml"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    command: >
+      sh -c "python manage.py runscript create_database &&
+      python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - CONFIG_FILE=${CONFIG_FILE}
+    depends_on:
+      - neo4j
+  
   neo4j:
-    # build: .
     image: neo4j:5.7.0
     volumes:
       - '$HOME/neo4j/data:/data'
@@ -13,3 +28,4 @@ services:
       - 7474:7474
       - 7687:7687
     restart: on-failure
+
