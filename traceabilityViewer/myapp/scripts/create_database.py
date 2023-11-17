@@ -8,22 +8,32 @@ from neomodel import db, clear_neo4j_database
 from myapp.models import DocumentItem
 
 
-def validate_keyword(config, keyword, expected_type):
+def validate_keyword(config, keyword, expected_type, required=True):
     """Validate a keyword of the configuration file if it exists and it is the expected type"""
-    if config.get(keyword) is None:
-        raise TypeError(f"Expected {keyword} to be in the configuration file; got 'None'")
-    if not isinstance(config[keyword], expected_type):
-        part_of_config = config[keyword]
-        raise TypeError(
-            f"Expected the {keyword} in the configuration file to be a {expected_type}; " f"got {type(part_of_config)}"
-        )
+    if required:
+        if keyword not in config:
+            raise ValueError(f"Failed to find mandatory parameter {keyword!r} in the configuration file")
+        if not isinstance(config[keyword], expected_type):
+            part_of_config = config[keyword]
+            raise TypeError(
+                f"Expected the {keyword} in the configuration file to be a {expected_type}; "
+                f"got {type(part_of_config)}"
+            )
+    else:
+        if keyword in config:
+            if not isinstance(config[keyword], expected_type):
+                part_of_config = config[keyword]
+                raise TypeError(
+                    f"Expected the {keyword} in the configuration file to be a {expected_type}; "
+                    f"got {type(part_of_config)}"
+                )
 
 
 def validate():
     """Validate the igiguration file"""
     config_path = getenv("CONFIG_FILE")
     if config_path is None:
-        raise
+        raise ValueError("No configuration path is given")
 
     yaml = YAML()
     with open(config_path, "r", encoding="utf-8") as open_file:
@@ -37,8 +47,8 @@ def validate():
     # elif not isinstance(variables, dict):
     #     raise TypeError(f"Expected the 'variables' in the configuration file to be a dict; got {type(variables)} ")
 
-    validate_keyword(config, "json_folder", list)
-    validate_keyword(config, "html_dir", list)
+    validate_keyword(config, "database_path", list)
+    validate_keyword(config, "html_dir", list, required=False)
     validate_keyword(config, "layered", bool)
     if config["layered"]:
         validate_keyword(config, "layers", dict)
