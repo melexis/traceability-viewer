@@ -1,17 +1,11 @@
 """Python module to create the database using the config file"""
 
+from os import getenv
 import re
 import json
 from ruamel.yaml import YAML
 from neomodel import db, clear_neo4j_database
 from myapp.models import DocumentItem
-
-
-with open("../config.yml", "r", encoding="utf-8") as open_file:
-    configuration = YAML().load(open_file)
-
-groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
-unique_groups = list(dict.fromkeys(groups_list))
 
 
 def validate_keyword(config, keyword, expected_type):
@@ -25,8 +19,15 @@ def validate_keyword(config, keyword, expected_type):
         )
 
 
-def validate(config):
+def validate():
     """Validate the igiguration file"""
+    config_path = getenv("CONFIG_FILE")
+    if config_path is None:
+        raise
+
+    yaml = YAML()
+    with open(config_path, "r", encoding="utf-8") as open_file:
+        config = yaml.load(open_file)
 
     validate_keyword(config, "variables", dict)
     validate_keyword(config["variables"], "BASE_URL", str)
@@ -42,18 +43,18 @@ def validate(config):
     if config["layered"]:
         validate_keyword(config, "layers", dict)
 
-    validate_keyword(config, "item_colors", dict)
-    if config["item_colors"].get("others") is None:
-        with open("../config.yml", "w", encoding="utf-8") as config_file:
-            config["item_colors"]["others"] = "black"
-            YAML().dump(config, config_file)
+    file_changed = False
+    for keyword in ["item_colors", "link_colors"]:
+        validate_keyword(config, keyword, dict)
+        if config[keyword].get("others") is None:
+            config[keyword]["others"] = "black"
+            file_changed = True
 
-    validate_keyword(config, "link_colors", dict)
-    if config["link_colors"].get("others") is None:
-        with open("../config.yml", "w", encoding="utf-8") as config_file:
-            config["link_colors"]["others"] = "black"
-            YAML().dump(config, config_file)
-    print(config["link_colors"]["others"])
+    if file_changed:
+        with open(config_path, "w", encoding="utf-8") as config_file:
+            yaml.dump(config, config_file)
+
+    return config
 
 
 def define_linkcolor(link_colors, rel):
@@ -62,7 +63,7 @@ def define_linkcolor(link_colors, rel):
     return link_colors.get(rel, fallback_color)
 
 
-def define_group(item_id):
+def define_group(item_id, unique_groups):
     """str: Define the group depending on the name of the node"""
     for regex in unique_groups:
         if re.match(regex, item_id):
@@ -80,8 +81,10 @@ def get_value_by_regex(item_colors, item_id):
 
 def run():
     """Create a Neo4j database"""
-    validate(configuration)
 
+    configuration = validate()
+    groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
+    unique_groups = list(dict.fromkeys(groups_list))
     path = ""
     data = {}
     for i in configuration["json_folder"]:
@@ -103,7 +106,7 @@ def run():
         del props["id"]
         del props["name"]
         if source not in node_objects:
-            source_group = define_group(source)
+            source_group = define_group(source, unique_groups)
             source_color = get_value_by_regex(configuration["item_colors"], source)
             node_objects[source] = DocumentItem(name=source, group=source_group, color=source_color)
         source_object = node_objects[source]
@@ -116,7 +119,7 @@ def run():
             link_color = define_linkcolor(configuration["link_colors"], link)
             for target in targets:
                 if target not in node_objects:
-                    target_group = define_group(target)
+                    target_group = define_group(target, unique_groups)
                     target_color = get_value_by_regex(configuration["item_colors"], target)
                     node_objects[target] = DocumentItem(name=target, group=target_group, color=target_color)
                 relationships.append(
