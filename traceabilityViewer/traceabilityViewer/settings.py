@@ -26,9 +26,9 @@ SECRET_KEY = "django-insecure-9@1+y@2v04x9t4r=ih5-%j7ueh(84j6($3tt6js&pd%ozl91du
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["0.0.0.0", "localhost"]
 
-config.DATABASE_URL = "bolt://neo4j:password@neo4j:7687"
+config.DATABASE_URL = "bolt://neo4j:password@neo4j_db:7687"
 
 # Application definition
 

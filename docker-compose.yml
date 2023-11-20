@@ -7,8 +7,6 @@ services:
         CONFIG_FILE: "config.yml"
         JSON_EXPORT: $JSON_EXPORT
         BASE_URL: "https://swdocs.sofia.elex.be/swcc/projects"
-      # args:
-      #   - CONFIG_FILE="../config.yml"
     ports:
       - "8000:8000"
     expose:
@@ -16,21 +14,13 @@ services:
     depends_on:
       neo4j_db:
         condition: service_healthy
-      # - neo4j_db
     links:
       - neo4j_db
-    # volumes:
-    #   - ./app:/app
     command: >
       sh -c "/py/bin/python3 manage.py runscript create_database &&
-      /py/bin/python3 manage.py runserver"
-    # networks:
-    #   - mynetwork
-    # environment:
-    #   - CONFIG_FILE=${CONFIG_FILE}
+      /py/bin/python3 manage.py runserver 0.0.0.0:8000"
     environment:
       - NEO4J_BOLT_URL=bolt://neo4j:password@neo4j_db:7687
-      # - DJANGO_SETTINGS_MODULE=settings
 
   neo4j_db:
     image: neo4j:5.7.0
@@ -47,8 +37,6 @@ services:
     expose:
       - 7474
       - 7687
-    # networks:
-    #   - mynetwork
     healthcheck:
       test: wget http://localhost:7474 || exit 1
       interval: 1s
@@ -58,7 +46,3 @@ services:
 
 volumes:
   neo4j_db:
-
-# networks:
-#   mynetwork:
-#     driver: bridge
