@@ -3,6 +3,7 @@
 from os import getenv
 import re
 import json
+from pathlib import Path
 from ruamel.yaml import YAML
 from neomodel import db, clear_neo4j_database
 from myapp.models import DocumentItem
@@ -40,15 +41,15 @@ def validate():
         config = yaml.load(open_file)
 
     validate_keyword(config, "variables", dict)
-    validate_keyword(config["variables"], "BASE_URL", str)
+    # validate_keyword(config["variables"], "BASE_URL", str)
     # variables = conf["variables"]
     # if variables.get("BASE_URL") is None:
     #     raise TypeError(f"Expected 'BASE_URL' to be in 'variables' of the configuration file; got 'None'")
     # elif not isinstance(variables, dict):
     #     raise TypeError(f"Expected the 'variables' in the configuration file to be a dict; got {type(variables)} ")
 
-    validate_keyword(config, "database_path", list)
-    validate_keyword(config, "html_dir", list, required=False)
+    # validate_keyword(config, "database_path", list)
+    # validate_keyword(config, "html_dir", list, required=False)
     validate_keyword(config, "layered", bool)
     if config["layered"]:
         validate_keyword(config, "layers", dict)
@@ -95,11 +96,9 @@ def run():
     configuration = validate()
     groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
     unique_groups = list(dict.fromkeys(groups_list))
-    path = ""
     data = {}
-    for i in configuration["json_folder"]:
-        path += str(i)
-
+    path = getenv("JSON_EXPORT")
+    print(path)
     with open(path, encoding="utf-8") as json_file:
         data = json.load(json_file)
     clear_neo4j_database(db, clear_constraints=True, clear_indexes=True)

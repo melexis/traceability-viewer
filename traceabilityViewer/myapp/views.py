@@ -1,5 +1,6 @@
 """Django views"""
 
+from os import getenv
 import json
 from ruamel.yaml import YAML
 
@@ -13,7 +14,8 @@ from django.shortcuts import render, redirect, HttpResponse
 # from traceabilityViewer.scripts.create_database import unique_groups, configuration
 from .models import DocumentItem
 
-with open("../config.yml", "r", encoding="utf-8") as open_file:
+config_path = getenv("CONFIG_FILE")
+with open(config_path, "r", encoding="utf-8") as open_file:
     configuration = YAML().load(open_file)
 
 groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
