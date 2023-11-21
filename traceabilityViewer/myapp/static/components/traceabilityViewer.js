@@ -19,9 +19,7 @@ app.component("traceability-viewer", {
         <br>
         <label>Cypher query: </label>
         <div class="autocomplete" style="width:100%;">
-            <input placeholder="Enter Cypher query like: MATCH (source)<-[rel]->(target) WHERE source.id = 'string_id' RETURN source, rel, target"
-            type="text" id="query" value="MATCH (source)<-[rel]->(target) WHERE source.id CONTAINS 'MEMORY' RETURN source,rel,target">
-            <button class="btn" id="query_button">Submit query</button>
+            <autocomplete :suggestions="words"></autocomplete>
         </div>
         <!-- <input placeholder="MATCH (source)-[rel]->(target) WHERE source.id = 'string_id' RETURN source, rel, target" margin-left="100px" size="80%" type="text" id="query" value="MATCH (source)-[rel]->(target) WHERE source.id CONTAINS 'MEMORY' RETURN source,rel,target"> -->
         <br>
@@ -48,15 +46,17 @@ app.component("traceability-viewer", {
     <div id="tooltip"></div>
     `,
     setup() {
+        query = ""
         activeGroup="home"
         groups=Vue.ref([])
         config={}
         nodes={}
         links={}
-        words=[]
-        searchIds=[]
+        words=Vue.ref([])
+        searchIds=Vue.ref([])
         linkTypes=[]
         return {
+            query,
             activeGroup,
             groups,
             nodes,
@@ -72,6 +72,9 @@ app.component("traceability-viewer", {
     //     }
     // },
     methods: {
+        autocomplete(word) {
+            console.log(word)
+        },
         initialize(){
             // axios
             //     .get("/data")
@@ -99,12 +102,10 @@ app.component("traceability-viewer", {
                 .get("/autocomplete")
                 .then(function (response) {
                     console.log(response);
-                    this.words = response.data[0].words;
-                    this.searchIds = response.data[0].searchIds;
-                    this.linkTypes = response.data[0].linkTypes;
+                    this.words.value = response.data[0].words;
+                    this.searchIds.value = response.data[0].searchIds;
                     console.log(this.words);
                     console.log(this.searchIds);
-                    console.log(this.linkTypes);
                 })
                 .catch(function (error)  {
                     console.log(error);

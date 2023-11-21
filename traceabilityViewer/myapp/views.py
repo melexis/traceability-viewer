@@ -93,8 +93,6 @@ def autocomplete(request):
         for rel in node["relations"]:
             label = rel["type"]
             words.add(label)
-
     # add the words of a query that are used the most.
     words.update(["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"])
-    breakpoint()
     return Response([{"words": words, "searchIds": search_ids}])
