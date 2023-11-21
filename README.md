@@ -3,9 +3,17 @@
 
 ## Getting Started
 
+install docker compose https://docs.docker.com/compose/install/linux/#install-the-plugin-manually
+
+https://docs.docker.com/engine/reference/commandline/compose_up/
+
+`# copy example .env to your .env
+cp .env.example .env`
+
 `cp <path-to-export-json-file> <destination-path>`
 
-`JSON_EXPORT=traceability_export.json docker-compose up --build`
+`docker compose up --build --remove-orphans`
+
 
 <!-- `docker-compose up`
 `cd traceabilityViewer/`

@@ -4,9 +4,10 @@ services:
     build:
       context: .
       args:
-        CONFIG_FILE: "config.yml"
-        JSON_EXPORT: $JSON_EXPORT
-        BASE_URL: "https://swdocs.sofia.elex.be/swcc/projects"
+        CONFIG_FILE: ${CONFIG_FILE}
+        JSON_EXPORT: ${JSON_EXPORT}
+        BASE_URL: ${BASE_URL}
+        IP_ADDRESS: ${IP_ADDRESS}
     ports:
       - "8000:8000"
     expose:
@@ -18,9 +19,13 @@ services:
       - neo4j_db
     command: >
       sh -c "/py/bin/python3 manage.py runscript create_database &&
-      /py/bin/python3 manage.py runserver 0.0.0.0:8000"
+      /py/bin/python3 manage.py runserver ${IP_ADDRESS}:8000"
     environment:
       - NEO4J_BOLT_URL=bolt://neo4j:password@neo4j_db:7687
+      - CONFIG_FILE=${CONFIG_FILE}
+      - JSON_EXPORT=${JSON_EXPORT}
+      - BASE_URL=${BASE_URL}
+      - IP_ADDRESS=${IP_ADDRESS}
 
   neo4j_db:
     image: neo4j:5.7.0

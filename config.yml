@@ -1,11 +1,13 @@
 variables:
-  PRODUCT: &PRODUCT 90427
-  BASE_URL: &BASE_URL /home/joke/Documents/
-  #/path/to/product/build/doc/    # CHANGE THIS
+  PRODUCT: ${PRODUCT}
+  BASE_URL: ${BASE_URL}
+  # PRODUCT: &PRODUCT 90427
+  # BASE_URL: &BASE_URL /home/joke/Documents
+#   #/path/to/product/build/doc/    # CHANGE THIS
 
-json_folder: [*BASE_URL, *PRODUCT, /traceability_export.json]
-# URL: [*BASE_URL, *PRODUCT, /rom/html/document.html#id]
-html_dir: [*BASE_URL, *PRODUCT, html]
+# database_path: [*BASE_URL, *PRODUCT, traceability_export.json]
+# # URL: [*BASE_URL, *PRODUCT, /rom/html/document.html#id]
+# html_dir: [*BASE_URL, *PRODUCT, html]
 
 layered: true
 
@@ -50,7 +52,6 @@ link_colors:
   ext_robotframeworklog: aquamarine
   raised_by: brown
   guaranteed_by: darkgreen
-  others: black
 
 backwards_relationships:
   depends_on: impacts_on
