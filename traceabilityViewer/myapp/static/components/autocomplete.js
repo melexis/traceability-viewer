@@ -8,7 +8,9 @@ app.component("autocomplete", {
         @keydown.enter = 'enter'
         @keydown.down = 'down'
         @keydown.up = 'up'
-        @input = 'change'/>
+        @input = 'change'
+        @focus = "startFocus"
+        @blur = "stopFocus"/>
     <ul v-show="openSuggestion" class="list-group"
     style="width:80%; position: absolute; z-index: 999;">
         <li
@@ -29,12 +31,14 @@ app.component("autocomplete", {
         search = Vue.ref("")
         isOpen = Vue.ref(false)
         current = Vue.ref(-1)
+        isFocussed = Vue.ref(false)
         // selection = ""
         return {
             fullInput,
             search,
             isOpen,
             current,
+            isFocussed,
             // selection,
         }
     },
@@ -51,6 +55,12 @@ app.component("autocomplete", {
         },
     },
     methods: {
+        startFocus(){
+            this.isFocussed = true
+        },
+        stopFocus(){
+            this.isFocussed = false
+        },
         //When enter pressed on the input
         enter() {
             this.search = this.matches[this.current];
@@ -151,7 +161,7 @@ app.component("autocomplete", {
 
         // The flag
         openSuggestion() {
-            if (this.matches.length > 0 && this.isOpen){
+            if (this.matches.length > 0 && this.isOpen && this.isFocussed){
                 return true
             }
             return false
