@@ -3,7 +3,7 @@ app.component("groupfilter", {
     template:
     /*html*/
     `
-    <button class="btn btn-dark btn-outline-light" :style="style" @click="clicked">[[group]]</button>
+    <button type="button" :class="style"  @click="clicked">[[group]]</button>
     `,
     data() {
         return {
@@ -14,14 +14,12 @@ app.component("groupfilter", {
     props: {
         group: {
             type: String,
-            default: () => "label"
-        },
-        groupcolor: {
-            type: String
+            default: () => "home"
         }
     },
     mounted(){
-        axios
+        if (this.group != "home"){
+            axios
             .get("/data/" + this.group)
             .then(function (response) {
                 // console.log(response.data[0].nodes.nodes)
@@ -31,21 +29,26 @@ app.component("groupfilter", {
             .catch(function (error)  {
                 console.log(error);
             })
+        }
     },
     methods: {
         clicked() {
             // @set-active-group="setActiveGroup"
             // this.$emit("set-active-group", this.group)
-            this.$root.activeGroup = this.group
+            console.log(this.group)
+            this.$emit("change-group", this.group)
+            // this.$root.activeGroup = this.group
+            this.$root.nodes = this.nodes
+            this.$root.links = this.links
         }
     },
     computed: {
         style() {
             if (this.$root.activeGroup == this.group){
-                return {"border": "2px solid #000000"}
+                return "btn btn-outline-danger"
             }
             else {
-                return {"border": "2px solid #ffffff"}
+                return "btn btn-dark btn-outline-light"
             }
         }
     }

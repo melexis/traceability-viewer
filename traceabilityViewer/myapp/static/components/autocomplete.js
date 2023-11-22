@@ -27,7 +27,7 @@ app.component("autocomplete", {
             [[ suggestion ]]
             </li>
         </ul>
-        <button @click="onSubmit" class="btn btn-primary">Submit</button>
+        <button @click="onSubmit" class="btn mt-1 mb-1 btn-primary">Submit</button>
     </div>
     `,
     setup() {
