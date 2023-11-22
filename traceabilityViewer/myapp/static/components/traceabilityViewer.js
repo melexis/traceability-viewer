@@ -4,11 +4,9 @@ app.component("traceability-viewer", {
     /*html*/
     `
     <!-- Navbar -->
-    <div class="buttons">
+    <div class="gap-2 d-md-block">
         <groupfilter group ="home"></groupfilter>
-        <div v-for="group in groups">
-            <groupfilter :group=group ></groupfilter>
-        </div>
+        <groupfilter v-for="group in groups" :group=group ></groupfilter>
     </div>
     <!-- Checkboxes -->
     <div id="checkboxes">

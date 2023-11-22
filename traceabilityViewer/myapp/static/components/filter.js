@@ -3,7 +3,7 @@ app.component("groupfilter", {
     template:
     /*html*/
     `
-    <button class='button' :style="style" @click="clicked">[[group]]</button>
+    <button class="btn btn-dark btn-outline-light" :style="style" @click="clicked">[[group]]</button>
     `,
     data() {
         return {
