@@ -4,7 +4,7 @@ app.component("autocomplete", {
     /*html*/
     `
     <div class="w-100 autocomplete">
-    <input class="form-control w-80" type="text" :value="search"
+    <input class="form-control w-80" type="text" :value="fullInput"
         @keydown.enter = 'enter'
         @keydown.down = 'down'
         @keydown.up = 'up'
@@ -25,11 +25,13 @@ app.component("autocomplete", {
     </div>
     `,
     setup() {
-        search = Vue.ref('')
+        fullInput = Vue.ref("")
+        search = Vue.ref("")
         isOpen = Vue.ref(false)
         current = Vue.ref(-1)
         // selection = ""
         return {
+            fullInput,
             search,
             isOpen,
             current,
@@ -41,13 +43,28 @@ app.component("autocomplete", {
             type: Array,
             required: true,
             default: () => []
-        }
+        },
+        sentenceAllowed: {
+            type: Boolean,
+            required: true,
+            default: false,
+        },
     },
     methods: {
         //When enter pressed on the input
         enter() {
             this.search = this.matches[this.current];
             this.isOpen = false;
+            if (this.sentenceAllowed){
+                words = this.fullInput.split(" ")
+                words = words.slice(0, words.length - 1)
+                words.push(this.search)
+                this.fullInput = words.join(" ")
+            }
+            else {
+                this.fullInput = this.search
+            }
+            this.current = -1
         },
 
         //When up pressed while suggestions are open
@@ -58,7 +75,7 @@ app.component("autocomplete", {
 
         //When up pressed while suggestions are open
         down() {
-            if(this.current < this.suggestions.length - 1)
+            if(this.current < this.matches.length - 1)
                 this.current ++;
         },
 
@@ -79,15 +96,34 @@ app.component("autocomplete", {
         suggestionClick(index) {
             this.search = this.matches[index];
             this.isOpen = false;
+            if (this.sentenceAllowed){
+                words = this.fullInput.split(" ")
+                words = words.slice(0, words.length - 1)
+                words.push(this.search)
+                this.fullInput = words.join(" ")
+            }
+            else {
+                this.fullInput = this.search
+            }
+            this.current = -1
         },
 
         onSubmit() {
-            console.log(this.search)
+            console.log(this.fullInput)
         },
 
         change(event) {
             this.isOpen = true
-            this.search = event.target.value
+            if (this.sentenceAllowed){
+                this.fullInput = event.target.value
+                words = event.target.value.split(" ")
+                this.search = words[words.length - 1]
+            }
+            else {
+                this.fullInput = event.target.value
+                this.search = event.target.value
+            }
+
             // this.modelValue = this.search.value
         },
         // setSelected(item) {

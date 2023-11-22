@@ -16,16 +16,9 @@ app.component("traceability-viewer", {
     <div v-if="activeGroup==='home'">
         <br>
         <label>Cypher query: </label>
-        <div class="autocomplete" style="width:100%;">
-            <autocomplete :suggestions="words"></autocomplete>
-        </div>
-        <!-- <input placeholder="MATCH (source)-[rel]->(target) WHERE source.id = 'string_id' RETURN source, rel, target" margin-left="100px" size="80%" type="text" id="query" value="MATCH (source)-[rel]->(target) WHERE source.id CONTAINS 'MEMORY' RETURN source,rel,target"> -->
-        <br>
+        <autocomplete :suggestions="words" :sentenceAllowed="true"></autocomplete>
         <label>Search: </label>
-        <div class="autocomplete" style="width:100%;">
-            <input placeholder="SWARCH_" type="text" id="search">
-            <button class="btn" id="search_button">Submit</button>
-        </div>
+        <autocomplete :suggestions="searchIds" :sentenceAllowed="false"></autocomplete>
     </div>
     <!-- Legend -->
     <div id="legend"></div>
