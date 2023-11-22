@@ -3,27 +3,31 @@ app.component("autocomplete", {
     template:
     /*html*/
     `
-    <div class="w-100 autocomplete">
-    <input class="form-control w-80" type="text" :value="fullInput"
-        @keydown.enter = 'enter'
-        @keydown.down = 'down'
-        @keydown.up = 'up'
-        @input = 'change'
-        @focus = "startFocus"
-        @blur = "stopFocus"/>
-    <ul v-show="openSuggestion" class="list-group"
-    style="width:80%; position: absolute; z-index: 999;">
-        <li
-            v-for="(suggestion, index) in matches"
-            class="list-group-item list-group-item-action"
-            v-bind:class="{'active': isActive(index), 'aria-current': isActive(index)}"
-            :key="suggestion"
-            @click="suggestionClick(index)"
+    <div class="w-100 autocomplete" tabindex="0"
+        @focusin="startFocus"
+        @focusout="stopFocus"
+    >
+        <input class="form-control w-80" type="text" :value="fullInput"
+            @keydown.enter="enter"
+            @keydown.tab.prevent="enter"
+            @keydown.down="down"
+            @keydown.up="up"
+            @input="change"
+            />
+        <ul v-show="openSuggestion" class="list-group"
+        style="width:80%; position: absolute; z-index: 999;"
         >
-        [[ suggestion ]]
-        </li>
-    </ul>
-    <button @click="onSubmit" class="btn btn-primary">Submit</button>
+            <li
+                v-for="(suggestion, index) in matches"
+                class="list-group-item list-group-item-action"
+                v-bind:class="{'active': isActive(index), 'aria-current': isActive(index)}"
+                :key="suggestion"
+                @click="suggestionClick(index)"
+            >
+            [[ suggestion ]]
+            </li>
+        </ul>
+        <button @click="onSubmit" class="btn btn-primary">Submit</button>
     </div>
     `,
     setup() {
@@ -56,56 +60,54 @@ app.component("autocomplete", {
     },
     methods: {
         startFocus(){
-            this.isFocussed = true
+            console.log("start focus");
+            this.isFocussed=true
         },
         stopFocus(){
-            this.isFocussed = false
+            console.log("stop focus");
+            this.isFocussed=false
         },
-        //When enter pressed on the input
+        // When enter pressed on the input
         enter() {
-            this.search = this.matches[this.current];
-            this.isOpen = false;
-            if (this.sentenceAllowed){
-                words = this.fullInput.split(" ")
-                words = words.slice(0, words.length - 1)
-                words.push(this.search)
-                this.fullInput = words.join(" ")
+            if (this.isOpen && this.current>=0){
+                this.search = this.matches[this.current];
+                if (this.sentenceAllowed){
+                    words = this.fullInput.split(" ")
+                    words = words.slice(0, words.length - 1)
+                    words.push(this.search)
+                    this.fullInput = words.join(" ")
+                }
+                else {
+                    this.fullInput = this.search
+                }
             }
             else {
-                this.fullInput = this.search
+                this.onSubmit()
             }
             this.current = -1
+            this.isOpen = false;
         },
 
-        //When up pressed while suggestions are open
+        // When up pressed while suggestions are open
         up() {
             if(this.current > 0)
                 this.current --;
         },
 
-        //When up pressed while suggestions are open
+        // When up pressed while suggestions are open
         down() {
             if(this.current < this.matches.length - 1)
                 this.current ++;
         },
 
-        //For highlighting element
+        // For highlighting element
         isActive(index) {
             return index === this.current;
         },
 
-        //When the user changes input
-        // change() {
-        //     if (this.isOpen == false) {
-        //         this.isOpen = true;
-        //         this.current = 0;
-        //     }
-        // },
-
-        //When one of the suggestion is clicked
+        // When one of the suggestion is clicked
         suggestionClick(index) {
             this.search = this.matches[index];
-            this.isOpen = false;
             if (this.sentenceAllowed){
                 words = this.fullInput.split(" ")
                 words = words.slice(0, words.length - 1)
@@ -116,12 +118,15 @@ app.component("autocomplete", {
                 this.fullInput = this.search
             }
             this.current = -1
+            this.isOpen = false;
         },
 
+        // When the button is pressed
         onSubmit() {
             console.log(this.fullInput)
         },
 
+        // When the input changes
         change(event) {
             this.isOpen = true
             if (this.sentenceAllowed){
@@ -133,15 +138,7 @@ app.component("autocomplete", {
                 this.fullInput = event.target.value
                 this.search = event.target.value
             }
-
-            // this.modelValue = this.search.value
         },
-        // setSelected(item) {
-        //     this.isOpen.value = false
-        //     this.search.value = item
-        //     this.$emit("update-value", this.search.value)
-        //     // this.modelValue = this.search.value
-        // }
     },
     computed: {
         //Filtering the word suggestion based on the input
@@ -154,9 +151,6 @@ app.component("autocomplete", {
                     return item
                 }
             })
-            // return this.suggestions.filter((item) => {
-            //     return item.indexOf(this.search) >= 0;
-            // });
         },
 
         // The flag
@@ -164,25 +158,8 @@ app.component("autocomplete", {
             if (this.matches.length > 0 && this.isOpen && this.isFocussed){
                 return true
             }
+            this.current = -1
             return false
-            // return this.search !== "" &&
-            //     this.matches.length != 0 &&
-            //     this.isOpen === true;
         },
-
-        // searchResults(){
-        //     if (this.search.value == ''){
-        //         return []
-        //     }
-        //     return this.words.filter(item => {
-        //         if (item.toLowerCase().includes(this.search.value.toLowerCase())){
-        //             return item
-        //         }
-        //     })
-        // },
     },
-    // emits: {
-    //     update: modelValue
-    // },
-
 })
