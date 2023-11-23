@@ -4,9 +4,12 @@ app.component("traceability-viewer", {
     /*html*/
     `
     <!-- Navbar -->
-    <div class="gap-2 d-md-block">
-        <groupfilter @change-group="changeGroup"></groupfilter>
-        <groupfilter v-for="group in groups" :group="group" @change-group="changeGroup"></groupfilter>
+    <div class="gap-2 d-md-flex">
+        <button type="button" @click="clicked" class="btn"
+        :class="{'btn-primary': activeGroup == 'home', 'btn-secondary': activeGroup != 'home'}">Home</button>
+        <groupfilter class="btn"
+        :class="{'btn-primary': activeGroup == group, 'btn-secondary': activeGroup != group}"
+        v-for="group in groups" :group="group" @change-group="changeGroup"></groupfilter>
     </div>
     <!-- Checkboxes -->
     <div id="checkboxes">
@@ -24,32 +27,51 @@ app.component("traceability-viewer", {
     <div id="legend"></div>
     <div id="legend_links"></div>
 
-    <graphviz :nodes="nodes" :links="links"> </graphviz>
+    <graphviz ref="graphvizRef"> </graphviz>
     `,
     setup() {
+        graphvizRef = Vue.ref(null)
         query = ""
         activeGroup=Vue.ref("home")
         groups=Vue.ref([])
         config={}
-        nodes=Vue.ref({})
-        links=Vue.ref({})
         words=Vue.ref([])
         searchIds=Vue.ref([])
         linkTypes=[]
+
+        function clicked() {
+            activeGroup = "home"
+            console.log("Home")
+        }
+        // function style(){
+        //     if (activeGroup == "home"){
+        //         return "btn btn-outline-danger"
+        //     }
+        //     else {
+        //         return "btn btn-dark btn-outline-light"
+        //     }
+        // })
         return {
+            graphvizRef,
             query,
             activeGroup,
             groups,
-            nodes,
-            links,
             words,
             searchIds,
             linkTypes,
+            clicked,
+            // style,
         }
     },
+    watch: {
+
+    },
     methods: {
-        changeGroup(group){
-            this.activeGroup = group
+        changeGroup(data){
+            this.activeGroup = data.group
+            console.log(this.activeGroup)
+            this.graphvizRef.update(data.nodes, data.links)
+            console.log(data.nodes)
         },
         initialize(){
             axios

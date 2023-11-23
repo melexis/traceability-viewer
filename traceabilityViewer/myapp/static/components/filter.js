@@ -1,55 +1,48 @@
+function dataRequest(group){
+    return axios
+        .get("/data/" + group)
+        .then(function (response) {
+            return response.data
+        })
+        .catch(function (error)  {
+            console.log(error);
+            return {}
+        })
+}
+
 app.component("groupfilter", {
     delimiters: ["[[", "]]"],
     template:
     /*html*/
     `
-    <button type="button" :class="style"  @click="clicked">[[group]]</button>
+    <button type="button" @click="clicked">[[group]]</button>
     `,
-    data() {
-        return {
-            nodes: {},
-            links: {},
-        }
-    },
     props: {
         group: {
             type: String,
-            default: () => "home"
+        }
+    },
+    setup(props, context) {
+        var nodes = []
+        var links = []
+
+        function clicked() {
+            context.emit("change-group", {group: props.group, nodes: nodes, links: links})
+        }
+        async function getData(){
+            data = await dataRequest(props.group)
+            console.log(data)
+            nodes = data.nodes
+            links = data.links
+        }
+        return {
+            nodes,
+            links,
+            clicked,
+            getData,
         }
     },
     mounted(){
-        if (this.group != "home"){
-            axios
-            .get("/data/" + this.group)
-            .then(function (response) {
-                // console.log(response.data[0].nodes.nodes)
-                this.nodes = response.data[0].nodes.nodes
-                this.links = response.data[0].nodes.links
-            })
-            .catch(function (error)  {
-                console.log(error);
-            })
-        }
-    },
-    methods: {
-        clicked() {
-            // @set-active-group="setActiveGroup"
-            // this.$emit("set-active-group", this.group)
-            console.log(this.group)
-            this.$emit("change-group", this.group)
-            // this.$root.activeGroup = this.group
-            this.$root.nodes = this.nodes
-            this.$root.links = this.links
-        }
-    },
-    computed: {
-        style() {
-            if (this.$root.activeGroup == this.group){
-                return "btn btn-outline-danger"
-            }
-            else {
-                return "btn btn-dark btn-outline-light"
-            }
-        }
+        this.getData()
     }
 })
