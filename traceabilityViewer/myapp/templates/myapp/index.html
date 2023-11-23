@@ -20,7 +20,7 @@
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
     </head>
 
-    <body>
+    <body class="m-2">
         {% comment %} {% for group in groups %}
 
         {% endfor %} {% endcomment %}
@@ -34,6 +34,7 @@
         <script src="{% static 'components/traceabilityViewer.js' %}"></script>
         <script src="{% static 'components/filter.js' %}"></script>
         <script src="{% static 'components/autocomplete.js' %}"></script>
+        <script src="{% static 'components/graphviz.js' %}"></script>
 
         <!-- Mount App -->
         <script>

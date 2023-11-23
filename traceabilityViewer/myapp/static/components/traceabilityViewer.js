@@ -27,10 +27,9 @@ app.component("traceability-viewer", {
     <div id="legend"></div>
     <div id="legend_links"></div>
 
-    <graphviz ref="graphvizRef"> </graphviz>
+    <graphviz :nodes="nodes" :links="links"> </graphviz>
     `,
     setup() {
-        graphvizRef = Vue.ref(null)
         query = ""
         activeGroup=Vue.ref("home")
         groups=Vue.ref([])
@@ -38,47 +37,24 @@ app.component("traceability-viewer", {
         words=Vue.ref([])
         searchIds=Vue.ref([])
         linkTypes=[]
-
+        nodes = Vue.ref([])
+        links = Vue.ref([])
         function clicked() {
-            activeGroup = "home"
+            activeGroup.value = "home"
             console.log("Home")
         }
-        // function style(){
-        //     if (activeGroup == "home"){
-        //         return "btn btn-outline-danger"
-        //     }
-        //     else {
-        //         return "btn btn-dark btn-outline-light"
-        //     }
-        // })
-        return {
-            graphvizRef,
-            query,
-            activeGroup,
-            groups,
-            words,
-            searchIds,
-            linkTypes,
-            clicked,
-            // style,
-        }
-    },
-    watch: {
-
-    },
-    methods: {
-        changeGroup(data){
-            this.activeGroup = data.group
-            console.log(this.activeGroup)
-            this.graphvizRef.update(data.nodes, data.links)
+        function changeGroup(data){
+            activeGroup.value = data.group
+            nodes.value = data.nodes
+            links.value = data.links
             console.log(data.nodes)
-        },
-        initialize(){
+        }
+        function initialize(){
             axios
                 .get("/config")
                 .then(function (response) {
-                    this.groups.value = response.data[0].groups
-                    this.config = response.data[0].config
+                    groups.value = response.data.groups
+                    config = response.data.config
                 })
                 .catch(function (error)  {
                     console.log(error);
@@ -86,12 +62,27 @@ app.component("traceability-viewer", {
             axios
                 .get("/autocomplete")
                 .then(function (response) {
-                    this.words.value = response.data[0].words;
-                    this.searchIds.value = response.data[0].searchIds;
+                    words.value = response.data.words;
+                    searchIds.value = response.data.searchIds;
                 })
                 .catch(function (error)  {
                     console.log(error);
                 });
+        }
+        return {
+            query,
+            activeGroup,
+            groups,
+            config,
+            words,
+            searchIds,
+            linkTypes,
+            nodes,
+            links,
+            clicked,
+            changeGroup,
+            initialize,
+
         }
     },
     mounted() {

@@ -63,8 +63,7 @@ def filter_group(request, filtergroup):
             target = DocumentItem.nodes.get(name=rel["target"])
             if target not in nodes:
                 nodes.append(target.to_json())
-    data = {"nodes": nodes, "links": links}
-    return Response([{"nodes": data}])
+    return Response({"nodes": nodes, "links": links})
 
 
 @api_view(["GET"])
@@ -72,7 +71,7 @@ def config(request):
     """Get the configuration"""
     print(type(configuration))
     # config = serializers.serialize('json', configuration)
-    return Response([{"config": configuration, "groups": unique_groups}])
+    return Response({"config": configuration, "groups": unique_groups})
 
 
 @api_view(["GET"])
@@ -95,4 +94,4 @@ def autocomplete(request):
             words.add(label)
     # add the words of a query that are used the most.
     words.update(["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"])
-    return Response([{"words": words, "searchIds": search_ids}])
+    return Response({"words": words, "searchIds": search_ids})

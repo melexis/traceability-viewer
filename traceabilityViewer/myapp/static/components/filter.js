@@ -31,7 +31,6 @@ app.component("groupfilter", {
         }
         async function getData(){
             data = await dataRequest(props.group)
-            console.log(data)
             nodes = data.nodes
             links = data.links
         }

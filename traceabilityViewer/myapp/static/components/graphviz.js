@@ -18,43 +18,47 @@ app.component("graphviz", {
     <div id="graphviz" @click="clicked($event)"></div>
     <div id="tooltip"></div>
     `,
-    setup() {
-        graphCanvas=Vue.ref()
-        // nodes=Vue.ref({})
-        // links=Vue.ref({})
-        return {
-            graphCanvas,
-            // nodes,
-            // links
-        }
-    },
     props: {
         nodes: {
-            type: Object,
-            required: true
+            type: Array,
+            default: []
         },
         links: {
-            type: Object,
-            required: true
+            type: Array,
+            default: []
         }
     },
-    methods: {
-        clicked() {
+    setup(props) {
+        // variables for the width and height
+        const width = window.innerWidth - 20;
+        const height = window.innerHeight - 120;
+        const graphCanvas=Vue.ref()
+        var nodes= Vue.toRef(props, "nodes")
+        var links=Vue.toRef(props, "links")
+        function clicked(event) {
+            console.log(event)
             console.log("clicked")
-            // this.$emit("set-active-group", this.group)
+        }
+        function update(nodes, links){
+            nodes.value = nodes
+            links.value = links
+        }
+        return {
+            width,
+            height,
+            graphCanvas,
+            nodes,
+            links,
+            clicked,
+            update,
+
         }
     },
     mounted(){
-        // variables for the width and height
-        this.width = window.innerWidth - 20;
-        this.height = window.innerHeight - 120;
-
         this.graphCanvas = d3.select('#graphviz').append('canvas')
         .classed("mainCanvas", true)
         .attr('width', this.width + 'px')
         .attr('height', this.height + 'px')
         .attr('id', "canvas");
     },
-    computed: {
-    }
 })
