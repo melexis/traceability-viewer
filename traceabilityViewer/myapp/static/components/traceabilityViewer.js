@@ -30,25 +30,28 @@ app.component("traceability-viewer", {
     <graphviz :nodes="nodes" :links="links"> </graphviz>
     `,
     setup() {
-        query = ""
-        activeGroup=Vue.ref("home")
-        groups=Vue.ref([])
-        config={}
-        words=Vue.ref([])
-        searchIds=Vue.ref([])
-        linkTypes=[]
-        nodes = Vue.ref([])
-        links = Vue.ref([])
+        var query = Vue.ref("")
+        var activeGroup=Vue.ref("home")
+        var groups=Vue.ref([])
+        const config={}
+        var words=Vue.ref([])
+        var searchIds=Vue.ref([])
+        const linkTypes=[]
+        var nodes = Vue.ref([])
+        var links = Vue.ref([])
+
         function clicked() {
             activeGroup.value = "home"
             console.log("Home")
         }
+
         function changeGroup(data){
             activeGroup.value = data.group
             nodes.value = data.nodes
             links.value = data.links
             console.log(data.nodes)
         }
+
         function initialize(){
             axios
                 .get("/config")
