@@ -1,6 +1,6 @@
 """Python module for the models that are used to create the database with Neomodel"""
 
-from neomodel import StructuredNode, StringProperty, RelationshipTo, install_labels, StructuredRel
+from neomodel import StructuredNode, StringProperty, RelationshipTo, install_labels, StructuredRel, BooleanProperty
 
 
 class Rel(StructuredRel):
@@ -14,6 +14,7 @@ class DocumentItem(StructuredNode):
     """Class that represents a node in the database"""
 
     # uid = UniqueIdProperty()
+    hide = BooleanProperty(default=True)
     name = StringProperty(required=True)
     props = StringProperty()
     attributes = StringProperty()
@@ -40,6 +41,7 @@ class DocumentItem(StructuredNode):
             "group": self.group,
             "color": self.color,
             "relations": links,
+            "hide": self.hide,
         }
 
 
