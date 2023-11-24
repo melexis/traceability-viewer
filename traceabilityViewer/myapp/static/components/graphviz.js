@@ -13,7 +13,7 @@ app.component("graphviz", {
     </div>
     <br>
     <!-- Info node -->
-    <div id="info"> [[ nodes ]]</div>
+    <div id="info">Mouse is at location([[ xMouse ]], [[ yMouse ]])</div>
     <!-- Graph -->
     <div id="graphviz" @click="clicked($event)"></div>
     <div id="tooltip"></div>
@@ -32,6 +32,9 @@ app.component("graphviz", {
         // variables for the width and height
         const width = window.innerWidth - 20;
         const height = window.innerHeight - 120;
+        const xMouse = Vue.ref(0)
+        const yMouse = Vue.ref(0)
+        window.addEventListener('mousemove', updateMouse)
         const graphCanvas=Vue.ref()
         var nodes= Vue.toRef(props, "nodes")
         var links=Vue.toRef(props, "links")
@@ -39,18 +42,25 @@ app.component("graphviz", {
             console.log(event)
             console.log("clicked")
         }
-        function update(nodes, links){
+        function updateData(nodes, links){
             nodes.value = nodes
             links.value = links
         }
+        function updateMouse(event){
+            xMouse.value = event.pageX
+            yMouse.value = event.pageY
+        }
         return {
+            xMouse,
+            yMouse,
             width,
             height,
             graphCanvas,
             nodes,
             links,
             clicked,
-            update,
+            updateData,
+            updateMouse,
 
         }
     },
