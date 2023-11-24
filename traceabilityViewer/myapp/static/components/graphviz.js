@@ -3,6 +3,9 @@ app.component("graphviz", {
     template:
     /*html*/
     `
+    <!-- Legend -->
+    <item-legend :items="config.item_colors"></item-legend>
+    <item-legend></item-legend>
     <!-- Buttons -->
     <div class="mt-1 gap-2 d-md-flex">
         <button id="zoom_in" class="btn btn-outline-dark">+</button>
@@ -13,12 +16,16 @@ app.component("graphviz", {
     </div>
     <br>
     <!-- Info node -->
-    <div id="info">Mouse is at location([[ xMouse ]], [[ yMouse ]])</div>
+    <div id="info"></div>
     <!-- Graph -->
-    <div id="graphviz" @click="clicked($event)"></div>
+    <div id="graphviz" @mousemove="mouseMove($event)" @click="clicked($event)"></div>
     <div id="tooltip"></div>
     `,
     props: {
+        config: {
+            type: Object,
+            default: {}
+        },
         nodes: {
             type: Array,
             default: []

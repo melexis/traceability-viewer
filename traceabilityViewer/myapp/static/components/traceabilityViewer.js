@@ -23,17 +23,13 @@ app.component("traceability-viewer", {
         <label>Search: </label>
         <autocomplete :suggestions="searchIds" :sentenceAllowed="false"></autocomplete>
     </div>
-    <!-- Legend -->
-    <div id="legend"></div>
-    <div id="legend_links"></div>
-
-    <graphviz :nodes="nodes" :links="links"> </graphviz>
+    <graphviz :nodes="nodes" :links="links" :config="config"> </graphviz>
     `,
     setup() {
         var query = Vue.ref("")
         var activeGroup=Vue.ref("home")
         var groups=Vue.ref([])
-        const config={}
+        var config=Vue.ref({})
         var words=Vue.ref([])
         var searchIds=Vue.ref([])
         const linkTypes=[]
@@ -57,7 +53,7 @@ app.component("traceability-viewer", {
                 .get("/config")
                 .then(function (response) {
                     groups.value = response.data.groups
-                    config = response.data.config
+                    config.value = response.data.config
                 })
                 .catch(function (error)  {
                     console.log(error);

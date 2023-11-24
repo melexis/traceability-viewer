@@ -12,7 +12,7 @@
         <!-- Scripts -->
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-        <script src="https://unpkg.com/neo4j-driver"></script>
+        {% comment %} <script src="https://unpkg.com/neo4j-driver"></script> {% endcomment %}
         <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
         <!-- Stylesheet -->
@@ -35,6 +35,7 @@
         <script src="{% static 'components/filter.js' %}"></script>
         <script src="{% static 'components/autocomplete.js' %}"></script>
         <script src="{% static 'components/graphviz.js' %}"></script>
+        <script src="{% static 'components/legend.js' %}"></script>
 
         <!-- Mount App -->
         <script>
