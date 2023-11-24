@@ -30,22 +30,6 @@ app.component("autocomplete", {
         <button @click="onSubmit" class="btn mt-1 mb-1 btn-primary">Submit</button>
     </div>
     `,
-    setup() {
-        fullInput = Vue.ref("")
-        search = Vue.ref("")
-        isOpen = Vue.ref(false)
-        current = Vue.ref(-1)
-        isFocussed = Vue.ref(false)
-        // selection = ""
-        return {
-            fullInput,
-            search,
-            isOpen,
-            current,
-            isFocussed,
-            // selection,
-        }
-    },
     props: {
         suggestions: {
             type: Array,
@@ -58,108 +42,135 @@ app.component("autocomplete", {
             default: false,
         },
     },
-    methods: {
-        startFocus(){
-            console.log("start focus");
-            this.isFocussed=true
-        },
-        stopFocus(){
-            console.log("stop focus");
-            this.isFocussed=false
-        },
-        // When enter pressed on the input
-        enter() {
-            if (this.isOpen && this.current>=0){
-                this.search = this.matches[this.current];
-                if (this.sentenceAllowed){
-                    words = this.fullInput.split(" ")
-                    words = words.slice(0, words.length - 1)
-                    words.push(this.search)
-                    this.fullInput = words.join(" ")
-                }
-                else {
-                    this.fullInput = this.search
-                }
-            }
-            else {
-                this.onSubmit()
-            }
-            this.current = -1
-            this.isOpen = false;
-        },
+    setup(props) {
+        var fullInput = Vue.ref("")
+        var search = Vue.ref("")
+        var isOpen = Vue.ref(false)
+        var current = Vue.ref(-1)
+        var isFocussed = Vue.ref(false)
 
-        // When up pressed while suggestions are open
-        up() {
-            if(this.current > 0)
-                this.current --;
-        },
-
-        // When up pressed while suggestions are open
-        down() {
-            if(this.current < this.matches.length - 1)
-                this.current ++;
-        },
-
-        // For highlighting element
-        isActive(index) {
-            return index === this.current;
-        },
-
-        // When one of the suggestion is clicked
-        suggestionClick(index) {
-            this.search = this.matches[index];
-            if (this.sentenceAllowed){
-                words = this.fullInput.split(" ")
-                words = words.slice(0, words.length - 1)
-                words.push(this.search)
-                this.fullInput = words.join(" ")
-            }
-            else {
-                this.fullInput = this.search
-            }
-            this.current = -1
-            this.isOpen = false;
-        },
-
-        // When the button is pressed
-        onSubmit() {
-            console.log(this.fullInput)
-        },
-
-        // When the input changes
-        change(event) {
-            this.isOpen = true
-            if (this.sentenceAllowed){
-                this.fullInput = event.target.value
-                words = event.target.value.split(" ")
-                this.search = words[words.length - 1]
-            }
-            else {
-                this.fullInput = event.target.value
-                this.search = event.target.value
-            }
-        },
-    },
-    computed: {
         //Filtering the word suggestion based on the input
-        matches() {
-            if (this.search == ''){
+        var matches = Vue.computed(() => {
+            if (search.value == ''){
                 return []
             }
-            return this.suggestions.filter(item => {
-                if (item.toLowerCase().includes(this.search.toLowerCase())){
+            return props.suggestions.filter(item => {
+                if (item.toLowerCase().includes(search.value.toLowerCase())){
                     return item
                 }
             })
-        },
+        })
 
         // The flag
-        openSuggestion() {
-            if (this.matches.length > 0 && this.isOpen && this.isFocussed){
+        var openSuggestion = Vue.computed( () => {
+            if (matches.value.length > 0 && isOpen.value && isFocussed.value){
                 return true
             }
-            this.current = -1
+            current.value = -1
             return false
-        },
+        })
+
+        function startFocus(){
+            isFocussed.value=true
+        }
+        function stopFocus(){
+            isFocussed.value=false
+        }
+        // When enter pressed on the input
+        function enter() {
+            if (isOpen.value && current.value>=0){
+                search.value = matches.value[current];
+                if (props.sentenceAllowed){
+                    words = fullInput.value.split(" ")
+                    words = words.slice(0, words.length - 1)
+                    words.push(search.value)
+                    fullInput.value = words.join(" ")
+                }
+                else {
+                    fullInput.value = search.value
+                }
+            }
+            else {
+                onSubmit()
+            }
+            current.value = -1
+            isOpen.value = false;
+        }
+
+        // When up pressed while suggestions are open
+        function up() {
+            if(current.value > 0)
+                current.value --;
+        }
+
+        // When up pressed while suggestions are open
+        function down() {
+            if(current.value < matches.value.length - 1)
+                current.value ++;
+        }
+
+        // For highlighting element
+        function isActive(index) {
+            return index === current.value;
+        }
+
+        // When one of the suggestion is clicked
+        function suggestionClick(index) {
+            search.value = matches.value[index];
+            if (props.sentenceAllowed){
+                words = fullInput.value.split(" ")
+                words = words.slice(0, words.length - 1)
+                words.push(search.value)
+                fullInput.value = words.join(" ")
+            }
+            else {
+                fullInput.value = search.value
+            }
+            current.value = -1
+            isOpen.value = false;
+        }
+
+        // When the button is pressed
+        function onSubmit() {
+            console.log(fullInput.value)
+        }
+
+        // When the input changes
+        function change(event) {
+            isOpen.value = true
+            if (props.sentenceAllowed){
+                fullInput.value = event.target.value
+                words = event.target.value.split(" ")
+                search.value = words[words.length - 1]
+            }
+            else {
+                fullInput.value = event.target.value
+                search.value = event.target.value
+            }
+        }
+        // selection = ""
+        return {
+            fullInput,
+            search,
+            isOpen,
+            current,
+            isFocussed,
+            matches,
+            openSuggestion,
+            startFocus,
+            stopFocus,
+            enter,
+            up,
+            down,
+            isActive,
+            suggestionClick,
+            onSubmit,
+            change,
+
+        }
+    },
+
+    methods: {
+
     },
 })
