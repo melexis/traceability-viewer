@@ -79,7 +79,7 @@ app.component("autocomplete", {
         // When enter pressed on the input
         function enter() {
             if (isOpen.value && current.value>=0){
-                search.value = matches.value[current];
+                search.value = matches.value[current.value];
                 if (props.sentenceAllowed){
                     words = fullInput.value.split(" ")
                     words = words.slice(0, words.length - 1)
