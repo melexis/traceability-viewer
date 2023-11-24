@@ -5,7 +5,7 @@ app.component("graphviz", {
     `
     <!-- Legend -->
     <item-legend :items="config.item_colors"></item-legend>
-    <item-legend></item-legend>
+    <item-legend :items="config.link_colors"></item-legend>
     <!-- Buttons -->
     <div class="mt-1 gap-2 d-md-flex">
         <button id="zoom_in" class="btn btn-outline-dark">+</button>
