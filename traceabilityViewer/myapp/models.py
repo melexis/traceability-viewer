@@ -14,7 +14,7 @@ class DocumentItem(StructuredNode):
     """Class that represents a node in the database"""
 
     # uid = UniqueIdProperty()
-    hide = BooleanProperty(default=True)
+    hide = BooleanProperty(default=False)
     name = StringProperty(required=True)
     props = StringProperty()
     attributes = StringProperty()
