@@ -8,7 +8,7 @@ urlpatterns = [
     path("", views.index, name="index"),
     # path("", views.BaseView.as_view(),  name="index"),
     path("data/<str:filtergroup>/", views.filter_group),
-    # path("data/", views.initialize),
+    path("data/init", views.initialize),
     path("config/", views.config),
     path("autocomplete/", views.autocomplete),
 ]

@@ -28,26 +28,20 @@ def index(request):
     return render(request, "myapp/index.html", {"groups": json.dumps(unique_groups), "config": configuration})
 
 
-# @api_view(["GET"])
-# def initialize(request):
-#     """"""
-#     # create_database()
-#     nodes = []
-#     links = []
-
-#     for item in DocumentItem.nodes.filter(group=unique_groups[0]):
-#         node = item.to_json()
-#         nodes.append(node)
-#         # breakpoint()
-#         for rel in node["relations"]:
-#             links.append(rel)
-#             target = DocumentItem.nodes.get(name=rel["target"])
-#             if target not in nodes:
-#                 nodes.append(target.to_json())
-#     data = {"nodes": nodes, "links": links}
-#     print(data)
-#     # serializer = serializers.serialize('json', data)
-#     return Response({"data": data})
+@api_view(["GET"])
+def initialize(request):
+    """Initialize data with data from first group"""
+    nodes = []
+    links = []
+    item = DocumentItem.nodes.all()[0]
+    node = item.to_json()
+    nodes.append(node)
+    for rel in node["relations"]:
+        links.append(rel)
+        target = DocumentItem.nodes.get(name=rel["target"])
+        if target not in nodes:
+            nodes.append(target.to_json())
+    return Response({"nodes": nodes, "links": links})
 
 
 @api_view(["GET"])
