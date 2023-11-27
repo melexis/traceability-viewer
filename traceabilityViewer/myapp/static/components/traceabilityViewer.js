@@ -48,8 +48,17 @@ app.component("traceability-viewer", {
             console.log(data.nodes)
         }
 
-        function initialize(){
-            axios
+        async function initialize(){
+            await axios
+                .get("/data/init")
+                .then(function (response){
+                    nodes.value = response.data.nodes
+                    links.value = response.data.links
+                })
+                .catch(function (error)  {
+                    console.log(error);
+                });
+            await axios
                 .get("/config")
                 .then(function (response) {
                     groups.value = response.data.groups
@@ -58,7 +67,7 @@ app.component("traceability-viewer", {
                 .catch(function (error)  {
                     console.log(error);
                 });
-            axios
+            await axios
                 .get("/autocomplete")
                 .then(function (response) {
                     words.value = response.data.words;
