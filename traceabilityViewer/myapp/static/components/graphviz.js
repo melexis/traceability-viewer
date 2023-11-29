@@ -314,12 +314,9 @@ app.component("graphviz", {
         }
 
         return {
-            // xMouse,
-            // yMouse,
             width,
             height,
-            // graphCanvas,
-            // canvas,
+            zoom,
             context,
             nodes,
             links,
@@ -332,7 +329,6 @@ app.component("graphviz", {
             drawUpdate,
             clicked,
             updateData,
-            // updateMouse,
             mouseMove,
             dragSubject,
             dragStart,
@@ -342,17 +338,11 @@ app.component("graphviz", {
     },
 
     mounted() {
-        // this.graphCanvas = this.$refs.canvas;
-        // this.graphCanvas = d3.select('#graphviz').append('canvas')
-        //     .classed("mainCanvas", true)
-        //     .attr('width', this.width + 'px')
-        //     .attr('height', this.height + 'px')
-        //     .attr('id', "canvas");
-        // the canvas
-        // this.canvas = document.querySelector("canvas");
-        // console.log(this.graphCanvas)
-        // this.context = this.graphCanvas.node().getContext('2d');
         this.context = this.$refs.canvas.getContext("2d")
+
+        /**
+         * Make dragging of nodes possible.
+         */
         d3.select(this.context.canvas)
             .call(d3.drag()
                 .container(this.context.canvas)
@@ -360,5 +350,11 @@ app.component("graphviz", {
                 .on('start', this.dragStart)
                 .on('drag', this.dragged)
                 .on('end', this.dragStop));
-                }
+        /**
+         * Make zooming with mouseweel possible.
+         * Disable zooming on double click.
+         */
+        d3.select(this.context.canvas).call(this.zoom)
+            .on("dblclick.zoom", null);;
+    }
 })
