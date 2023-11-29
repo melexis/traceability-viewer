@@ -22,7 +22,7 @@ app.component("graphviz", {
         <strong role="status" class="m-5">Loading...</strong>
         <div class="spinner-border m-5" aria-hidden="true"></div>
     </div>
-    <canvas ref="canvas" @mousemove="mouseMove($event)" :height="height" :width="width" @click="clicked($event)">
+    <canvas ref="canvas" @mousemove="mouseMove($event)" @click="clicked($event)" :height="height" :width="width">
     </canvas>
     <div id="tooltip"></div>
     `,
@@ -46,7 +46,7 @@ app.component("graphviz", {
         // variables for the width and height
         const width = Vue.ref(window.innerWidth - 20);
         const height = Vue.ref(window.innerHeight - 200);
-
+        var dragging = false
         // let graphCanvas = Vue.ref(null);
         // let canvas = Vue.ref(null);
         let context = Vue.ref(null);
@@ -196,27 +196,92 @@ app.component("graphviz", {
 
         /**
          * When the mouse moves, the position will check wether it hovers over a node.
-         * When the mouse hovers a node, a tooltip will pop up with the ID of that node.
+         * When the mouse hovers a node, a tooltip will pop up with the name of that node.
          */
         function mouseMove(event) {
+            if (dragging == false) {
+                x = transform.invert(d3.pointer(event))[0];
+                y = transform.invert(d3.pointer(event))[1];
+                // console.log(x, y)
+                // console.log(nodes.value)
+                const node = findNode(nodes.value, x, y, nodeRadius);
+                if (node) {
+                    if (!node.hide) {
+                        d3.select('#tooltip')
+                        .style('opacity', 0.9)
+                        // .style("data-bs-offset", String((event.pageY) + 5) + ", " + String((event.pageX) + 5) )
+                        .style('top', (event.pageY) + 10 + 'px')
+                        .style('left', (event.pageX) + 10 + 'px')
+                        .html(node.name);
+                    }
+                } else {
+                d3.select('#tooltip')
+                    .style('opacity', 0);
+                }
+            }
+
+        }
+
+        /**
+         * When clicked in the canvas, it will check whether a node is clicked.
+         * If a node is clicked, it will be selected and interactive buttons will be visible.
+         */
+        function clicked(event) {
             x = transform.invert(d3.pointer(event))[0];
             y = transform.invert(d3.pointer(event))[1];
-            // console.log(x, y)
-            // console.log(nodes.value)
+            const node = findNode(nodes.value, x, y, nodeRadius);
+            if (node){
+                if (!node.hide) {
+                    selectedNodeID = node.name
+                    console.log(selectedNodeID)
+                }
+            }
+            console.log(x, y)
+            console.log("clicked")
+        }
+
+        /**
+         * Find the node that was clicked, if any, and return it.
+         * @param {object} event The dragging event
+         */
+        function dragSubject(event) {
+            const x = transform.invert(d3.pointer(event))[0];
+            const y = transform.invert(d3.pointer(event))[1];
             const node = findNode(nodes.value, x, y, nodeRadius);
             if (node) {
                 if (!node.hide) {
-                    d3.select('#tooltip')
-                    .style('opacity', 0.9)
-                    // .style("data-bs-offset", String((event.pageY) + 5) + ", " + String((event.pageX) + 5) )
-                    .style('top', (event.pageY) + 10 + 'px')
-                    .style('left', (event.pageX) + 10 + 'px')
-                    .html(node.name);
+                    node.x = transform.applyX(node.x);
+                    node.y = transform.applyY(node.y);
+                    return node;
                 }
-            } else {
-            d3.select('#tooltip')
-                .style('opacity', 0);
             }
+            // else: No node selected, drag container
+        }
+
+        function dragStart(event){
+            console.log("dragStart")
+            event.subject.x = transform.invertX(event.x);
+            event.subject.y = transform.invertY(event.y);
+            drawUpdate()
+        }
+
+        /**
+         * While dragging the node will follow your pointer.
+         * @param {object} event The dragging event
+         */
+        function dragged(event) {
+            event.subject.x= transform.invertX(event.x);
+            event.subject.y = transform.invertY(event.y);
+            drawUpdate()
+        }
+
+        /**
+         * When the dragging end the node is released.
+         * @param {object} event The dragging event
+         */
+        function dragStop(event) {
+            console.log("dragstop")
+            drawUpdate()
         }
 
         /**
@@ -243,13 +308,6 @@ app.component("graphviz", {
             return undefined;
         }
 
-        function clicked(event) {
-            x = transform.invert(d3.pointer(event))[0];
-            y = transform.invert(d3.pointer(event))[1];
-            console.log(x, y)
-            console.log("clicked")
-
-        }
         function updateData(nodes, links){
             nodes.value = nodes
             links.value = links
@@ -276,7 +334,10 @@ app.component("graphviz", {
             updateData,
             // updateMouse,
             mouseMove,
-
+            dragSubject,
+            dragStart,
+            dragged,
+            dragStop,
         }
     },
 
@@ -292,15 +353,12 @@ app.component("graphviz", {
         // console.log(this.graphCanvas)
         // this.context = this.graphCanvas.node().getContext('2d');
         this.context = this.$refs.canvas.getContext("2d")
-        console.log(this.context)
-
-        //Drawing a circle
-        this.context.fillStyle = "red";
-        this.context.beginPath();
-        //this.context.arc(x-center, y-center, radius, startAngle, endAngle, counterclockwise)
-        //A circle would thus look like:
-        this.context.arc(0, 0, 5, 0,  2 * Math.PI, true);
-        this.context.fill();
-        this.context.closePath();
-    }
+        d3.select(this.context.canvas)
+            .call(d3.drag()
+                .container(this.context.canvas)
+                .subject(this.dragSubject)
+                .on('start', this.dragStart)
+                .on('drag', this.dragged)
+                .on('end', this.dragStop));
+                }
 })
