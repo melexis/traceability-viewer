@@ -199,41 +199,62 @@ app.component("graphviz", {
          * When the mouse hovers a node, a tooltip will pop up with the ID of that node.
          */
         function mouseMove(event) {
-            // let p = d3.pointer(event, this);
-            // p[0] = p[0];
-            // p[1] = p[1];
-            // let transform = d3.zoomTransform(d3.select(context.canvas).node());
-            // let p1 = transform.invert(p);
-            // x = p1[0];
-            // y = p1[1];
-            // const node = findNode(nodes.value, x, y, nodeRadius);
-            // if (node) {
-            //     if (!node.hide) {
-            //         d3.select('#tooltip')
-            //         .style('opacity', 0.9)
-            //         // .style("data-bs-offset", String((event.pageY) + 5) + ", " + String((event.pageX) + 5) )
-            //         .style('top', (event.pageY) + 5 + 'px')
-            //         .style('left', (event.pageX) + 5 + 'px')
-            //         .html(node.id);
-            //     }
-            // } else {
-            // d3.select('#tooltip')
-            //     .style('opacity', 0);
-            // }
+            x = transform.invert(d3.pointer(event))[0];
+            y = transform.invert(d3.pointer(event))[1];
+            // console.log(x, y)
+            // console.log(nodes.value)
+            const node = findNode(nodes.value, x, y, nodeRadius);
+            if (node) {
+                if (!node.hide) {
+                    d3.select('#tooltip')
+                    .style('opacity', 0.9)
+                    // .style("data-bs-offset", String((event.pageY) + 5) + ", " + String((event.pageX) + 5) )
+                    .style('top', (event.pageY) + 10 + 'px')
+                    .style('left', (event.pageX) + 10 + 'px')
+                    .html(node.name);
+                }
+            } else {
+            d3.select('#tooltip')
+                .style('opacity', 0);
+            }
+        }
+
+        /**
+         * Description
+         * @param {Array} nodes The array of node objects that exists in the graph.
+         * @param {number} x The x value
+         * @param {number} y The y value
+         * @param {number} radius The node radius
+         * @returns {object} The node object if the pointer is on a node, else it will return undefined.
+         */
+        function findNode(nodes, x, y, radius) {
+            const rSq = radius * radius;
+            let i;
+            for (i = 0; i < nodes.length; i++) {
+            const node = nodes[i],
+                dx = x - node.x,
+                dy = y - node.y,
+                distSq = (dx * dx) + (dy * dy);
+            if (distSq < rSq) {
+                return node;
+            }
+            }
+            // No node selected
+            return undefined;
         }
 
         function clicked(event) {
-            console.log(event)
+            x = transform.invert(d3.pointer(event))[0];
+            y = transform.invert(d3.pointer(event))[1];
+            console.log(x, y)
             console.log("clicked")
+
         }
         function updateData(nodes, links){
             nodes.value = nodes
             links.value = links
         }
-        // function updateMouse(event){
-        //     xMouse.value = event.pageX
-        //     yMouse.value = event.pageY
-        // }
+
         return {
             // xMouse,
             // yMouse,
