@@ -18,6 +18,10 @@ app.component("graphviz", {
     <!-- Info node -->
     <div id="info"></div>
     <!-- Graph -->
+    <div id="loading" class="d-flex justify-content-center visually-hidden">
+        <strong role="status" class="m-5">Loading...</strong>
+        <div class="spinner-border m-5" aria-hidden="true"></div>
+    </div>
     <canvas ref="canvas" @mousemove="mouseMove($event)" :height="height" :width="width" @click="clicked($event)">
     </canvas>
     <div id="tooltip"></div>
@@ -38,9 +42,11 @@ app.component("graphviz", {
     },
     setup(props) {
         console.log(props.config)
+
         // variables for the width and height
         const width = Vue.ref(window.innerWidth - 20);
         const height = Vue.ref(window.innerHeight - 200);
+
         // let graphCanvas = Vue.ref(null);
         // let canvas = Vue.ref(null);
         let context = Vue.ref(null);
@@ -50,48 +56,41 @@ app.component("graphviz", {
         let transform = d3.zoomIdentity;
         let zoom = d3.zoom();
         zoom.scaleExtent([1 / 10, 8]).on("zoom", zoomed);
-
         var nodes= Vue.toRef(props, "nodes");
         var links=Vue.toRef(props, "links");
         let simulation = d3.forceSimulation()
             .force("link", d3.forceLink().id(function (d) {
                 return d.name; }))
-            .force("charge", d3.forceManyBody().strength(-5))
+            .force("charge", d3.forceManyBody().strength(-50))
             .force("collide", d3.forceCollide().radius(nodeRadius + 5))
             .force("center", d3.forceCenter(width.value / 2, height.value / 2))
-
-        let ticksPerRender = 3;
-        /**
-         * For faster animation.
-         */
-        requestAnimationFrame(function render() {
-            for (let i = 0; i < ticksPerRender; i++) {
-            simulation.tick();
-            }
-            if (simulation.alpha() > 0) {
-            requestAnimationFrame(render);
-            }
-        });
+        for (var i = 0; i < 300; ++i) simulation.tick();
 
         // const xMouse = Vue.ref(0)
         // const yMouse = Vue.ref(0)
 
-        Vue.watch(nodes, () => {
-            console.log("Watch nodes")
-            console.log(nodes.value)
-            simulation
-                .nodes(nodes.value)
+        Vue.watch([nodes, links], ([newNodes, newLinks]) => {
+            context.value.save();
+            context.value.clearRect(0, 0, width.value, height.value);
+            context.value.restore();
+            document.getElementById("loading").className = "d-flex justify-content-center";
+            console.log(newNodes)
+            console.log(newLinks)
+            simulation.nodes(newNodes)
+            simulation.force("link").links(newLinks)
+
                 // .force('forceY', d3.forceY(height / 2))
                 // .force('forceX', d3.forceX(width / 2))
-                .alpha(1).restart()
-                .on("end", drawUpdate);
+            simulation.alpha(1).restart()
+            for (var i = 0; i < 300; ++i) simulation.tick();
+            document.getElementById("loading").className = "d-flex justify-content-center visually-hidden";
+            drawUpdate();
         })
-        Vue.watch(links, () => {
-            console.log("Watch links")
-            simulation.force("link")
-                .links(links.value);
-            simulation.alpha(1).restart();
-        })
+        // Vue.watch(links, () => {
+        //     console.log("Watch links")
+
+        //     simulation.alpha(1).restart();
+        // })
 
         /**
          * This function is used for zooming. After transforming, simulationUpdate will draw the graph.
@@ -111,7 +110,7 @@ app.component("graphviz", {
         }
 
         function drawUpdate() {
-            // context.value.save();
+            context.value.save();
             context.value.clearRect(0, 0, width.value, height.value);
             context.value.translate(transform.x, transform.y);
             context.value.scale(transform.k, transform.k);
