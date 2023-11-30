@@ -1,15 +1,3 @@
-function dataRequest(group){
-    return axios
-        .get("/data/" + group)
-        .then(function (response) {
-            return response.data
-        })
-        .catch(function (error)  {
-            console.log(error);
-            return {}
-        })
-}
-
 app.component("groupfilter", {
     delimiters: ["[[", "]]"],
     template:
@@ -30,18 +18,20 @@ app.component("groupfilter", {
             context.emit("change-group", {group: props.group, nodes: nodes, links: links})
         }
         async function getData(){
-            data = await dataRequest(props.group)
-            nodes = data.nodes
-            links = data.links
+            data = await dataRequest("/data/" + props.group)
+            nodes = data.data.nodes
+            links = data.data.links
         }
+
+        Vue.onMounted(async function() {
+            await getData()
+        });
+
         return {
             nodes,
             links,
             clicked,
             getData,
         }
-    },
-    mounted(){
-        this.getData()
     }
 })

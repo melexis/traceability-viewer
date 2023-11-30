@@ -1,3 +1,16 @@
+function dataRequest(request){
+    return axios
+        .get(request)
+        // .then(function (response){
+        //     return response.data;
+        // })
+        .catch(function (error)  {
+            console.log(error);
+            return {}
+        });
+}
+
+
 app.component("traceability-viewer", {
     delimiters: ["[[", "]]"],
     template:
@@ -26,57 +39,50 @@ app.component("traceability-viewer", {
     <graphviz :nodes="nodes" :links="links" :config="config"> </graphviz>
     `,
     setup() {
-        var query = Vue.ref("")
-        var activeGroup=Vue.ref("home")
-        var groups=Vue.ref([])
-        var config=Vue.ref({})
-        var words=Vue.ref([])
-        var searchIds=Vue.ref([])
-        const linkTypes=[]
-        var nodes = Vue.ref([])
-        var links = Vue.ref([])
+        var query = Vue.ref("");
+        var activeGroup=Vue.ref("home");
+        var groups=Vue.ref([]);
+        var config=Vue.ref({});
+        var words=Vue.ref([]);
+        var searchIds=Vue.ref([]);
+        const linkTypes=[];
+        var nodes = Vue.ref([]);
+        var links = Vue.ref([]);
 
         function clicked() {
             activeGroup.value = "home"
             console.log("Home")
-        }
+        };
 
         function changeGroup(data){
             activeGroup.value = data.group
             nodes.value = data.nodes
             links.value = data.links
             console.log(data.nodes)
-        }
+        };
 
         async function initialize(){
-            await axios
-                .get("/data/init")
-                .then(function (response){
-                    nodes.value = response.data.nodes
-                    links.value = response.data.links
-                })
-                .catch(function (error)  {
-                    console.log(error);
-                });
-            await axios
-                .get("/config")
-                .then(function (response) {
-                    groups.value = response.data.groups
-                    config.value = response.data.config
-                })
-                .catch(function (error)  {
-                    console.log(error);
-                });
-            await axios
-                .get("/autocomplete")
-                .then(function (response) {
-                    words.value = response.data.words;
-                    searchIds.value = response.data.searchIds;
-                })
-                .catch(function (error)  {
-                    console.log(error);
-                });
-        }
+            configData = await dataRequest("/config")
+            console.log(configData)
+            groups.value = configData.data.groups
+            config.value = configData.data.config
+            console.log(config.value)
+
+            data = await dataRequest("/data/init")
+            nodes.value = data.data.nodes
+            links.value = data.data.links
+
+            autocompleteData = await dataRequest("/autocomplete")
+            words.value = autocompleteData.data.words
+            searchIds.value = autocompleteData.data.searchIds
+        };
+
+        Vue.onMounted(async function() {
+            console.log("mounted")
+            await initialize()
+            console.log(config.value)
+        });
+
         return {
             query,
             activeGroup,
@@ -92,9 +98,5 @@ app.component("traceability-viewer", {
             initialize,
 
         }
-    },
-    mounted() {
-        console.log("mounted")
-        this.initialize()
     },
 })
