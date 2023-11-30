@@ -16,20 +16,12 @@ app.component("itemLegend", {
     props: {
         items: {
             type: Object,
-            default: []
+            default: {}
         },
     },
     setup(props) {
-        var items = Vue.toRef(props, "items")
-        var inactiveItems = Vue.ref([])
-        // var opacity = Vue.computed(() => {
-        //     console.log(clickedItem.value)
-        //     if (inactiveItems.value.includes(clickedItem.value)){
-        //         return '50'
-        //     }
-        //     return '100'
-        // })
-        // :class="{'opacity-100': !inactiveItems.value.includes(item), 'opacity-50': inactiveItems.value.includes(item)}"
+        let items = Vue.toRef(props, "items")
+        let inactiveItems = Vue.ref([])
 
         function clicked(item){
             if (inactiveItems.value.includes(item)){
@@ -49,7 +41,6 @@ app.component("itemLegend", {
         return {
             items,
             inactiveItems,
-            // opacity,
             clicked,
         }
     }

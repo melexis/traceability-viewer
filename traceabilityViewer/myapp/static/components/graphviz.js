@@ -4,8 +4,8 @@ app.component("graphviz", {
     /*html*/
     `
     <!-- Legend -->
-    <item-legend :items="config.item_colors"></item-legend>
-    <item-legend :items="config.link_colors"></item-legend>
+    <item-legend :items="itemColors"></item-legend>
+    <item-legend :items="linkColors"></item-legend>
     <!-- Buttons -->
     <div class="mt-1 gap-2 d-md-flex">
         <button id="zoom_in" class="btn btn-outline-dark" @click="zoomIn">+</button>
@@ -41,12 +41,13 @@ app.component("graphviz", {
         }
     },
     setup(props) {
-        console.log(props.config)
-
         // variables for the width and height
         const width = Vue.ref(window.innerWidth - 20);
         const height = Vue.ref(window.innerHeight - 200);
-        var dragging = false
+        var nodes= Vue.toRef(props, "nodes");
+        var links=Vue.toRef(props, "links");
+        let itemColors = Vue.ref(updateLegendData(nodes.value, "item_colors"))
+        let linkColors = Vue.ref(updateLegendData(links.value, "link_colors"))
         // let graphCanvas = Vue.ref(null);
         // let canvas = Vue.ref(null);
         let context = Vue.ref(null);
@@ -54,10 +55,10 @@ app.component("graphviz", {
         let nodeRadius = 6;
         let selectedNodeID = null
         let transform = d3.zoomIdentity;
+        var dragging = false
         let zoom = d3.zoom();
         zoom.scaleExtent([1 / 10, 8]).on("zoom", zoomed);
-        var nodes= Vue.toRef(props, "nodes");
-        var links=Vue.toRef(props, "links");
+
         let simulation = d3.forceSimulation()
             .force("link", d3.forceLink().id(function (d) {
                 return d.name; }))
@@ -70,12 +71,11 @@ app.component("graphviz", {
         // const yMouse = Vue.ref(0)
 
         Vue.watch([nodes, links], ([newNodes, newLinks]) => {
+            selectedNodeID = null
             context.value.save();
             context.value.clearRect(0, 0, width.value, height.value);
             context.value.restore();
             document.getElementById("loading").className = "d-flex justify-content-center";
-            console.log(newNodes)
-            console.log(newLinks)
             simulation.nodes(newNodes)
             simulation.force("link").links(newLinks)
 
@@ -85,12 +85,23 @@ app.component("graphviz", {
             for (var i = 0; i < 300; ++i) simulation.tick();
             document.getElementById("loading").className = "d-flex justify-content-center visually-hidden";
             drawUpdate();
-        })
-        // Vue.watch(links, () => {
-        //     console.log("Watch links")
 
-        //     simulation.alpha(1).restart();
-        // })
+            itemColors.value = updateLegendData(newNodes,"group", "item_colors")
+            linkColors.value = updateLegendData(newLinks,"type", "link_colors")
+            console.log(itemColors.value)
+        })
+
+        function updateLegendData(newData, key, configKey){
+            var newSet = new Set
+            var newLegend = {}
+            for (element in newData){
+                newSet.add(newData[element][key])
+            }
+            for (const element of newSet){
+                newLegend[element] = props.config[configKey][element]
+            }
+            return newLegend
+        }
 
         /**
          * This function is used for zooming. After transforming, simulationUpdate will draw the graph.
@@ -202,8 +213,6 @@ app.component("graphviz", {
             if (dragging == false) {
                 x = transform.invert(d3.pointer(event))[0];
                 y = transform.invert(d3.pointer(event))[1];
-                // console.log(x, y)
-                // console.log(nodes.value)
                 const node = findNode(nodes.value, x, y, nodeRadius);
                 if (node) {
                     if (!node.hide) {
@@ -233,10 +242,9 @@ app.component("graphviz", {
             if (node){
                 if (!node.hide) {
                     selectedNodeID = node.name
-                    console.log(selectedNodeID)
+                    drawUpdate()
                 }
             }
-            console.log(x, y)
             console.log("clicked")
         }
 
@@ -316,6 +324,8 @@ app.component("graphviz", {
         return {
             width,
             height,
+            itemColors,
+            linkColors,
             zoom,
             context,
             nodes,
