@@ -14,9 +14,8 @@ app.component("graphviz", {
         <button id="show_connected_nodes" hidden="hidden" class="btn btn-outline-dark">&#x1F441;</button>
         <button id="search_connected_nodes" hidden="hidden" class="btn btn-outline-dark">&#x2747;</button>
     </div>
-    <br>
     <!-- Info node -->
-    <div id="info"></div>
+    <div v-if="showInfo" v-html="info" id="info" class="m-2 p-2 rounded position-absolute bg-body-secondary bg-opacity-75 "></div>
     <!-- Graph -->
     <div id="loading" class="d-flex justify-content-center visually-hidden">
         <strong role="status" class="m-5">Loading...</strong>
@@ -54,7 +53,8 @@ app.component("graphviz", {
         let context = Vue.ref(null);
         // The radius of a normal node
         let nodeRadius = 6;
-        let selectedNodeID = null
+        let selectedNodeId = ""
+        let selectedNode = Vue.ref(null)
         let transform = d3.zoomIdentity;
         var dragging = false
         let zoom = d3.zoom();
@@ -70,9 +70,42 @@ app.component("graphviz", {
 
         // const xMouse = Vue.ref(0)
         // const yMouse = Vue.ref(0)
+        let showInfo = Vue.computed(() => {
+            if (selectedNode.value != null){
+                console.log(selectedNode.value.hide)
+                return !selectedNode.value.hide
+            }
+            return false
+        })
+
+        let info = Vue.computed(() => {
+            let text = ""
+            if (selectedNode.value != null){
+                text += "<b>" + selectedNode.value.name + "</b><br>"
+                console.log(selectedNode.value)
+                if (selectedNode.value.attributes){
+                    console.log(typeof selectedNode.value.attributes)
+                    let attributes = JSON.parse(selectedNode.value.attributes.replaceAll("'",'"'));
+                    console.log(attributes)
+                    text += "<b>Attributes: </b><br>";
+                    for (item in attributes) {
+                        text += " &emsp; <i>" + item + "</i>";
+                        if (attributes[item]) {
+                          text += ": " + attributes[item] + "<br>";
+                        }
+                        else {
+                          text += "<br>";
+                        }
+                      }
+                }
+                return text
+            }
+            return text
+        })
 
         Vue.watch([nodes, links], ([newNodes, newLinks]) => {
-            selectedNodeID = null
+            selectedNode.value = null
+            selectedNodeId = ""
             context.value.save();
             context.value.clearRect(0, 0, width.value, height.value);
             context.value.restore();
@@ -172,7 +205,7 @@ app.component("graphviz", {
             // context.value.globalAlpha = d.globalAlpha;
             context.value.beginPath();
 
-            if (d.name == selectedNodeID) {
+            if (d.name == selectedNodeId) {
             context.value.arc(d.x, d.y, nodeRadius + 3, 0, 2 * Math.PI);
             context.value.strokeStyle = "black";
             }
@@ -205,7 +238,7 @@ app.component("graphviz", {
             context.value.strokeStyle = d.color;
             context.value.stroke(link);
             const arrow = new Path2D();
-            if (d.target.id == selectedNodeID) {
+            if (d.target.name == selectedNodeId) {
             targetX = d.target.x - (nodeRadius + 4) * Math.cos(slope);
             targetY = d.target.y - (nodeRadius + 4) * Math.sin(slope);
             }
@@ -261,12 +294,14 @@ app.component("graphviz", {
             const node = findNode(nodes.value, x, y, nodeRadius);
             if (node){
                 if (!node.hide) {
-                    selectedNodeID = node.name
+                    selectedNode.value = node
+                    selectedNodeId = node.name
                     drawUpdate()
                 }
             }
             console.log("clicked")
         }
+
 
         /**
          * Find the node that was clicked, if any, and return it.
@@ -352,8 +387,11 @@ app.component("graphviz", {
             links,
             simulation,
             transform,
-            selectedNodeID,
+            selectedNode,
+            selectedNodeId,
             hiddenLinks,
+            showInfo,
+            info,
             zoomed,
             zoomIn,
             zoomOut,
