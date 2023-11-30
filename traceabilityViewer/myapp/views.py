@@ -47,16 +47,20 @@ def initialize(request):
 @api_view(["GET"])
 def filter_group(request, filtergroup):
     """Get the data according to the filter"""
+    nodes_ids = []
     nodes = []
     links = []
     for item in DocumentItem.nodes.filter(group=filtergroup):
         node = item.to_json()
-        nodes.append(node)
-        for rel in node["relations"]:
-            links.append(rel)
-            target = DocumentItem.nodes.get(name=rel["target"])
-            if target not in nodes:
-                nodes.append(target.to_json())
+        if node["name"] not in nodes_ids:
+            nodes_ids.append(node["name"])
+            nodes.append(node)
+            for rel in node["relations"]:
+                links.append(rel)
+                target = DocumentItem.nodes.get(name=rel["target"]).to_json()
+                if target["name"] not in nodes_ids:
+                    nodes_ids.append(target["name"])
+                    nodes.append(target)
     return Response({"nodes": nodes, "links": links})
 
 
