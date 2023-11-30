@@ -32,6 +32,7 @@ class DocumentItem(StructuredNode):
                     "source": self.relations.relationship(rel).start_node().name,
                     "target": self.relations.relationship(rel).end_node().name,
                     "type": self.relations.relationship(rel).type,
+                    "color": self.relations.relationship(rel).color,
                 }
             )
         return {
