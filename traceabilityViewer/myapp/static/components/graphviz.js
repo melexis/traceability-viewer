@@ -4,8 +4,8 @@ app.component("graphviz", {
     /*html*/
     `
     <!-- Legend -->
-    <item-legend :items="itemColors"></item-legend>
-    <item-legend :items="linkColors"></item-legend>
+    <item-legend :items="itemColors" @hidden-items="updateHiddenGroups"></item-legend>
+    <item-legend :items="linkColors" @hidden-items="updateHiddenLinks"></item-legend>
     <!-- Buttons -->
     <div class="mt-1 gap-2 d-md-flex">
         <button id="zoom_in" class="btn btn-outline-dark" @click="zoomIn">+</button>
@@ -50,6 +50,7 @@ app.component("graphviz", {
         let linkColors = Vue.ref(updateLegendData(links.value, "link_colors"))
         // let graphCanvas = Vue.ref(null);
         // let canvas = Vue.ref(null);
+        let hiddenLinks = Vue.ref([])
         let context = Vue.ref(null);
         // The radius of a normal node
         let nodeRadius = 6;
@@ -103,6 +104,26 @@ app.component("graphviz", {
             return newLegend
         }
 
+        function updateHiddenGroups(hiddenItems){
+            // Draw edges
+            nodes.value.forEach(node => {
+                if (hiddenItems.includes(node.group)){
+                    node.hide = true
+                    console.log(node)
+                }
+                else {
+                    node.hide = false
+                }
+            })
+            drawUpdate()
+        }
+
+        function updateHiddenLinks(hiddenItems){
+            hiddenLinks.value = hiddenItems
+            console.log(hiddenLinks.value)
+            drawUpdate()
+        }
+
         /**
          * This function is used for zooming. After transforming, simulationUpdate will draw the graph.
          * @param {object} event The zooming event
@@ -128,14 +149,13 @@ app.component("graphviz", {
 
             // Draw edges
             links.value.forEach(link => {
-                if ((!link.source.hide) && (!link.target.hide)) {
+                if ((!hiddenLinks.value.includes(link.type)) && (!link.source.hide) && (!link.target.hide)) {
                     drawLine(link)
                 }
             })
 
             // Draw nodes
             nodes.value.forEach(node => {
-                // console.log(node)
                 if (!node.hide) {
                     drawNode(node);
                 }
@@ -333,6 +353,7 @@ app.component("graphviz", {
             simulation,
             transform,
             selectedNodeID,
+            hiddenLinks,
             zoomed,
             zoomIn,
             zoomOut,
@@ -344,6 +365,8 @@ app.component("graphviz", {
             dragStart,
             dragged,
             dragStop,
+            updateHiddenGroups,
+            updateHiddenLinks,
         }
     },
 

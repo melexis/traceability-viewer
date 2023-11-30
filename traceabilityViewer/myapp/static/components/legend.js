@@ -19,7 +19,7 @@ app.component("itemLegend", {
             default: {}
         },
     },
-    setup(props) {
+    setup(props, context) {
         let items = Vue.toRef(props, "items")
         let inactiveItems = Vue.ref([])
 
@@ -36,7 +36,7 @@ app.component("itemLegend", {
                 document.getElementById(item).className = "d-flex opacity-25"
                 inactiveItems.value.push(item)
             }
-
+            context.emit("hidden-items", inactiveItems.value)
         }
         return {
             items,
