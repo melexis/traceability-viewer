@@ -3,6 +3,7 @@
 from os import getenv
 import json
 from ruamel.yaml import YAML
+from pathlib import PurePath
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -93,3 +94,21 @@ def autocomplete(request):
     # add the words of a query that are used the most.
     words.update(["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"])
     return Response({"words": words, "searchIds": search_ids})
+
+@api_view(["GET"])
+def node_url(request, node_name):
+    """Request the url of the selected node."""
+    PRODUCT = getenv("PRODUCT")
+    BASE_URL = getenv("BASE_URL")
+    node = DocumentItem.nodes.get(name=node_name)
+    node = node.to_json()
+    url = None
+    if node["properties"]:
+        properties = json.loads(node["properties"])
+        node_name = node["name"]
+        document = properties["document"]
+        url = PurePath(BASE_URL).joinpath(PRODUCT, "latest", "flash", "html", f"{document}.html#{node_name}")
+        print(url)
+
+    return Response(str(url))
+

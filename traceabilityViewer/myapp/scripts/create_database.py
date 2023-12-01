@@ -119,7 +119,7 @@ def run():
             source_color = get_value_by_regex(configuration["item_colors"], source)
             node_objects[source] = DocumentItem(name=source, group=source_group, color=source_color)
         source_object = node_objects[source]
-        source_object.props = props
+        source_object.props = json.dumps(props)
         source_object.attributes = attributes
 
         for link, targets in targets_per_relationship.items():

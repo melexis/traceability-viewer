@@ -78,31 +78,6 @@ app.component("graphviz", {
             return false
         })
 
-        let info = Vue.computed(() => {
-            let text = ""
-            if (selectedNode.value != null){
-                text += "<b>" + selectedNode.value.name + "</b><br>"
-                console.log(selectedNode.value)
-                if (selectedNode.value.attributes){
-                    console.log(typeof selectedNode.value.attributes)
-                    let attributes = JSON.parse(selectedNode.value.attributes.replaceAll("'",'"'));
-                    console.log(attributes)
-                    text += "<b>Attributes: </b><br>";
-                    for (item in attributes) {
-                        text += " &emsp; <i>" + item + "</i>";
-                        if (attributes[item]) {
-                          text += ": " + attributes[item] + "<br>";
-                        }
-                        else {
-                          text += "<br>";
-                        }
-                      }
-                }
-                return text
-            }
-            return text
-        })
-
         Vue.watch([nodes, links], ([newNodes, newLinks]) => {
             selectedNode.value = null
             selectedNodeId = ""
@@ -124,6 +99,11 @@ app.component("graphviz", {
             linkColors.value = updateLegendData(newLinks,"type", "link_colors")
             console.log(itemColors.value)
         })
+
+        async function requestUrl(nodeName) {
+            let urlData = await dataRequest("url/" + nodeName)
+            return urlData.data
+        }
 
         function updateLegendData(newData, key, configKey){
             var newSet = new Set
@@ -391,7 +371,6 @@ app.component("graphviz", {
             selectedNodeId,
             hiddenLinks,
             showInfo,
-            info,
             zoomed,
             zoomIn,
             zoomOut,
@@ -405,6 +384,45 @@ app.component("graphviz", {
             dragStop,
             updateHiddenGroups,
             updateHiddenLinks,
+            requestUrl,
+        }
+    },
+    asyncComputed: {
+        async info() {
+        let text = ""
+        if (this.selectedNode != null){
+
+            // let url = path.join(props.config["variables"]["BASE_URL"],
+            //                     props.config["variables"]["PRODUCT"],
+            //     )
+            console.log(this.selectedNode.properties)
+            let url = await this.requestUrl(this.selectedNode.name)
+            if (url == "None"){
+                text += "<b>" + this.selectedNode.name + "</b><br>"
+            }
+            else {
+                text += "<a href='" + url + "'><b>" + this.selectedNode.name + "</b></a><br>"
+            }
+            console.log(url)
+            if (this.selectedNode.attributes){
+                console.log(typeof this.selectedNode.attributes)
+                let attributes = JSON.parse(this.selectedNode.attributes.replaceAll("'",'"'));
+                console.log(attributes)
+                text += "<b>Attributes: </b><br>";
+                for (item in attributes) {
+                    text += " &emsp; <i>" + item + "</i>";
+                    if (attributes[item]) {
+                      text += ": " + attributes[item] + "<br>";
+                    }
+                    else {
+                      text += "<br>";
+                    }
+                  }
+            }
+            console.log(text)
+            return text
+        }
+        return text
         }
     },
 

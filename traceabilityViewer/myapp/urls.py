@@ -11,4 +11,5 @@ urlpatterns = [
     path("data/init", views.initialize),
     path("config/", views.config),
     path("autocomplete/", views.autocomplete),
+    path("url/<str:node_name>/", views.node_url),
 ]
