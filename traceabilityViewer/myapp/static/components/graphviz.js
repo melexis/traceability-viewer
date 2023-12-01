@@ -448,24 +448,22 @@ app.component("graphviz", {
         async info() {
         let text = ""
         if (this.selectedNode != null){
-
-            // let url = path.join(props.config["variables"]["BASE_URL"],
-            //                     props.config["variables"]["PRODUCT"],
-            //     )
-            console.log(this.selectedNode.properties)
             let url = await this.requestUrl(this.selectedNode.name)
             if (url == "None"){
-                text += "<b>" + this.selectedNode.name + "</b><br>"
+                text += "<b>" + this.selectedNode.name + "</b>"
             }
             else {
-                text += "<a href='" + url + "'><b>" + this.selectedNode.name + "</b></a><br>"
+                text+="<a class='link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover'"
+                    + "href='" + url + "'><b>" + this.selectedNode.name + "</b></a>"
             }
-            console.log(url)
+            if (this.selectedNode.properties){
+                let properties = JSON.parse(this.selectedNode.properties);
+                text += "<br><b><i>" + properties.caption + "</i></b>"
+                text += "<br><b>Content hash: </b>" + properties["content-hash"]
+            }
             if (this.selectedNode.attributes){
-                console.log(typeof this.selectedNode.attributes)
                 let attributes = JSON.parse(this.selectedNode.attributes.replaceAll("'",'"'));
-                console.log(attributes)
-                text += "<b>Attributes: </b><br>";
+                text += "<br><b>Attributes: </b><br>";
                 for (item in attributes) {
                     text += " &emsp; <i>" + item + "</i>";
                     if (attributes[item]) {
@@ -476,7 +474,6 @@ app.component("graphviz", {
                     }
                   }
             }
-            console.log(text)
             return text
         }
         return text
