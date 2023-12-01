@@ -38,6 +38,30 @@ function minY(arr) {
     return node.y;
 }
 
+/**
+ * Description
+ * @param {Array} nodes The array of node objects that exists in the graph.
+ * @param {number} x The x value
+ * @param {number} y The y value
+ * @param {number} radius The node radius
+ * @returns {object} The node object if the pointer is on a node, else it will return undefined.
+ */
+function findNode(nodes, x, y, radius) {
+    const rSq = radius * radius;
+    let i;
+    for (i = 0; i < nodes.length; i++) {
+    const node = nodes[i],
+        dx = x - node.x,
+        dy = y - node.y,
+        distSq = (dx * dx) + (dy * dy);
+    if (distSq < rSq) {
+        return node;
+    }
+    }
+    // No node selected
+    return undefined;
+}
+
 app.component("graphviz", {
     delimiters: ["[[", "]]"],
     template:
@@ -51,8 +75,8 @@ app.component("graphviz", {
         <button id="zoom_in" class="btn btn-outline-dark" @click="zoomIn">+</button>
         <button id="zoom_out" class="btn btn-outline-dark" @click="zoomOut">-</button>
         <button id="zoom_fit" class="btn btn-outline-dark" @click="zoomToFit">Zoom to fit</button>
-        <button id="show_connected_nodes" hidden="hidden" class="btn btn-outline-dark">&#x1F441;</button>
-        <button id="search_connected_nodes" hidden="hidden" class="btn btn-outline-dark">&#x2747;</button>
+        <button v-if="!selectedNodeName == ''" id="show_connected_nodes" class="btn btn-outline-dark">&#x1F441;</button>
+        <button v-if="!selectedNodeName == ''" id="search_connected_nodes" class="btn btn-outline-dark">&#x2747;</button>
     </div>
     <!-- Info node -->
     <div v-if="showInfo" v-html="info" id="info" class="m-2 p-2 rounded position-absolute bg-body-secondary bg-opacity-75 "></div>
@@ -83,33 +107,54 @@ app.component("graphviz", {
         // variables for the width and height
         const width = Vue.ref(window.innerWidth - 20);
         const height = Vue.ref(window.innerHeight - 200);
+
+        // data nodes and links from the parent component
         var nodes= Vue.toRef(props, "nodes");
         var links=Vue.toRef(props, "links");
+
+        // The groups with corresponding colors depending on the nodes in the graph
         let itemColors = Vue.ref(updateLegendData(nodes.value, "item_colors"))
+
+        // The links with corresponding colors depending on the links in the graph
         let linkColors = Vue.ref(updateLegendData(links.value, "link_colors"))
-        // let graphCanvas = Vue.ref(null);
-        // let canvas = Vue.ref(null);
+
+        // The links that are hidden (corresponding to the legend of links)
         let hiddenLinks = Vue.ref([])
-        let context = Vue.ref(null);
+
+        // The context of the canvas
+        let ctx = Vue.ref(null);
+
         // The radius of a normal node
         let nodeRadius = 6;
-        let selectedNodeId = ""
+
+        // The name of the selected node
+        let selectedNodeName = Vue.ref("")
+        // The selected node object
         let selectedNode = Vue.ref(null)
+
+        // The identity transform where k=1, tx=ty=0
         let transform = d3.zoomIdentity;
-        var dragging = false
+
+        // A zoom behavior
         let zoom = d3.zoom();
+        // The minimum scale factor is 1/10 and the maximum scale factor is 8.
+        // After a change to the zoom transform, the function zoomed() is called.
         zoom.scaleExtent([1 / 10, 8]).on("zoom", zoomed);
 
+        // The simulation with specified array of nodes (later) and forces that are specified.
         let simulation = d3.forceSimulation()
             .force("link", d3.forceLink().id(function (d) {
                 return d.name; }))
             .force("charge", d3.forceManyBody().strength(-50))
             .force("collide", d3.forceCollide().radius(nodeRadius + 5))
             .force("center", d3.forceCenter(width.value / 2, height.value / 2))
+        // Run the simulation faster
         for (var i = 0; i < 300; ++i) simulation.tick();
 
-        // const xMouse = Vue.ref(0)
-        // const yMouse = Vue.ref(0)
+        /**
+         * Controlls the div for the info when a node is clicked
+         * @returns {bool} True when info may be showed, false otherwise
+         */
         let showInfo = Vue.computed(() => {
             if (selectedNode.value != null){
                 console.log(selectedNode.value.hide)
@@ -118,12 +163,18 @@ app.component("graphviz", {
             return false
         })
 
+        /**
+         * When the nodes and links change, the graph will be updated
+         * @param {Array} newNodes The new nodes
+         * @param {Array} newLinks The new links
+         * @returns {Array, Array} The new nodes and links
+         */
         Vue.watch([nodes, links], ([newNodes, newLinks]) => {
             selectedNode.value = null
-            selectedNodeId = ""
-            context.value.save();
-            context.value.clearRect(0, 0, width.value, height.value);
-            context.value.restore();
+            selectedNodeName.value = ""
+            ctx.value.save();
+            ctx.value.clearRect(0, 0, width.value, height.value);
+            ctx.value.restore();
             document.getElementById("loading").className = "d-flex justify-content-center";
             simulation.nodes(newNodes)
             simulation.force("link").links(newLinks)
@@ -135,16 +186,28 @@ app.component("graphviz", {
             document.getElementById("loading").className = "d-flex justify-content-center visually-hidden";
             drawUpdate();
 
-            itemColors.value = updateLegendData(newNodes,"group", "item_colors")
-            linkColors.value = updateLegendData(newLinks,"type", "link_colors")
+            itemColors.value = updateLegendData(newNodes, "group", "item_colors")
+            linkColors.value = updateLegendData(newLinks, "type", "link_colors")
             console.log(itemColors.value)
         })
 
+        /**
+         * Gets the url to the documentation of a node.
+         * @param {string} nodeName The name of the node
+         * @returns {string} The url string to the documentation of that node
+         */
         async function requestUrl(nodeName) {
             let urlData = await dataRequest("url/" + nodeName)
             return urlData.data
         }
 
+        /**
+         * Updates the data of the legend corresponding to the new data.
+         * @param {Array} newData The new data (nodes or links)
+         * @param {string} key The key of that is used of an element of the new data
+         * @param {string} configKey The key of the configuration where the colors are specified
+         * @returns {Object} The new legend object
+         */
         function updateLegendData(newData, key, configKey){
             var newSet = new Set
             var newLegend = {}
@@ -157,6 +220,11 @@ app.component("graphviz", {
             return newLegend
         }
 
+        /**
+         * Update the hide attribute of the nodes corresponding to the legend of the node groups.
+         * The graph will be updated.
+         * @param {Array} hiddenItems The array of the hidden items
+         */
         function updateHiddenGroups(hiddenItems){
             // Draw edges
             nodes.value.forEach(node => {
@@ -171,14 +239,17 @@ app.component("graphviz", {
             drawUpdate()
         }
 
+        /**
+         * Update the hidden links corresponding to the legend of the node groups. The graph will be updated.
+         * @param {Array} hiddenItems The array of the hidden items
+         */
         function updateHiddenLinks(hiddenItems){
             hiddenLinks.value = hiddenItems
-            console.log(hiddenLinks.value)
             drawUpdate()
         }
 
         /**
-         * This function is used for zooming. After transforming, simulationUpdate will draw the graph.
+         * Function used for zooming. After transforming, the graph will be updated.
          * @param {object} event The zooming event
          */
         function zoomed(event) {
@@ -186,16 +257,22 @@ app.component("graphviz", {
             drawUpdate();
         }
 
+        /**
+         * Zoom in when the button zoom in is clicked.
+         */
         function zoomIn(){
-            zoom.scaleBy(d3.select(context.value.canvas).transition().duration(750), 1.2);
-        }
-
-        function zoomOut() {
-            zoom.scaleBy(d3.select(context.value.canvas).transition().duration(750), 0.8);
+            zoom.scaleBy(d3.select(ctx.value.canvas).transition().duration(750), 1.2);
         }
 
         /**
-         * Zoom to fit the content of the graph.
+         * Zoom out when the button zoom out is clicked.
+         */
+        function zoomOut() {
+            zoom.scaleBy(d3.select(ctx.value.canvas).transition().duration(750), 0.8);
+        }
+
+        /**
+         * Zoom to fit the content of the graph when the button zoom to fit is clicked.
          */
         function zoomToFit() {
             let minx = minX(nodes.value);
@@ -207,14 +284,17 @@ app.component("graphviz", {
                 .translate((width.value / 2) - ((dataWidth / 2) + minx) * scale,
                            (height.value / 2) - ((dataHeight / 2) + miny) * scale)
                 .scale(scale);
-            d3.select(context.value.canvas).transition().duration(750).call(zoom.transform, transform)
+            d3.select(ctx.value.canvas).transition().duration(750).call(zoom.transform, transform)
         }
 
+        /**
+         * Clear the graph and draw all nodes and links (again).
+         */
         function drawUpdate() {
-            context.value.save();
-            context.value.clearRect(0, 0, width.value, height.value);
-            context.value.translate(transform.x, transform.y);
-            context.value.scale(transform.k, transform.k);
+            ctx.value.save();
+            ctx.value.clearRect(0, 0, width.value, height.value);
+            ctx.value.translate(transform.x, transform.y);
+            ctx.value.scale(transform.k, transform.k);
 
             // Draw edges
             links.value.forEach(link => {
@@ -230,57 +310,57 @@ app.component("graphviz", {
                 }
             })
 
-            context.value.restore();
+            ctx.value.restore();
         }
 
         /**
-         * A node will be drawn in the canvas.
-         * @param {object} d the node object
+         * Draw the node in the canvas.
+         * @param {object} node the node object
          */
-        function drawNode(d) {
-            // context.value.globalAlpha = d.globalAlpha;
-            context.value.beginPath();
+        function drawNode(node) {
+            // ctx.value.globalAlpha = node.globalAlpha;
+            ctx.value.beginPath();
 
-            if (d.name == selectedNodeId) {
-            context.value.arc(d.x, d.y, nodeRadius + 3, 0, 2 * Math.PI);
-            context.value.strokeStyle = "black";
+            if (node.name == selectedNodeName.value) {
+            ctx.value.arc(node.x, node.y, nodeRadius + 3, 0, 2 * Math.PI);
+            ctx.value.strokeStyle = "black";
             }
             else {
-            context.value.arc(d.x, d.y, nodeRadius, 0, 2 * Math.PI);
-            context.value.strokeStyle = "white";
+            ctx.value.arc(node.x, node.y, nodeRadius, 0, 2 * Math.PI);
+            ctx.value.strokeStyle = "white";
             }
-            context.value.fillStyle = d.color;
+            ctx.value.fillStyle = node.color;
 
-            context.value.closePath();
-            context.value.lineWidth = "3";
-            context.value.stroke();
-            context.value.fill();
+            ctx.value.closePath();
+            ctx.value.lineWidth = "3";
+            ctx.value.stroke();
+            ctx.value.fill();
         }
 
         /**
-         * A link will be drawn in the canvas.
-         * @param {object} d the link object
+         * Draw the link in the canvas.
+         * @param {object} link the link object
          */
-        function drawLine(d) {
-            const link = new Path2D();
+        function drawLine(link) {
+            const line = new Path2D();
             let targetX;
             let targetY;
-            context.value.globalAlpha = d.globalAlpha;
-            let slope = Math.atan2(d.target.y - d.source.y, d.target.x - d.source.x);
+            // ctx.value.globalAlpha = link.globalAlpha;
+            let slope = Math.atan2(link.target.y - link.source.y, link.target.x - link.source.x);
             let arrowWidth = 7;
-            link.moveTo(d.source.x, d.source.y);
-            link.lineTo(d.target.x, d.target.y);
-            link.lineWidth = 1.5;
-            context.value.strokeStyle = d.color;
-            context.value.stroke(link);
+            line.moveTo(link.source.x, link.source.y);
+            line.lineTo(link.target.x, link.target.y);
+            line.lineWidth = 1.5;
+            ctx.value.strokeStyle = link.color;
+            ctx.value.stroke(line);
             const arrow = new Path2D();
-            if (d.target.name == selectedNodeId) {
-            targetX = d.target.x - (nodeRadius + 4) * Math.cos(slope);
-            targetY = d.target.y - (nodeRadius + 4) * Math.sin(slope);
+            if (link.target.name == selectedNodeName.value) {
+            targetX = link.target.x - (nodeRadius + 4) * Math.cos(slope);
+            targetY = link.target.y - (nodeRadius + 4) * Math.sin(slope);
             }
             else {
-            targetX = d.target.x - (nodeRadius + 1) * Math.cos(slope);
-            targetY = d.target.y - (nodeRadius + 1) * Math.sin(slope);
+            targetX = link.target.x - (nodeRadius + 1) * Math.cos(slope);
+            targetY = link.target.y - (nodeRadius + 1) * Math.sin(slope);
             }
             arrow.moveTo(targetX, targetY);
             arrow.lineTo(targetX - arrowWidth * Math.cos(slope - Math.PI / 7),
@@ -288,36 +368,33 @@ app.component("graphviz", {
             arrow.lineTo(targetX - arrowWidth * Math.cos(slope + Math.PI / 7),
             targetY - arrowWidth * Math.sin(slope + Math.PI / 7));
             arrow.closePath();
-            context.value.fillStyle = d.color;
-            context.value.globalAlpha = d.globalAlpha;
-            context.value.stroke(arrow);
-            context.value.fill(arrow);
+            ctx.value.fillStyle = link.color;
+            ctx.value.globalAlpha = link.globalAlpha;
+            ctx.value.stroke(arrow);
+            ctx.value.fill(arrow);
         }
 
         /**
          * When the mouse moves, the position will check wether it hovers over a node.
          * When the mouse hovers a node, a tooltip will pop up with the name of that node.
+         * @param {object} event the mouse event
          */
         function mouseMove(event) {
-            if (dragging == false) {
-                x = transform.invert(d3.pointer(event))[0];
-                y = transform.invert(d3.pointer(event))[1];
-                const node = findNode(nodes.value, x, y, nodeRadius);
-                if (node) {
-                    if (!node.hide) {
-                        d3.select('#tooltip')
-                        .style('opacity', 0.9)
-                        // .style("data-bs-offset", String((event.pageY) + 5) + ", " + String((event.pageX) + 5) )
-                        .style('top', (event.pageY) + 10 + 'px')
-                        .style('left', (event.pageX) + 10 + 'px')
-                        .html(node.name);
-                    }
-                } else {
-                d3.select('#tooltip')
-                    .style('opacity', 0);
+            x = transform.invert(d3.pointer(event))[0];
+            y = transform.invert(d3.pointer(event))[1];
+            const node = findNode(nodes.value, x, y, nodeRadius);
+            if (node) {
+                if (!node.hide) {
+                    d3.select('#tooltip')
+                    .style('opacity', 0.9)
+                    .style('top', (event.pageY) + 10 + 'px')
+                    .style('left', (event.pageX) + 10 + 'px')
+                    .html(node.name);
                 }
+            } else {
+            d3.select('#tooltip')
+                .style('opacity', 0);
             }
-
         }
 
         /**
@@ -331,7 +408,7 @@ app.component("graphviz", {
             if (node){
                 if (!node.hide) {
                     selectedNode.value = node
-                    selectedNodeId = node.name
+                    selectedNodeName.value = node.name
                     drawUpdate()
                 }
             }
@@ -357,6 +434,10 @@ app.component("graphviz", {
             // else: No node selected, drag container
         }
 
+        /**
+         * Start dragging the node
+         * @param {object} event The dragging event
+         */
         function dragStart(event){
             console.log("dragStart")
             event.subject.x = transform.invertX(event.x);
@@ -365,7 +446,7 @@ app.component("graphviz", {
         }
 
         /**
-         * While dragging the node will follow your pointer.
+         * While dragging, the node will follow your pointer.
          * @param {object} event The dragging event
          */
         function dragged(event) {
@@ -383,30 +464,12 @@ app.component("graphviz", {
             drawUpdate()
         }
 
-        /**
-         * Description
-         * @param {Array} nodes The array of node objects that exists in the graph.
-         * @param {number} x The x value
-         * @param {number} y The y value
-         * @param {number} radius The node radius
-         * @returns {object} The node object if the pointer is on a node, else it will return undefined.
-         */
-        function findNode(nodes, x, y, radius) {
-            const rSq = radius * radius;
-            let i;
-            for (i = 0; i < nodes.length; i++) {
-            const node = nodes[i],
-                dx = x - node.x,
-                dy = y - node.y,
-                distSq = (dx * dx) + (dy * dy);
-            if (distSq < rSq) {
-                return node;
-            }
-            }
-            // No node selected
-            return undefined;
-        }
 
+        /**
+         * Update the data nodes and links
+         * @param {Array} nodes
+         * @param {Array} links
+         */
         function updateData(nodes, links){
             nodes.value = nodes
             links.value = links
@@ -418,13 +481,13 @@ app.component("graphviz", {
             itemColors,
             linkColors,
             zoom,
-            context,
+            ctx,
             nodes,
             links,
             simulation,
             transform,
             selectedNode,
-            selectedNodeId,
+            selectedNodeName,
             hiddenLinks,
             showInfo,
             zoomed,
@@ -445,6 +508,10 @@ app.component("graphviz", {
         }
     },
     asyncComputed: {
+        /**
+         * The info showed when clicking a node.
+         * @returns {string} The string that contains html for the info of the node
+         */
         async info() {
         let text = ""
         if (this.selectedNode != null){
@@ -481,14 +548,14 @@ app.component("graphviz", {
     },
 
     mounted() {
-        this.context = this.$refs.canvas.getContext("2d")
+        this.ctx = this.$refs.canvas.getContext("2d")
 
         /**
          * Make dragging of nodes possible.
          */
-        d3.select(this.context.canvas)
+        d3.select(this.ctx.canvas)
             .call(d3.drag()
-                .container(this.context.canvas)
+                .container(this.ctx.canvas)
                 .subject(this.dragSubject)
                 .on('start', this.dragStart)
                 .on('drag', this.dragged)
@@ -497,7 +564,7 @@ app.component("graphviz", {
          * Make zooming with mouseweel possible.
          * Disable zooming on double click.
          */
-        d3.select(this.context.canvas).call(this.zoom)
+        d3.select(this.ctx.canvas).call(this.zoom)
             .on("dblclick.zoom", null);;
     }
 })
