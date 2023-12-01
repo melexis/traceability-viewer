@@ -58,15 +58,12 @@ app.component("traceability-viewer", {
             activeGroup.value = data.group
             nodes.value = data.nodes
             links.value = data.links
-            console.log(data.nodes)
         };
 
         async function initialize(){
             configData = await dataRequest("/config")
-            console.log(configData)
             groups.value = configData.data.groups
             config.value = configData.data.config
-            console.log(config.value)
 
             data = await dataRequest("/data/init")
             nodes.value = data.data.nodes
