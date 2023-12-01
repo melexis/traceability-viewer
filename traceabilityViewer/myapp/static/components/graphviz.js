@@ -1,3 +1,43 @@
+/**
+ * Returns max value of attribute 'x' in array.
+ * @param {object} arr Array of objects
+ * @returns {number} Number of the maximum x value
+ */
+function maxX(arr) {
+    let node = arr.reduce((prev, curr) => prev.x > curr.x ? prev : curr);
+    return node.x;
+}
+
+/**
+ * Returns max value of attribute 'y' in array.
+ * @param {object} arr Array of objects
+ * @returns {number} Number of the maximum y value
+ */
+function maxY(arr) {
+    let node = arr.reduce((prev, curr) => prev.y > curr.y ? prev : curr);
+    return node.y;
+}
+
+/**
+ * Returns min value of attribute 'x' in array.
+ * @param {object} arr Array of objects
+ * @returns {number} Number of the minimum x value
+ */
+function minX(arr) {
+    let node = arr.reduce((prev, curr) => prev.x < curr.x ? prev : curr);
+    return node.x;
+}
+
+/**
+ * Returns min value of attribute 'y' in array.
+ * @param {object} arr Array of objects
+ * @returns {number} Number of the minimum y value.
+ */
+function minY(arr) {
+    let node = arr.reduce((prev, curr) => prev.y < curr.y ? prev : curr);
+    return node.y;
+}
+
 app.component("graphviz", {
     delimiters: ["[[", "]]"],
     template:
@@ -10,7 +50,7 @@ app.component("graphviz", {
     <div class="mt-1 gap-2 d-md-flex">
         <button id="zoom_in" class="btn btn-outline-dark" @click="zoomIn">+</button>
         <button id="zoom_out" class="btn btn-outline-dark" @click="zoomOut">-</button>
-        <button id="zoom_fit" class="btn btn-outline-dark">Zoom fit</button>
+        <button id="zoom_fit" class="btn btn-outline-dark" @click="zoomToFit">Zoom to fit</button>
         <button id="show_connected_nodes" hidden="hidden" class="btn btn-outline-dark">&#x1F441;</button>
         <button id="search_connected_nodes" hidden="hidden" class="btn btn-outline-dark">&#x2747;</button>
     </div>
@@ -152,6 +192,22 @@ app.component("graphviz", {
 
         function zoomOut() {
             zoom.scaleBy(d3.select(context.value.canvas).transition().duration(750), 0.8);
+        }
+
+        /**
+         * Zoom to fit the content of the graph.
+         */
+        function zoomToFit() {
+            let minx = minX(nodes.value);
+            let miny = minY(nodes.value);
+            let dataWidth = maxX(nodes.value) - minx;
+            let dataHeight = maxY(nodes.value) - miny;
+            let scale = 0.80 * Math.min(width.value / dataWidth, height.value / dataHeight);
+            transform = d3.zoomIdentity
+                .translate((width.value / 2) - ((dataWidth / 2) + minx) * scale,
+                           (height.value / 2) - ((dataHeight / 2) + miny) * scale)
+                .scale(scale);
+            d3.select(context.value.canvas).transition().duration(750).call(zoom.transform, transform)
         }
 
         function drawUpdate() {
@@ -374,6 +430,7 @@ app.component("graphviz", {
             zoomed,
             zoomIn,
             zoomOut,
+            zoomToFit,
             drawUpdate,
             clicked,
             updateData,
