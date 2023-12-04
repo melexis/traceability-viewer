@@ -9,7 +9,7 @@ app.component("autocomplete", {
     >
         <input class="form-control w-80" type="text" :value="fullInput"
             @keydown.enter="enter"
-            @keydown.tab.prevent="enter"
+            @keydown.tab.prevent="tab"
             @keydown.down="down"
             @keydown.up="up"
             @input="change"
@@ -97,6 +97,24 @@ app.component("autocomplete", {
             isOpen.value = false;
         }
 
+        // When tab pressed on the input
+        function tab() {
+            if (isOpen.value && current.value>=0){
+                search.value = matches.value[current.value];
+                if (props.sentenceAllowed){
+                    words = fullInput.value.split(" ")
+                    words = words.slice(0, words.length - 1)
+                    words.push(search.value)
+                    fullInput.value = words.join(" ")
+                }
+                else {
+                    fullInput.value = search.value
+                }
+            }
+            current.value = -1
+            isOpen.value = false;
+        }
+
         // When up pressed while suggestions are open
         function up() {
             if(current.value > 0)
@@ -160,6 +178,7 @@ app.component("autocomplete", {
             startFocus,
             stopFocus,
             enter,
+            tab,
             up,
             down,
             isActive,
