@@ -495,10 +495,19 @@ app.component("graphviz", {
             links.value = links
         }
 
+        function onResize() {
+            let doit
+            clearTimeout(doit);
+            width.value = window.innerWidth - 20;
+            height.value = window.innerHeight - 200;
+            doit = setTimeout(drawUpdate, 100);
+        }
+
         Vue.onMounted(async function() {
             layersData = await dataRequest("/layers")
             yScale = layersData.data
             console.log(yScale)
+
             ctx.value = canvas.value.getContext("2d")
 
             /**
@@ -516,8 +525,17 @@ app.component("graphviz", {
              * Disable zooming on double click.
              */
             d3.select(ctx.value.canvas).call(zoom)
-                .on("dblclick.zoom", null);;
+                .on("dblclick.zoom", null);
+
+            window.addEventListener("resize", onResize)
+            onResize();
+            console.log(width.value)
         });
+
+        Vue.onUnmounted(() => {
+            window.removeEventListener('resize', onResize)
+            onResize();
+        })
 
         return {
             canvas,
