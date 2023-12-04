@@ -48,10 +48,14 @@ app.component("traceability-viewer", {
         const linkTypes=[];
         var nodes = Vue.ref([]);
         var links = Vue.ref([]);
+        var initNodes = [];
+        var initLinks = [];
 
         function clicked() {
             activeGroup.value = "home"
             console.log("Home")
+            nodes.value = initNodes
+            links.value= initLinks
         };
 
         function changeGroup(data){
@@ -68,6 +72,8 @@ app.component("traceability-viewer", {
             data = await dataRequest("/data/init")
             nodes.value = data.data.nodes
             links.value = data.data.links
+            initNodes = data.data.nodes
+            initLinks = data.data.links
 
             autocompleteData = await dataRequest("/autocomplete")
             words.value = autocompleteData.data.words

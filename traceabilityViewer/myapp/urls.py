@@ -12,4 +12,5 @@ urlpatterns = [
     path("config/", views.config),
     path("autocomplete/", views.autocomplete),
     path("url/<str:node_name>/", views.node_url),
+    path("layers/", views.layers),
 ]

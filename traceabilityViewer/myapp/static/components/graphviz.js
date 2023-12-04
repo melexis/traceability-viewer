@@ -104,6 +104,9 @@ app.component("graphviz", {
         }
     },
     setup(props) {
+        // ref canvas
+        var canvas = Vue.ref(null)
+
         // variables for the width and height
         const width = Vue.ref(window.innerWidth - 20);
         const height = Vue.ref(window.innerHeight - 200);
@@ -127,6 +130,9 @@ app.component("graphviz", {
         // The radius of a normal node
         let nodeRadius = 6;
 
+        // The y scale for the layers
+        let yScale = null
+
         // The name of the selected node
         let selectedNodeName = Vue.ref("")
         // The selected node object
@@ -147,7 +153,7 @@ app.component("graphviz", {
                 return d.name; }))
             .force("charge", d3.forceManyBody().strength(-50))
             .force("collide", d3.forceCollide().radius(nodeRadius + 5))
-            .force("center", d3.forceCenter(width.value / 2, height.value / 2))
+
         // Run the simulation faster
         for (var i = 0; i < 300; ++i) simulation.tick();
 
@@ -176,11 +182,25 @@ app.component("graphviz", {
             ctx.value.clearRect(0, 0, width.value, height.value);
             ctx.value.restore();
             document.getElementById("loading").className = "d-flex justify-content-center";
-            simulation.nodes(newNodes)
+            if (props.config["layered"]){
+                simulation.nodes(newNodes)
+                    .force("forceY", d3.forceY(function (n){
+                        for (group of Object.keys(yScale)){
+                            const re = new RegExp(group)
+                            if (re.test(n.group)){
+                                return yScale[group]
+                            }
+                        }
+                        return height.value / 2
+                    }).strength(3))
+                    .force('forceX', d3.forceX().strength(0.01).x(width.value / 2))
+            }
+            else {
+                simulation.nodes(newNodes)
+            }
+
             simulation.force("link").links(newLinks)
 
-                // .force('forceY', d3.forceY(height / 2))
-                // .force('forceX', d3.forceX(width / 2))
             simulation.alpha(1).restart()
             for (var i = 0; i < 300; ++i) simulation.tick();
             document.getElementById("loading").className = "d-flex justify-content-center visually-hidden";
@@ -475,7 +495,32 @@ app.component("graphviz", {
             links.value = links
         }
 
+        Vue.onMounted(async function() {
+            layersData = await dataRequest("/layers")
+            yScale = layersData.data
+            console.log(yScale)
+            ctx.value = canvas.value.getContext("2d")
+
+            /**
+             * Make dragging of nodes possible.
+             */
+            d3.select(ctx.value.canvas)
+                .call(d3.drag()
+                    .container(ctx.value.canvas)
+                    .subject(dragSubject)
+                    .on('start', dragStart)
+                    .on('drag', dragged)
+                    .on('end', dragStop));
+            /**
+             * Make zooming with mouseweel possible.
+             * Disable zooming on double click.
+             */
+            d3.select(ctx.value.canvas).call(zoom)
+                .on("dblclick.zoom", null);;
+        });
+
         return {
+            canvas,
             width,
             height,
             itemColors,
@@ -547,24 +592,5 @@ app.component("graphviz", {
         }
     },
 
-    mounted() {
-        this.ctx = this.$refs.canvas.getContext("2d")
 
-        /**
-         * Make dragging of nodes possible.
-         */
-        d3.select(this.ctx.canvas)
-            .call(d3.drag()
-                .container(this.ctx.canvas)
-                .subject(this.dragSubject)
-                .on('start', this.dragStart)
-                .on('drag', this.dragged)
-                .on('end', this.dragStop));
-        /**
-         * Make zooming with mouseweel possible.
-         * Disable zooming on double click.
-         */
-        d3.select(this.ctx.canvas).call(this.zoom)
-            .on("dblclick.zoom", null);;
-    }
 })

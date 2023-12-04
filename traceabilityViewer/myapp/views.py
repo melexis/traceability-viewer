@@ -2,15 +2,13 @@
 
 from os import getenv
 import json
-from ruamel.yaml import YAML
 from pathlib import PurePath
+from ruamel.yaml import YAML
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from django.http import JsonResponse
-from django.views.generic.base import TemplateView
-from django.shortcuts import render, redirect, HttpResponse
+from django.shortcuts import render
 
 # from traceabilityViewer.scripts.create_database import unique_groups, configuration
 from .models import DocumentItem
@@ -95,6 +93,7 @@ def autocomplete(request):
     words.update(["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"])
     return Response({"words": words, "searchIds": search_ids})
 
+
 @api_view(["GET"])
 def node_url(request, node_name):
     """Request the url of the selected node."""
@@ -112,3 +111,25 @@ def node_url(request, node_name):
 
     return Response(str(url))
 
+
+@api_view(["GET"])
+def layers(request):
+    """Request the y values depending on the layers in the configuration file."""
+    y_scale = {}
+
+    if isinstance(configuration["layers"], list):
+        y = 0
+        for group in configuration["layers"]:
+            y_scale[group] = y
+            y += 200
+
+    if isinstance(configuration["layers"], dict):
+        y = 0
+        for group1, group2 in configuration["layers"].items():
+            print(group1)
+            y_scale[group1] = y
+            print(group2)
+            y_scale[group2] = y
+            y += 300
+
+    return Response(y_scale)
