@@ -9,9 +9,11 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from django.shortcuts import render
+from neomodel import db
+
 
 # from traceabilityViewer.scripts.create_database import unique_groups, configuration
-from .models import DocumentItem
+from .models import DocumentItem,Rel
 
 config_path = getenv("CONFIG_FILE")
 with open(config_path, "r", encoding="utf-8") as open_file:
@@ -66,8 +68,6 @@ def filter_group(request, filtergroup):
 @api_view(["GET"])
 def config(request):
     """Get the configuration"""
-    print(type(configuration))
-    # config = serializers.serialize('json', configuration)
     return Response({"config": configuration, "groups": unique_groups})
 
 
@@ -107,7 +107,6 @@ def node_url(request, node_name):
         node_name = node["name"]
         document = properties["document"]
         url = PurePath(BASE_URL).joinpath(PRODUCT, "latest", "flash", "html", f"{document}.html#{node_name}")
-        print(url)
 
     return Response(str(url))
 
@@ -126,10 +125,35 @@ def layers(request):
     if isinstance(configuration["layers"], dict):
         y = 0
         for group1, group2 in configuration["layers"].items():
-            print(group1)
             y_scale[group1] = y
-            print(group2)
             y_scale[group2] = y
             y += 300
 
     return Response(y_scale)
+
+@api_view(["POST"])
+def query(request):
+    """Return the result of nodes and links depending on the query."""
+    query = json.loads(request.body.decode('utf-8'))["query"]
+    results, _ = db.cypher_query(query, resolve_objects=True)
+    # print(meta)
+    # print(results)
+    nodes_made = []
+    nodes = []
+    links = []
+    for result in results:
+        for element in result:
+            if isinstance(element, DocumentItem):
+                node = element.to_json()
+                if node["name"] not in nodes_made:
+                    nodes.append(node)
+                    nodes_made.append(node["name"])
+
+            elif isinstance(element, Rel):
+                link = {"source": element.start_node().name,
+                        "target": element.end_node().name,
+                        "type": element.type,
+                        "color": element.color}
+                if link not in links:
+                    links.append(link)
+    return Response({"nodes": nodes, "links": links})

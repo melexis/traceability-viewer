@@ -32,13 +32,14 @@ app.component("traceability-viewer", {
     <div v-if="activeGroup==='home'">
         <br>
         <label>Cypher query: </label>
-        <autocomplete :suggestions="words" :sentenceAllowed="true"></autocomplete>
+        <autocomplete :suggestions="words" :sentenceAllowed="true" @loading="changeLoading" @on-submit="changeData"></autocomplete>
         <label>Search: </label>
         <autocomplete :suggestions="searchIds" :sentenceAllowed="false"></autocomplete>
     </div>
-    <graphviz :nodes="nodes" :links="links" :config="config"> </graphviz>
+    <graphviz :loading="loading" :nodes="nodes" :links="links" :config="config"> </graphviz>
     `,
     setup() {
+        var loading = Vue.ref(true);
         var query = Vue.ref("");
         var activeGroup=Vue.ref("home");
         var groups=Vue.ref([]);
@@ -64,6 +65,15 @@ app.component("traceability-viewer", {
             links.value = data.links
         };
 
+        function changeData(data){
+            nodes.value = data.nodes
+            links.value = data.links
+        }
+
+        function changeLoading(newValue){
+            loading.value = newValue
+        }
+
         async function initialize(){
             configData = await dataRequest("/config")
             groups.value = configData.data.groups
@@ -78,6 +88,8 @@ app.component("traceability-viewer", {
             autocompleteData = await dataRequest("/autocomplete")
             words.value = autocompleteData.data.words
             searchIds.value = autocompleteData.data.searchIds
+
+            loading.value = false
         };
 
         Vue.onMounted(async function() {
@@ -87,6 +99,7 @@ app.component("traceability-viewer", {
         });
 
         return {
+            loading,
             query,
             activeGroup,
             groups,
@@ -98,6 +111,8 @@ app.component("traceability-viewer", {
             links,
             clicked,
             changeGroup,
+            changeData,
+            changeLoading,
             initialize,
 
         }

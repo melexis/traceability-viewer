@@ -90,6 +90,10 @@ app.component("graphviz", {
     <div id="tooltip"></div>
     `,
     props: {
+        loading: {
+            type: Boolean,
+            default: true,
+        },
         config: {
             type: Object,
             default: {}
@@ -114,6 +118,9 @@ app.component("graphviz", {
         // data nodes and links from the parent component
         var nodes= Vue.toRef(props, "nodes");
         var links=Vue.toRef(props, "links");
+
+        // If loading = true, a loading screen is displayed
+        var loading = Vue.toRef(props, "loading");
 
         // The groups with corresponding colors depending on the nodes in the graph
         let itemColors = Vue.ref(updateLegendData(nodes.value, "item_colors"))
@@ -169,6 +176,19 @@ app.component("graphviz", {
             return false
         })
 
+        Vue.watch(loading, (newLoading) => {
+            console.log(newLoading)
+            if (newLoading){
+                document.getElementById("loading").className = "d-flex justify-content-center";
+                ctx.value.save();
+                ctx.value.clearRect(0, 0, width.value, height.value);
+                ctx.value.restore();
+            }
+            else {
+                document.getElementById("loading").className = "d-flex justify-content-center visually-hidden";
+            }
+        })
+
         /**
          * When the nodes and links change, the graph will be updated
          * @param {Array} newNodes The new nodes
@@ -181,7 +201,7 @@ app.component("graphviz", {
             ctx.value.save();
             ctx.value.clearRect(0, 0, width.value, height.value);
             ctx.value.restore();
-            document.getElementById("loading").className = "d-flex justify-content-center";
+
             if (props.config["layered"]){
                 simulation.nodes(newNodes)
                     .force("forceY", d3.forceY(function (n){
@@ -203,7 +223,7 @@ app.component("graphviz", {
 
             simulation.alpha(1).restart()
             for (var i = 0; i < 300; ++i) simulation.tick();
-            document.getElementById("loading").className = "d-flex justify-content-center visually-hidden";
+
             drawUpdate();
 
             itemColors.value = updateLegendData(newNodes, "group", "item_colors")

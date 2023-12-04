@@ -1,3 +1,11 @@
+function postDataRequest(url, data){
+    return axios.post(url, data)
+                .catch(function (error)  {
+                    console.log(error);
+                    return {}
+    });
+}
+
 app.component("autocomplete", {
     delimiters: ["[[", "]]"],
     template:
@@ -42,7 +50,7 @@ app.component("autocomplete", {
             default: false,
         },
     },
-    setup(props) {
+    setup(props, context) {
         var fullInput = Vue.ref("")
         var search = Vue.ref("")
         var isOpen = Vue.ref(false)
@@ -149,8 +157,31 @@ app.component("autocomplete", {
         }
 
         // When the button is pressed
-        function onSubmit() {
+        async function onSubmit() {
             console.log(fullInput.value)
+            context.emit("loading", true)
+            nodes = []
+            links = []
+            if (props.sentenceAllowed){
+                // query
+                if (["SET ", "CREATE ", "DELETE", "MERGE ", "REMOVE"].some(substring =>
+                    fullInput.value.toUpperCase().includes(substring))) {
+                        alert("SET, CREATE, DELETE, MERGE or REMOVE cannot be used!");
+                    }
+                else if (fullInput.value === "") {
+                    alert("Please enter a Cypher query.")
+                }
+                else {
+                    data = await postDataRequest("query/", {"query": fullInput.value});
+                    nodes = data.data.nodes
+                    links = data.data.links
+                }
+            }
+            else {
+                // search ID
+            }
+            context.emit("on-submit", {nodes: nodes, links: links})
+            context.emit("loading", false)
         }
 
         // When the input changes
