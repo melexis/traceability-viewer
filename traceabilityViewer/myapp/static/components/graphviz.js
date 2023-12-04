@@ -71,12 +71,12 @@ app.component("graphviz", {
     <item-legend :items="itemColors" @hidden-items="updateHiddenGroups"></item-legend>
     <item-legend :items="linkColors" @hidden-items="updateHiddenLinks"></item-legend>
     <!-- Buttons -->
-    <div class="mt-1 gap-2 d-md-flex">
-        <button id="zoom_in" class="btn btn-outline-dark" @click="zoomIn">+</button>
-        <button id="zoom_out" class="btn btn-outline-dark" @click="zoomOut">-</button>
-        <button id="zoom_fit" class="btn btn-outline-dark" @click="zoomToFit">Zoom to fit</button>
-        <button v-if="!selectedNodeName == ''" id="show_connected_nodes" class="btn btn-outline-dark">&#x1F441;</button>
-        <button v-if="!selectedNodeName == ''" id="search_connected_nodes" class="btn btn-outline-dark">&#x2747;</button>
+    <div class="mt-1 btn-group">
+        <button id="zoom_in" class="btn btn-light border-dark" @click="zoomIn">+</button>
+        <button id="zoom_out" class="btn btn-light border-dark" @click="zoomOut">-</button>
+        <button id="zoom_fit" class="btn btn-light border-dark" @click="zoomToFit">Zoom to fit</button>
+        <button v-if="!selectedNodeName == ''" id="show_connected_nodes" class="btn btn-light border-dark">&#x1F441;</button>
+        <button v-if="!selectedNodeName == ''" id="search_connected_nodes" class="btn btn-light border-dark">&#x2747;</button>
     </div>
     <!-- Info node -->
     <div v-if="showInfo" v-html="info" id="info" class="m-2 p-2 rounded position-absolute bg-body-secondary bg-opacity-75 "></div>

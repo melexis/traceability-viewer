@@ -3,15 +3,22 @@ app.component("itemLegend", {
     template:
     /*html*/
     `
-    <ul class="list-group list-group-horizontal overflow-auto">
-        <li v-for="(color, item) in items"
-            class="list-group-item d-flex btn btn-light"
-            @click="clicked(item)">
-            <div :id="item" class="d-flex"><svg width="25" height="20"><rect width="20" height="20" :fill="color"/></svg>
-            [[item]]
-            </div>
-        </li>
-    </ul>
+    <div class="hstack">
+    <div class="mt-1 btn-group overflow-x-auto" role="group">
+            <button v-for="(color, item) in items"
+                class="btn btn-light border-dark"
+                type="button"
+                @click="clicked(item)"
+                :id="item">
+                <div class="d-flex">
+                    <svg width="25" height="20">
+                        <rect width="20" height="20" :fill="color"/>
+                    </svg>
+                    [[item]]
+                </div>
+            </button>
+    </div>
+    </div>
     `,
     props: {
         items: {
@@ -25,7 +32,7 @@ app.component("itemLegend", {
 
         function clicked(item){
             if (inactiveItems.value.includes(item)){
-                document.getElementById(item).className = "d-flex opacity-100"
+                document.getElementById(item).className = "btn btn-light border-dark opacity-100"
                 inactiveItems.value = inactiveItems.value.filter(i => {
                     if (i != item){
                         return i
@@ -33,7 +40,7 @@ app.component("itemLegend", {
                 })
             }
             else {
-                document.getElementById(item).className = "d-flex opacity-25"
+                document.getElementById(item).className = "btn btn-light border-dark opacity-25"
                 inactiveItems.value.push(item)
             }
             context.emit("hidden-items", inactiveItems.value)

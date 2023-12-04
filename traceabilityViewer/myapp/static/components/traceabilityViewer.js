@@ -17,11 +17,11 @@ app.component("traceability-viewer", {
     /*html*/
     `
     <!-- Navbar -->
-    <div class="gap-2 d-md-flex">
+    <div class="d-flex flex-wrap">
         <button type="button" @click="clicked" class="btn"
-        :class="{'btn-primary': activeGroup == 'home', 'btn-secondary': activeGroup != 'home'}">Home</button>
+        :class="{'btn btn-lg btn-outline-primary active mb-1 me-1': activeGroup == 'home', 'btn btn-lg btn-outline-primary mb-1 me-1': activeGroup != 'home'}">Home</button>
         <groupfilter class="btn"
-        :class="{'btn-primary': activeGroup == group, 'btn-secondary': activeGroup != group}"
+        :class="{'btn btn-lg btn-outline-primary active mb-1 me-1': activeGroup == group, 'btn btn-lg btn-outline-primary mb-1 me-1': activeGroup != group}"
         v-for="group in groups" :group="group" @change-group="changeGroup"></groupfilter>
     </div>
     <!-- Checkboxes -->
