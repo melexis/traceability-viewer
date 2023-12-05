@@ -10,6 +10,7 @@ from rest_framework.response import Response
 
 from django.shortcuts import render
 from neomodel import db
+from neo4j.exceptions import CypherSyntaxError
 
 
 # from traceabilityViewer.scripts.create_database import unique_groups, configuration
@@ -51,7 +52,7 @@ def filter_group(request, filtergroup):
     nodes_ids = []
     nodes = []
     links = []
-    for item in DocumentItem.nodes.filter(group=filtergroup):
+    for item in DocumentItem.nodes.filter(group__iregex=filtergroup):
         node = item.to_json()
         if node["name"] not in nodes_ids:
             nodes_ids.append(node["name"])
@@ -134,26 +135,32 @@ def layers(request):
 @api_view(["POST"])
 def query(request):
     """Return the result of nodes and links depending on the query."""
-    query = json.loads(request.body.decode('utf-8'))["query"]
-    results, _ = db.cypher_query(query, resolve_objects=True)
-    # print(meta)
-    # print(results)
-    nodes_made = []
+    query = request.body.decode('utf-8')
+    error = ""
     nodes = []
     links = []
-    for result in results:
-        for element in result:
-            if isinstance(element, DocumentItem):
-                node = element.to_json()
-                if node["name"] not in nodes_made:
-                    nodes.append(node)
-                    nodes_made.append(node["name"])
+    try:
+        results, meta = db.cypher_query(query, resolve_objects=True)
+        nodes_made = []
+        for result in results:
+            for element in result:
+                if isinstance(element, DocumentItem):
+                    node = element.to_json()
+                    if node["name"] not in nodes_made:
+                        nodes.append(node)
+                        nodes_made.append(node["name"])
 
-            elif isinstance(element, Rel):
-                link = {"source": element.start_node().name,
-                        "target": element.end_node().name,
-                        "type": element.type,
-                        "color": element.color}
-                if link not in links:
-                    links.append(link)
-    return Response({"nodes": nodes, "links": links})
+                elif isinstance(element, Rel):
+                    link = {"source": element.start_node().name,
+                            "target": element.end_node().name,
+                            "type": element.type,
+                            "color": element.color}
+                    if link not in links:
+                        links.append(link)
+        return Response({"nodes": nodes, "links": links})
+    except CypherSyntaxError as error:
+        print("==============================")
+        print(error)
+        return Response(error.message)
+
+

@@ -2,15 +2,24 @@ function postDataRequest(url, data){
     return axios.post(url, data)
                 .catch(function (error)  {
                     console.log(error);
-                    return {}
     });
 }
-
+//
 app.component("autocomplete", {
     delimiters: ["[[", "]]"],
     template:
     /*html*/
     `
+    <div ref="alert" class="alert alert-danger" role="alert" style="display:none">
+        <div class="d-flex">
+            <svg width="20" height="20" class="bi flex-shrink-1 me-2" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+            <button id="arrow-button" @click="showError" type="button" class="btn btn-sm" content-type="charset=utf-8">&#8964</button>
+            <strong>Error:&emsp;</strong><div ref="info"></div>&emsp;
+            <button type="button" class="btn-close" @click="close" aria-label="Close"></button>
+        </div>
+        <div ref="error" class="collapse font-monospace"></div>
+    </div>
+
     <div class="w-100 autocomplete" tabindex="0"
         @focusin="startFocus"
         @focusout="stopFocus"
@@ -35,7 +44,7 @@ app.component("autocomplete", {
             [[ suggestion ]]
             </li>
         </ul>
-        <button @click="onSubmit" class="btn mt-1 mb-1 btn-primary">Submit</button>
+        <button @click="submitted" class="btn mt-1 mb-1 btn-primary">Submit</button>
     </div>
     `,
     props: {
@@ -51,6 +60,11 @@ app.component("autocomplete", {
         },
     },
     setup(props, context) {
+        var alert = Vue.ref(null)
+        var info = Vue.ref(null)
+        var error = Vue.ref(null)
+        var show = false;
+        var errorText = ""
         var fullInput = Vue.ref("")
         var search = Vue.ref("")
         var isOpen = Vue.ref(false)
@@ -157,31 +171,63 @@ app.component("autocomplete", {
         }
 
         // When the button is pressed
-        async function onSubmit() {
-            console.log(fullInput.value)
+        async function submitted() {
             context.emit("loading", true)
+            errorText = ""
+            show = false
             nodes = []
             links = []
+            context.emit("on-submit", {nodes: nodes, links: links})
             if (props.sentenceAllowed){
                 // query
                 if (["SET ", "CREATE ", "DELETE", "MERGE ", "REMOVE"].some(substring =>
                     fullInput.value.toUpperCase().includes(substring))) {
-                        alert("SET, CREATE, DELETE, MERGE or REMOVE cannot be used!");
+                        alert.value.style.display = "block";
+                        info.value.innerText = "SET, CREATE, DELETE, MERGE or REMOVE cannot be used!";
                     }
                 else if (fullInput.value === "") {
-                    alert("Please enter a Cypher query.")
+                    alert.value.style.display = "block";
+                    info.value.innerText = "The input is empty. Please enter a Cypher query."
                 }
                 else {
-                    data = await postDataRequest("query/", {"query": fullInput.value});
-                    nodes = data.data.nodes
-                    links = data.data.links
+                    data = await postDataRequest("query/",fullInput.value);
+                    console.log(typeof data.data)
+                    console.log(typeof data.data === "string")
+                    if (typeof data.data === "string"){
+                        console.log(alert)
+                        alert.value.style.display = "block";
+                        info.value.innerText = "Please enter a valid cypher query."
+                        errorText = data.data
+                    }
+                    else {
+                        nodes = data.data.nodes
+                        links = data.data.links
+                    }
                 }
             }
             else {
+                if (props.suggestions.includes(fullInput.value)){
+                    data = await postDataRequest("search/", fullInput.value)
+
+                }
                 // search ID
             }
             context.emit("on-submit", {nodes: nodes, links: links})
             context.emit("loading", false)
+        }
+
+        function showError(){
+            show = !show;
+            if (errorText != "" && show == true){
+                error.value.innerText = errorText;
+                error.value.className = "collapsed font-monospace"
+                document.getElementById("arrow-button").innerHTML = "&#8963;"
+            }
+            else {
+                error.value.innerText = errorText;
+                error.value.className = "collapse font-monospace"
+                document.getElementById("arrow-button").innerHTML = "&#8964";
+            }
         }
 
         // When the input changes
@@ -197,8 +243,15 @@ app.component("autocomplete", {
                 search.value = event.target.value
             }
         }
+
+        function close() {
+            alert.value.className = "alert alert-danger d-none align-items-center";
+        }
         // selection = ""
         return {
+            alert,
+            info,
+            error,
             fullInput,
             search,
             isOpen,
@@ -214,8 +267,10 @@ app.component("autocomplete", {
             down,
             isActive,
             suggestionClick,
-            onSubmit,
+            submitted,
+            showError,
             change,
+            close,
 
         }
     },
