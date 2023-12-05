@@ -81,7 +81,7 @@ app.component("graphviz", {
     <!-- Info node -->
     <div v-if="showInfo" v-html="info" id="info" class="m-2 p-2 rounded position-absolute bg-body-secondary bg-opacity-75 "></div>
     <!-- Graph -->
-    <div id="loading" class="d-flex justify-content-center visually-hidden">
+    <div id="loading" class="d-flex justify-content-center">
         <strong role="status" class="m-5">Loading...</strong>
         <div class="spinner-border m-5" aria-hidden="true"></div>
     </div>
@@ -159,10 +159,11 @@ app.component("graphviz", {
             .force("link", d3.forceLink().id(function (d) {
                 return d.name; }))
             .force("charge", d3.forceManyBody().strength(-50))
-            .force("collide", d3.forceCollide().radius(nodeRadius + 5))
+            .force("collide", d3.forceCollide().radius(nodeRadius + 5));
+
 
         // Run the simulation faster
-        for (var i = 0; i < 300; ++i) simulation.tick();
+        // for (var i = 0; i < 300; ++i) simulation.tick();
 
         /**
          * Controlls the div for the info when a node is clicked
@@ -214,17 +215,18 @@ app.component("graphviz", {
                         return height.value / 2
                     }).strength(3))
                     .force('forceX', d3.forceX().strength(0.01).x(width.value / 2))
+                    .on("tick", drawUpdate);
             }
             else {
                 simulation.nodes(newNodes)
+                    .on("tick", drawUpdate);
             }
 
             simulation.force("link").links(newLinks)
 
             simulation.alpha(1).restart()
-            for (var i = 0; i < 300; ++i) simulation.tick();
-
-            drawUpdate();
+            for (var i = 0; i < 5; ++i) simulation.tick(); // 300
+            // drawUpdate();
 
             itemColors.value = updateLegendData(newNodes, "group", "item_colors")
             linkColors.value = updateLegendData(newLinks, "type", "link_colors")

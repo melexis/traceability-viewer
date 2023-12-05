@@ -59,7 +59,8 @@ app.component("autocomplete", {
             default: false,
         },
     },
-    setup(props, context) {
+    emits: ["loading", "onSubmit"],
+    setup(props, { emit } ) {
         var alert = Vue.ref(null)
         var info = Vue.ref(null)
         var error = Vue.ref(null)
@@ -113,7 +114,7 @@ app.component("autocomplete", {
                 }
             }
             else {
-                onSubmit()
+                submitted()
             }
             current.value = -1
             isOpen.value = false;
@@ -172,12 +173,12 @@ app.component("autocomplete", {
 
         // When the button is pressed
         async function submitted() {
-            context.emit("loading", true)
+            emit("loading", true)
             errorText = ""
             show = false
             nodes = []
             links = []
-            context.emit("on-submit", {nodes: nodes, links: links})
+            emit("onSubmit", {nodes: nodes, links: links})
             if (props.sentenceAllowed){
                 // query
                 if (["SET ", "CREATE ", "DELETE", "MERGE ", "REMOVE"].some(substring =>
@@ -212,8 +213,8 @@ app.component("autocomplete", {
                 }
                 // search ID
             }
-            context.emit("on-submit", {nodes: nodes, links: links})
-            context.emit("loading", false)
+            emit("onSubmit", {nodes: nodes, links: links})
+            emit("loading", false)
         }
 
         function showError(){
