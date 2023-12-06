@@ -3,7 +3,7 @@ app.component("groupfilter", {
     template:
     /*html*/
     `
-    <button type="button" @click="clicked">[[group]]</button>
+    <button type="button" @click="clicked" :disabled="isDisabled">[[group]]</button>
     `,
     props: {
         group: {
@@ -12,17 +12,24 @@ app.component("groupfilter", {
     },
     emits: ["loading", "changeGroup"],
     setup(props, { emit }) {
-        var nodes = []
-        var links = []
+        var nodes = Vue.ref([])
+        var links = Vue.ref([])
+
+        isDisabled = Vue.computed(() => {
+            if (nodes.value.length == 0){
+                return true
+            }
+            return false
+        })
 
         function clicked() {
-            emit("changeGroup", {group: props.group, nodes: nodes, links: links})
+            emit("changeGroup", {group: props.group, nodes: nodes.value, links: links.value})
         }
         async function getData(){
             emit("loading", true)
             data = await dataRequest("/data/" + props.group)
-            nodes = data.data.nodes
-            links = data.data.links
+            nodes.value = data.data.nodes
+            links.value = data.data.links
             emit("loading", false)
         }
 
@@ -31,6 +38,7 @@ app.component("groupfilter", {
         });
 
         return {
+            isDisabled,
             nodes,
             links,
             clicked,
