@@ -140,7 +140,7 @@ def query(request):
     nodes = []
     links = []
     try:
-        results, meta = db.cypher_query(query, resolve_objects=True)
+        results, _ = db.cypher_query(query, resolve_objects=True)
         nodes_made = []
         for result in results:
             for element in result:
@@ -159,8 +159,29 @@ def query(request):
                         links.append(link)
         return Response({"nodes": nodes, "links": links})
     except CypherSyntaxError as error:
-        print("==============================")
-        print(error)
         return Response(error.message)
+    except BufferError as error:
+        return Response(error)
+    except:
+        return Response({"nodes": nodes, "links": links})
 
 
+@api_view(["POST"])
+def search(request):
+    """Return the connected nodes or the layers that are connected to the node with the requested node name."""
+    search_name = request.body.decode('utf-8')
+    nodes_made = []
+    nodes = []
+    links = []
+    search_node = DocumentItem.nodes.get(name = search_name)
+    node = search_node.to_json()
+    nodes_made.append(node["name"])
+    nodes.append(node)
+    links = node["relations"]
+    for relation in node["relations"]:
+        if relation["target"] not in nodes_made:
+            target_node = DocumentItem.nodes.get(name = relation["target"])
+            target = target_node.to_json()
+            nodes.append(target)
+            nodes_made.append(target)
+    return Response({"nodes": nodes, "links": links})

@@ -14,4 +14,5 @@ urlpatterns = [
     path("url/<str:node_name>/", views.node_url),
     path("layers/", views.layers),
     path("query/", views.query),
+    path("search/", views.search),
 ]

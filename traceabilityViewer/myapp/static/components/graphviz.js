@@ -76,7 +76,7 @@ app.component("graphviz", {
         <button id="zoom_out" class="btn btn-light border-dark" @click="zoomOut">-</button>
         <button id="zoom_fit" class="btn btn-light border-dark" @click="zoomToFit">Zoom to fit</button>
         <button v-if="!selectedNodeName == ''" id="show_connected_nodes" class="btn btn-light border-dark">&#x1F441;</button>
-        <button v-if="!selectedNodeName == ''" id="search_connected_nodes" class="btn btn-light border-dark">&#x2747;</button>
+        <button v-if="!selectedNodeName == ''" id="search_connected_nodes" class="btn btn-light border-dark">Add/show connecting nodes</button>
     </div>
     <!-- Info node -->
     <div v-if="showInfo" v-html="info" id="info" class="m-2 p-2 rounded position-absolute bg-body-secondary bg-opacity-75 "></div>
@@ -178,7 +178,6 @@ app.component("graphviz", {
         })
 
         Vue.watch(loading, (newLoading) => {
-            console.log(newLoading)
             if (newLoading){
                 document.getElementById("loading").className = "d-flex justify-content-center";
                 ctx.value.save();
@@ -214,20 +213,21 @@ app.component("graphviz", {
                         }
                         return height.value / 2
                     }).strength(3))
-                    .force('forceX', d3.forceX().strength(0.01).x(width.value / 2))
-                    .on("tick", drawUpdate);
+                    .force('forceX', d3.forceX().strength(0.01).x(width.value / 2));
             }
             else {
-                simulation.nodes(newNodes)
-                    .on("tick", drawUpdate);
+                simulation.nodes(newNodes);
+
             }
 
-            simulation.force("link").links(newLinks)
+            simulation.force("link").links(newLinks);
+            simulation.on("tick", drawUpdate);
 
             simulation.alpha(1).restart()
             for (var i = 0; i < 5; ++i) simulation.tick(); // 300
             // drawUpdate();
-
+            console.log(newNodes)
+            console.log(newLinks)
             itemColors.value = updateLegendData(newNodes, "group", "item_colors")
             linkColors.value = updateLegendData(newLinks, "type", "link_colors")
             console.log(itemColors.value)

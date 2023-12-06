@@ -207,12 +207,15 @@ app.component("autocomplete", {
                 }
             }
             else {
+                // search ID
                 if (props.suggestions.includes(fullInput.value)){
                     data = await postDataRequest("search/", fullInput.value)
-
+                    nodes = data.data.nodes
+                    links = data.data.links
                 }
-                // search ID
             }
+            console.log(nodes)
+            console.log(links)
             emit("onSubmit", {nodes: nodes, links: links})
             emit("loading", false)
         }
@@ -222,7 +225,7 @@ app.component("autocomplete", {
             if (errorText != "" && show == true){
                 error.value.innerText = errorText;
                 error.value.className = "collapsed font-monospace"
-                document.getElementById("arrow-button").innerHTML = "&#8963;"
+                document.getElementById("arrow-button").innerHTML = "&#8963;";
             }
             else {
                 error.value.innerText = errorText;
