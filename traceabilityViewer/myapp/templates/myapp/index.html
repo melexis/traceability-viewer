@@ -24,6 +24,41 @@
         </div>
         <!-- Import App -->
         <script src="{% static 'main.js' %}"></script>
+        <script src="{% static 'd3-force-sampled.js' %}"></script>
+        <script id="worker" type="javascript/worker">
+            importScripts("https://d3js.org/d3.v7.min.js")
+            onmessage = function(event) {
+                var nodes = event.data.nodes,
+                    links = event.data.links;
+                    yScale = event.data.yScale;
+                    width = event.data.width;
+                    height = event.data.heigth;
+
+                var simulation = d3.forceSimulation(nodes)
+                    .force("charge", d3.forceManyBody())
+                    .force("link", d3.forceLink().id(function (d) {
+                        return d.name; }))
+                    .force("collide", d3.forceCollide().radius(11))
+                    .force("forceY", d3.forceY(function (n){
+                        for (group of Object.keys(yScale)){
+                            const re = new RegExp(group)
+                            if (re.test(n.group)){
+                                return yScale[group]
+                            }
+                        }
+                        return height / 2
+                    }).strength(3))
+                    .force('forceX', d3.forceX().strength(0.01).x(width / 2))
+                    .stop();
+
+                for (var i = 0, n = Math.ceil(Math.log(simulation.alphaMin()) / Math.log(1 - simulation.alphaDecay())); i < n; ++i) {
+                  postMessage({type: "tick", progress: i / n});
+                  simulation.tick();
+                }
+
+                postMessage({type: "end", nodes: nodes, links: links});
+            };
+        </script>
         <script src="{% static 'components/traceabilityViewer.js' %}"></script>
         <script src="{% static 'components/filter.js' %}"></script>
         <script src="{% static 'components/autocomplete.js' %}"></script>

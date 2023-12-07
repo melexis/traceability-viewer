@@ -7,6 +7,7 @@ from ruamel.yaml import YAML
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.views.decorators.cache import cache_page
 
 from django.shortcuts import render
 from neomodel import db
@@ -30,22 +31,29 @@ def index(request):
     return render(request, "myapp/index.html", {"groups": json.dumps(unique_groups), "config": configuration})
 
 
+# @cache_page(None)
 @api_view(["GET"])
 def initialize(request):
-    """Initialize data with data from first group"""
+    """Initialize data for the 'home' button"""
+    nodes_made = []
     nodes = []
     links = []
-    item = DocumentItem.nodes.all()[0]
-    node = item.to_json()
-    nodes.append(node)
-    for rel in node["relations"]:
-        links.append(rel)
-        target = DocumentItem.nodes.get(name=rel["target"])
-        if target not in nodes:
-            nodes.append(target.to_json())
+    items = DocumentItem.nodes.all()
+    for item in items:
+        node = item.to_json()
+        if node["name"] not in nodes_made:
+            nodes.append(node)
+            nodes_made.append(node["name"])
+        for rel in node["relations"]:
+            links.append(rel)
+            target = DocumentItem.nodes.get(name=rel["target"]).to_json()
+            if target["name"] not in nodes_made:
+                    nodes_made.append(target["name"])
+                    nodes.append(target)
     return Response({"nodes": nodes, "links": links})
 
 
+# @cache_page(None)
 @api_view(["GET"])
 def filter_group(request, filtergroup):
     """Get the data according to the filter"""
@@ -72,6 +80,7 @@ def config(request):
     return Response({"config": configuration, "groups": unique_groups})
 
 
+# @cache_page(None)
 @api_view(["GET"])
 def autocomplete(request):
     """
@@ -83,7 +92,7 @@ def autocomplete(request):
     words = set()
     # search_ids will contain the node IDs for in the search input field.
     search_ids = set()
-    for item in DocumentItem.nodes.filter(group__in=unique_groups).all():
+    for item in DocumentItem.nodes.filter(group__in=unique_groups):
         node = item.to_json()
         words.add(node["name"])
         search_ids.add(node["name"])
@@ -132,6 +141,7 @@ def layers(request):
 
     return Response(y_scale)
 
+
 @api_view(["POST"])
 def query(request):
     """Return the result of nodes and links depending on the query."""
@@ -157,6 +167,8 @@ def query(request):
                             "color": element.color}
                     if link not in links:
                         links.append(link)
+                # else:
+                    # TODO: Error element is not an instance of DocumentItem or Rel
         return Response({"nodes": nodes, "links": links})
     except CypherSyntaxError as error:
         return Response(error.message)

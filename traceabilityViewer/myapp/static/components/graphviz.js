@@ -85,6 +85,7 @@ app.component("graphviz", {
         <strong role="status" class="m-5">Loading...</strong>
         <div class="spinner-border m-5" aria-hidden="true"></div>
     </div>
+    <div id="progress"></div>
     <canvas ref="canvas" @mousemove="mouseMove($event)" @click="clicked($event)" :height="height" :width="width">
     </canvas>
     <div id="tooltip"></div>
@@ -98,14 +99,10 @@ app.component("graphviz", {
             type: Object,
             default: {}
         },
-        nodes: {
-            type: Array,
-            default: []
+        data: {
+            type: Object,
+            default: {}
         },
-        links: {
-            type: Array,
-            default: []
-        }
     },
     setup(props) {
         // ref canvas
@@ -116,17 +113,20 @@ app.component("graphviz", {
         const height = Vue.ref(window.innerHeight - 200);
 
         // data nodes and links from the parent component
-        var nodes= Vue.toRef(props, "nodes");
-        var links=Vue.toRef(props, "links");
+        // var nodes= Vue.toRef(props, "nodes");
+        // var links=Vue.toRef(props, "links");
+        var data = Vue.toRef(props, "data")
+        var nodes = []
+        var links = []
 
         // If loading = true, a loading screen is displayed
         var loading = Vue.toRef(props, "loading");
 
         // The groups with corresponding colors depending on the nodes in the graph
-        let itemColors = Vue.ref(updateLegendData(nodes.value, "item_colors"))
+        let itemColors = Vue.ref([])
 
         // The links with corresponding colors depending on the links in the graph
-        let linkColors = Vue.ref(updateLegendData(links.value, "link_colors"))
+        let linkColors = Vue.ref([])
 
         // The links that are hidden (corresponding to the legend of links)
         let hiddenLinks = Vue.ref([])
@@ -155,11 +155,12 @@ app.component("graphviz", {
         zoom.scaleExtent([1 / 10, 8]).on("zoom", zoomed);
 
         // The simulation with specified array of nodes (later) and forces that are specified.
-        let simulation = d3.forceSimulation()
-            .force("link", d3.forceLink().id(function (d) {
-                return d.name; }))
-            .force("charge", d3.forceManyBody().strength(-50))
-            .force("collide", d3.forceCollide().radius(nodeRadius + 5));
+        // let simulation = d3.forceSimulation()
+        //     .velocityDecay(0.2)
+        //     .force("link", d3.forceLink().id(function (d) {
+        //         return d.name; }))
+        //     .force("charge", d3.forceManyBody().strength(-50))
+        //     .force("collide", d3.forceCollide().radius(nodeRadius + 5));
 
 
         // Run the simulation faster
@@ -195,43 +196,92 @@ app.component("graphviz", {
          * @param {Array} newLinks The new links
          * @returns {Array, Array} The new nodes and links
          */
-        Vue.watch([nodes, links], ([newNodes, newLinks]) => {
-            selectedNode.value = null
-            selectedNodeName.value = ""
-            ctx.value.save();
-            ctx.value.clearRect(0, 0, width.value, height.value);
-            ctx.value.restore();
+        // Vue.watch([nodes, links], ([newNodes, newLinks]) => {
+        //     selectedNode.value = null
+        //     selectedNodeName.value = ""
+        //     ctx.value.save();
+        //     ctx.value.clearRect(0, 0, width.value, height.value);
+        //     ctx.value.restore();
 
-            if (props.config["layered"]){
-                simulation.nodes(newNodes)
-                    .force("forceY", d3.forceY(function (n){
-                        for (group of Object.keys(yScale)){
-                            const re = new RegExp(group)
-                            if (re.test(n.group)){
-                                return yScale[group]
-                            }
-                        }
-                        return height.value / 2
-                    }).strength(3))
-                    .force('forceX', d3.forceX().strength(0.01).x(width.value / 2));
-            }
-            else {
-                simulation.nodes(newNodes);
+        //     if (props.config["layered"]){
+        //         simulation.nodes(newNodes)
+        //             .force("forceY", d3.forceY(function (n){
+        //                 for (group of Object.keys(yScale)){
+        //                     const re = new RegExp(group)
+        //                     if (re.test(n.group)){
+        //                         return yScale[group]
+        //                     }
+        //                 }
+        //                 return height.value / 2
+        //             }).strength(3))
+        //             .force('forceX', d3.forceX().strength(0.01).x(width.value / 2));
+        //     }
+        //     else {
+        //         simulation.nodes(newNodes);
 
-            }
+        //     }
 
-            simulation.force("link").links(newLinks);
-            simulation.on("tick", drawUpdate);
+        //     simulation.force("link").links(newLinks);
+        //     // simulation.stop()
 
-            simulation.alpha(1).restart()
-            for (var i = 0; i < 5; ++i) simulation.tick(); // 300
-            // drawUpdate();
-            console.log(newNodes)
-            console.log(newLinks)
-            itemColors.value = updateLegendData(newNodes, "group", "item_colors")
-            linkColors.value = updateLegendData(newLinks, "type", "link_colors")
-            console.log(itemColors.value)
+        //     simulation.on("tick", function(){
+        //         console.log("tick")
+        //         drawUpdate()})
+        //         .stop();
+
+        //     simulation.alpha(1).restart()
+        //     // for (var i = 0; i < 300; ++i) simulation.tick(); // 300
+        //     // simulation.tick(100)
+        //     // drawUpdate();
+
+        //     console.log(newNodes)
+        //     console.log(newLinks)
+        //     itemColors.value = updateLegendData(newNodes, "group", "item_colors")
+        //     linkColors.value = updateLegendData(newLinks, "type", "link_colors")
+        //     console.log(itemColors.value)
+        // })
+
+
+        Vue.watch(data, (newData) => {
+            var blob = new Blob([
+                document.querySelector("#worker").textContent
+            ], {type: "text/javascript"})
+            var worker = new Worker(window.URL.createObjectURL(blob));
+            console.log(newData)
+            meter.style.display = "block";
+            worker.postMessage({
+                nodes: JSON.parse(JSON.stringify(newData.nodes)),
+                links: JSON.parse(JSON.stringify(newData.links)),
+                yScale: yScale,
+                width: width.value,
+                height: height.value,
+              });
+
+            worker.onmessage = function(event) {
+                switch (event.data.type) {
+                  case "tick": return ticked(event.data);
+                  case "end": return ended(event.data);
+                }
+            };
         })
+
+        function ticked(data) {
+            var progress = data.progress;
+
+            meter.style.width = 100 * progress + "%";
+        }
+
+        function ended(data) {
+            // nodes.value = data.nodes;
+            // data.links = data.links;
+            meter.style.display = "none";
+            itemColors.value = updateLegendData(data.nodes, "group", "item_colors")
+            linkColors.value = updateLegendData(data.links, "type", "link_colors")
+            console.log(data.nodes)
+            drawUpdate()
+            nodes = data.nodes
+            links = data.links
+        }
 
         /**
          * Gets the url to the documentation of a node.
@@ -269,10 +319,10 @@ app.component("graphviz", {
          */
         function updateHiddenGroups(hiddenItems){
             // Draw edges
-            nodes.value.forEach(node => {
+            nodes.forEach(node => {
                 if (hiddenItems.includes(node.group)){
                     node.hide = true
-                    console.log(node)
+                    // console.log(node)
                 }
                 else {
                     node.hide = false
@@ -317,10 +367,10 @@ app.component("graphviz", {
          * Zoom to fit the content of the graph when the button zoom to fit is clicked.
          */
         function zoomToFit() {
-            let minx = minX(nodes.value);
-            let miny = minY(nodes.value);
-            let dataWidth = maxX(nodes.value) - minx;
-            let dataHeight = maxY(nodes.value) - miny;
+            let minx = minX(nodes);
+            let miny = minY(nodes);
+            let dataWidth = maxX(nodes) - minx;
+            let dataHeight = maxY(nodes) - miny;
             let scale = 0.80 * Math.min(width.value / dataWidth, height.value / dataHeight);
             transform = d3.zoomIdentity
                 .translate((width.value / 2) - ((dataWidth / 2) + minx) * scale,
@@ -339,14 +389,14 @@ app.component("graphviz", {
             ctx.value.scale(transform.k, transform.k);
 
             // Draw edges
-            links.value.forEach(link => {
-                if ((!hiddenLinks.value.includes(link.type)) && (!link.source.hide) && (!link.target.hide)) {
-                    drawLine(link)
-                }
-            })
+            // links.value.forEach(link => {
+            //     if ((!hiddenLinks.value.includes(link.type)) && (!link.source.hide) && (!link.target.hide)) {
+            //         drawLine(link)
+            //     }
+            // })
 
             // Draw nodes
-            nodes.value.forEach(node => {
+            nodes.forEach(node => {
                 if (!node.hide) {
                     drawNode(node);
                 }
@@ -424,7 +474,7 @@ app.component("graphviz", {
         function mouseMove(event) {
             x = transform.invert(d3.pointer(event))[0];
             y = transform.invert(d3.pointer(event))[1];
-            const node = findNode(nodes.value, x, y, nodeRadius);
+            const node = findNode(nodes, x, y, nodeRadius);
             if (node) {
                 if (!node.hide) {
                     d3.select('#tooltip')
@@ -446,7 +496,7 @@ app.component("graphviz", {
         function clicked(event) {
             x = transform.invert(d3.pointer(event))[0];
             y = transform.invert(d3.pointer(event))[1];
-            const node = findNode(nodes.value, x, y, nodeRadius);
+            const node = findNode(nodes, x, y, nodeRadius);
             if (node){
                 if (!node.hide) {
                     selectedNode.value = node
@@ -465,7 +515,7 @@ app.component("graphviz", {
         function dragSubject(event) {
             const x = transform.invert(d3.pointer(event))[0];
             const y = transform.invert(d3.pointer(event))[1];
-            const node = findNode(nodes.value, x, y, nodeRadius);
+            const node = findNode(nodes, x, y, nodeRadius);
             if (node) {
                 if (!node.hide) {
                     node.x = transform.applyX(node.x);
@@ -513,8 +563,8 @@ app.component("graphviz", {
          * @param {Array} links
          */
         function updateData(nodes, links){
-            nodes.value = nodes
-            links.value = links
+            nodes = nodes
+            links = links
         }
 
         function onResize() {
@@ -531,7 +581,8 @@ app.component("graphviz", {
             console.log(yScale)
 
             ctx.value = canvas.value.getContext("2d")
-
+            meter = document.querySelector("#progress")
+            console.log(meter)
             /**
              * Make dragging of nodes possible.
              */
@@ -569,7 +620,7 @@ app.component("graphviz", {
             ctx,
             nodes,
             links,
-            simulation,
+            // simulation,
             transform,
             selectedNode,
             selectedNodeName,

@@ -47,7 +47,7 @@ app.component("traceability-viewer", {
         <label>Search: </label>
         <autocomplete :suggestions="searchIds" :sentenceAllowed="false" @loading="changeLoading" @onSubmit="changeData"></autocomplete>
     </div>
-    <graphviz :loading="loading" :nodes="nodes" :links="links" :config="config"> </graphviz>
+    <graphviz :loading="loading" :data="{nodes: nodes, links: links}" :config="config"> </graphviz>
     `,
     setup() {
         var loading = Vue.ref(true);
@@ -65,7 +65,6 @@ app.component("traceability-viewer", {
 
         function clicked() {
             activeGroup.value = "home"
-            console.log("Home")
             nodes.value = initNodes
             links.value= initLinks
         };
@@ -82,8 +81,7 @@ app.component("traceability-viewer", {
         }
 
         function changeLoading(newValue){
-            loading.value = loading.value || newValue
-            console.log(loading.value)
+            loading.value =  newValue
         }
 
         async function initialize(){
@@ -105,9 +103,7 @@ app.component("traceability-viewer", {
         };
 
         Vue.onMounted(async function() {
-            console.log("mounted")
             await initialize()
-            console.log(config.value)
         });
 
         return {
