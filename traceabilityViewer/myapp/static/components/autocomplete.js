@@ -69,7 +69,7 @@ app.component("autocomplete", {
         var fullInput = Vue.ref("")
         var search = Vue.ref("")
         var isOpen = Vue.ref(false)
-        var current = Vue.ref(-1)
+        var current = Vue.ref(0)
         var isFocussed = Vue.ref(false)
 
         //Filtering the word suggestion based on the input
@@ -89,7 +89,7 @@ app.component("autocomplete", {
             if (matches.value.length > 0 && isOpen.value && isFocussed.value){
                 return true
             }
-            current.value = -1
+            current.value = 0
             return false
         })
 
@@ -116,7 +116,7 @@ app.component("autocomplete", {
             else {
                 submitted()
             }
-            current.value = -1
+            current.value = 0
             isOpen.value = false;
         }
 
@@ -134,7 +134,7 @@ app.component("autocomplete", {
                     fullInput.value = search.value
                 }
             }
-            current.value = -1
+            current.value = 0
             isOpen.value = false;
         }
 
@@ -167,7 +167,7 @@ app.component("autocomplete", {
             else {
                 fullInput.value = search.value
             }
-            current.value = -1
+            current.value = 0
             isOpen.value = false;
         }
 
@@ -263,6 +263,7 @@ app.component("autocomplete", {
             isFocussed,
             matches,
             openSuggestion,
+            // styledAndOrderedMatches,
             startFocus,
             stopFocus,
             enter,
@@ -277,9 +278,5 @@ app.component("autocomplete", {
             close,
 
         }
-    },
-
-    methods: {
-
     },
 })
