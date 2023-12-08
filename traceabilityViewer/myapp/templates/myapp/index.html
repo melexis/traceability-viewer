@@ -36,9 +36,11 @@
 
                 var simulation = d3.forceSimulation(nodes)
                     .force("charge", d3.forceManyBody())
-                    .force("link", d3.forceLink().id(function (d) {
+                    .force("link", d3.forceLink(links).id(function (d) {
                         return d.name; }))
                     .force("collide", d3.forceCollide().radius(11))
+                    //.force("x", d3.forceX())
+                    //.force("y", d3.forceY())
                     .force("forceY", d3.forceY(function (n){
                         for (group of Object.keys(yScale)){
                             const re = new RegExp(group)

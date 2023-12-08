@@ -85,7 +85,7 @@ app.component("graphviz", {
         <strong role="status" class="m-5">Loading...</strong>
         <div class="spinner-border m-5" aria-hidden="true"></div>
     </div>
-    <div id="progress"></div>
+    <div id="progress" ref="meter"></div>
     <canvas ref="canvas" @mousemove="mouseMove($event)" @click="clicked($event)" :height="height" :width="width">
     </canvas>
     <div id="tooltip"></div>
@@ -107,6 +107,11 @@ app.component("graphviz", {
     setup(props) {
         // ref canvas
         var canvas = Vue.ref(null)
+
+        // The context of the canvas
+        let ctx = Vue.ref(null);
+
+        meter = Vue.ref(null)
 
         // variables for the width and height
         const width = Vue.ref(window.innerWidth - 20);
@@ -130,9 +135,6 @@ app.component("graphviz", {
 
         // The links that are hidden (corresponding to the legend of links)
         let hiddenLinks = Vue.ref([])
-
-        // The context of the canvas
-        let ctx = Vue.ref(null);
 
         // The radius of a normal node
         let nodeRadius = 6;
@@ -240,15 +242,19 @@ app.component("graphviz", {
         //     linkColors.value = updateLegendData(newLinks, "type", "link_colors")
         //     console.log(itemColors.value)
         // })
-
+        var blob = new Blob([
+            document.querySelector("#worker").textContent
+        ], {type: "text/javascript"})
+        var worker = new Worker(window.URL.createObjectURL(blob));
 
         Vue.watch(data, (newData) => {
-            var blob = new Blob([
-                document.querySelector("#worker").textContent
-            ], {type: "text/javascript"})
-            var worker = new Worker(window.URL.createObjectURL(blob));
+            ctx.value.save();
+            ctx.value.clearRect(0, 0, width.value, height.value);
+            ctx.value.restore();
+            worker.terminate();
+            worker = new Worker(window.URL.createObjectURL(blob));
             console.log(newData)
-            meter.style.display = "block";
+            meter.value.style.display = "block";
             worker.postMessage({
                 nodes: JSON.parse(JSON.stringify(newData.nodes)),
                 links: JSON.parse(JSON.stringify(newData.links)),
@@ -267,18 +273,17 @@ app.component("graphviz", {
 
         function ticked(data) {
             var progress = data.progress;
-
-            meter.style.width = 100 * progress + "%";
+            meter.value.style.width = 100 * progress + "%";
         }
 
         function ended(data) {
             // nodes.value = data.nodes;
             // data.links = data.links;
-            meter.style.display = "none";
+            meter.value.style.display = "none";
             itemColors.value = updateLegendData(data.nodes, "group", "item_colors")
             linkColors.value = updateLegendData(data.links, "type", "link_colors")
-            console.log(data.nodes)
-            drawUpdate()
+            // drawUpdate()
+            zoomToFit()
             nodes = data.nodes
             links = data.links
         }
@@ -367,16 +372,19 @@ app.component("graphviz", {
          * Zoom to fit the content of the graph when the button zoom to fit is clicked.
          */
         function zoomToFit() {
-            let minx = minX(nodes);
-            let miny = minY(nodes);
-            let dataWidth = maxX(nodes) - minx;
-            let dataHeight = maxY(nodes) - miny;
-            let scale = 0.80 * Math.min(width.value / dataWidth, height.value / dataHeight);
-            transform = d3.zoomIdentity
-                .translate((width.value / 2) - ((dataWidth / 2) + minx) * scale,
-                           (height.value / 2) - ((dataHeight / 2) + miny) * scale)
-                .scale(scale);
-            d3.select(ctx.value.canvas).transition().duration(750).call(zoom.transform, transform)
+            if (nodes.length > 0){
+                console.log("zoom to fit")
+                let minx = minX(nodes);
+                let miny = minY(nodes);
+                let dataWidth = maxX(nodes) - minx;
+                let dataHeight = maxY(nodes) - miny;
+                let scale = 0.80 * Math.min(width.value / dataWidth, height.value / dataHeight);
+                transform = d3.zoomIdentity
+                    .translate((width.value / 2) - ((dataWidth / 2) + minx) * scale,
+                            (height.value / 2) - ((dataHeight / 2) + miny) * scale)
+                    .scale(scale);
+                d3.select(ctx.value.canvas).transition().duration(750).call(zoom.transform, transform)
+            }
         }
 
         /**
@@ -389,12 +397,12 @@ app.component("graphviz", {
             ctx.value.scale(transform.k, transform.k);
 
             // Draw edges
-            // links.value.forEach(link => {
-            //     if ((!hiddenLinks.value.includes(link.type)) && (!link.source.hide) && (!link.target.hide)) {
-            //         drawLine(link)
-            //     }
-            // })
-
+            links.forEach(link => {
+                if ((!hiddenLinks.value.includes(link.type)) && (!link.source.hide) && (!link.target.hide)) {
+                    drawLine(link)
+                }
+            })
+            // console.log(nodes)
             // Draw nodes
             nodes.forEach(node => {
                 if (!node.hide) {
@@ -579,10 +587,8 @@ app.component("graphviz", {
             layersData = await dataRequest("/layers")
             yScale = layersData.data
             console.log(yScale)
-
             ctx.value = canvas.value.getContext("2d")
-            meter = document.querySelector("#progress")
-            console.log(meter)
+
             /**
              * Make dragging of nodes possible.
              */
@@ -602,7 +608,6 @@ app.component("graphviz", {
 
             window.addEventListener("resize", onResize)
             onResize();
-            console.log(width.value)
         });
 
         Vue.onUnmounted(() => {
@@ -620,6 +625,8 @@ app.component("graphviz", {
             ctx,
             nodes,
             links,
+            meter,
+            worker,
             // simulation,
             transform,
             selectedNode,
