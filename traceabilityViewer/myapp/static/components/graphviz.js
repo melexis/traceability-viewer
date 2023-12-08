@@ -38,30 +38,6 @@ function minY(arr) {
     return node.y;
 }
 
-/**
- * Description
- * @param {Array} nodes The array of node objects that exists in the graph.
- * @param {number} x The x value
- * @param {number} y The y value
- * @param {number} radius The node radius
- * @returns {object} The node object if the pointer is on a node, else it will return undefined.
- */
-function findNode(nodes, x, y, radius) {
-    const rSq = radius * radius;
-    let i;
-    for (i = 0; i < nodes.length; i++) {
-    const node = nodes[i],
-        dx = x - node.x,
-        dy = y - node.y,
-        distSq = (dx * dx) + (dy * dy);
-    if (distSq < rSq) {
-        return node;
-    }
-    }
-    // No node selected
-    return undefined;
-}
-
 app.component("graphviz", {
     delimiters: ["[[", "]]"],
     template:
@@ -75,8 +51,18 @@ app.component("graphviz", {
         <button id="zoom_in" class="btn btn-light border-dark" @click="zoomIn">+</button>
         <button id="zoom_out" class="btn btn-light border-dark" @click="zoomOut">-</button>
         <button id="zoom_fit" class="btn btn-light border-dark" @click="zoomToFit">Zoom to fit</button>
-        <button v-if="!selectedNodeName == ''" id="show_connected_nodes" class="btn btn-light border-dark">&#x1F441;</button>
-        <button v-if="!selectedNodeName == ''" id="search_connected_nodes" class="btn btn-light border-dark">Add/show connecting nodes</button>
+        <button v-if="!selectedNodeName == ''"
+                id="show_connected_nodes"
+                class="btn btn-light border-dark"
+                @click="showConnectedNodes">
+        &#x1F441;
+        </button>
+        <button v-if="!selectedNodeName == ''"
+                id="search_connected_nodes"
+                class="btn btn-light border-dark"
+                @click="searchConnectedNodes">
+        Add/show connecting nodes
+        </button>
     </div>
     <!-- Info node -->
     <div v-if="showInfo" v-html="info" id="info" class="m-2 p-2 rounded position-absolute bg-body-secondary bg-opacity-75 "></div>
@@ -99,9 +85,17 @@ app.component("graphviz", {
             type: Object,
             default: {}
         },
-        data: {
-            type: Object,
-            default: {}
+        // data: {
+        //     type: Object,
+        //     default: {}
+        // },
+        nodes: {
+            type: Array,
+            default: []
+        },
+        links: {
+            type: Array,
+            default: []
         },
     },
     setup(props) {
@@ -118,11 +112,11 @@ app.component("graphviz", {
         const height = Vue.ref(window.innerHeight - 200);
 
         // data nodes and links from the parent component
-        // var nodes= Vue.toRef(props, "nodes");
-        // var links=Vue.toRef(props, "links");
-        var data = Vue.toRef(props, "data")
-        var nodes = []
-        var links = []
+        var nodes= Vue.toRef(props, "nodes");
+        var links=Vue.toRef(props, "links");
+        // var data = Vue.toRef(props, "data")
+        // var nodes = []
+        // var links = []
 
         // If loading = true, a loading screen is displayed
         var loading = Vue.toRef(props, "loading");
@@ -135,6 +129,12 @@ app.component("graphviz", {
 
         // The links that are hidden (corresponding to the legend of links)
         let hiddenLinks = Vue.ref([])
+
+        // The nodes that are connected to the selected node
+        let linkedByIndex = {};
+
+        // Toggle to show connected nodes
+        let toggle = false
 
         // The radius of a normal node
         let nodeRadius = 6;
@@ -157,12 +157,12 @@ app.component("graphviz", {
         zoom.scaleExtent([1 / 10, 8]).on("zoom", zoomed);
 
         // The simulation with specified array of nodes (later) and forces that are specified.
-        // let simulation = d3.forceSimulation()
-        //     .velocityDecay(0.2)
-        //     .force("link", d3.forceLink().id(function (d) {
-        //         return d.name; }))
-        //     .force("charge", d3.forceManyBody().strength(-50))
-        //     .force("collide", d3.forceCollide().radius(nodeRadius + 5));
+        let simulation = d3.forceSimulation()
+            // .velocityDecay(0.2)
+            .force("link", d3.forceLink().id(function (d) {
+                return d.name; }))
+            .force("charge", d3.forceManyBodyReuse().strength(-50))
+            .force("collide", d3.forceCollide().radius(nodeRadius + 5));
 
 
         // Run the simulation faster
@@ -192,101 +192,56 @@ app.component("graphviz", {
             }
         })
 
-        /**
-         * When the nodes and links change, the graph will be updated
-         * @param {Array} newNodes The new nodes
-         * @param {Array} newLinks The new links
-         * @returns {Array, Array} The new nodes and links
-         */
-        // Vue.watch([nodes, links], ([newNodes, newLinks]) => {
-        //     selectedNode.value = null
-        //     selectedNodeName.value = ""
+
+
+
+        // var blob = new Blob([
+        //     document.querySelector("#worker").textContent
+        // ], {type: "text/javascript"})
+        // var worker = new Worker(window.URL.createObjectURL(blob));
+
+        // Vue.watch(data, (newData) => {
         //     ctx.value.save();
         //     ctx.value.clearRect(0, 0, width.value, height.value);
         //     ctx.value.restore();
 
-        //     if (props.config["layered"]){
-        //         simulation.nodes(newNodes)
-        //             .force("forceY", d3.forceY(function (n){
-        //                 for (group of Object.keys(yScale)){
-        //                     const re = new RegExp(group)
-        //                     if (re.test(n.group)){
-        //                         return yScale[group]
-        //                     }
-        //                 }
-        //                 return height.value / 2
-        //             }).strength(3))
-        //             .force('forceX', d3.forceX().strength(0.01).x(width.value / 2));
-        //     }
-        //     else {
-        //         simulation.nodes(newNodes);
+        //     worker.terminate();
+        //     worker = new Worker(window.URL.createObjectURL(blob));
 
-        //     }
+        //     meter.value.style.display = "block";
 
-        //     simulation.force("link").links(newLinks);
-        //     // simulation.stop()
+        //     worker.postMessage({
+        //         nodes: JSON.parse(JSON.stringify(newData.nodes)),
+        //         links: JSON.parse(JSON.stringify(newData.links)),
+        //         yScale: yScale,
+        //         width: width.value,
+        //         height: height.value,
+        //       });
 
-        //     simulation.on("tick", function(){
-        //         console.log("tick")
-        //         drawUpdate()})
-        //         .stop();
-
-        //     simulation.alpha(1).restart()
-        //     // for (var i = 0; i < 300; ++i) simulation.tick(); // 300
-        //     // simulation.tick(100)
-        //     // drawUpdate();
-
-        //     console.log(newNodes)
-        //     console.log(newLinks)
-        //     itemColors.value = updateLegendData(newNodes, "group", "item_colors")
-        //     linkColors.value = updateLegendData(newLinks, "type", "link_colors")
-        //     console.log(itemColors.value)
+        //     worker.onmessage = function(event) {
+        //         switch (event.data.type) {
+        //           case "tick": return ticked(event.data);
+        //           case "end": return ended(event.data);
+        //         }
+        //     };
         // })
-        var blob = new Blob([
-            document.querySelector("#worker").textContent
-        ], {type: "text/javascript"})
-        var worker = new Worker(window.URL.createObjectURL(blob));
 
-        Vue.watch(data, (newData) => {
-            ctx.value.save();
-            ctx.value.clearRect(0, 0, width.value, height.value);
-            ctx.value.restore();
-            worker.terminate();
-            worker = new Worker(window.URL.createObjectURL(blob));
-            console.log(newData)
-            meter.value.style.display = "block";
-            worker.postMessage({
-                nodes: JSON.parse(JSON.stringify(newData.nodes)),
-                links: JSON.parse(JSON.stringify(newData.links)),
-                yScale: yScale,
-                width: width.value,
-                height: height.value,
-              });
-
-            worker.onmessage = function(event) {
-                switch (event.data.type) {
-                  case "tick": return ticked(event.data);
-                  case "end": return ended(event.data);
-                }
-            };
-        })
-
-        function ticked(data) {
-            var progress = data.progress;
+        function ticked(progress) {
+            // var progress = data.progress;
             meter.value.style.width = 100 * progress + "%";
         }
 
-        function ended(data) {
-            // nodes.value = data.nodes;
-            // data.links = data.links;
-            meter.value.style.display = "none";
-            itemColors.value = updateLegendData(data.nodes, "group", "item_colors")
-            linkColors.value = updateLegendData(data.links, "type", "link_colors")
-            // drawUpdate()
-            zoomToFit()
-            nodes = data.nodes
-            links = data.links
-        }
+        // function ended(data) {
+        //     // nodes.value = data.nodes;
+        //     // data.links = data.links;
+        //     meter.value.style.display = "none";
+        //     itemColors.value = updateLegendData(data.nodes, "group", "item_colors")
+        //     linkColors.value = updateLegendData(data.links, "type", "link_colors")
+        //     // drawUpdate()
+        //     zoomToFit()
+        //     nodes = data.nodes
+        //     links = data.links
+        // }
 
         /**
          * Gets the url to the documentation of a node.
@@ -324,7 +279,7 @@ app.component("graphviz", {
          */
         function updateHiddenGroups(hiddenItems){
             // Draw edges
-            nodes.forEach(node => {
+            nodes.value.forEach(node => {
                 if (hiddenItems.includes(node.group)){
                     node.hide = true
                     // console.log(node)
@@ -397,15 +352,40 @@ app.component("graphviz", {
             ctx.value.scale(transform.k, transform.k);
 
             // Draw edges
-            links.forEach(link => {
+            links.value.forEach(link => {
                 if ((!hiddenLinks.value.includes(link.type)) && (!link.source.hide) && (!link.target.hide)) {
+                    if (toggle) {
+                        if (link.source.name == selectedNodeName.value || link.target.name == selectedNodeName.value)
+                        {
+                            ctx.value.globalAlpha = 1;
+                        }
+                        else {
+                        ctx.value.globalAlpha = 0.05;
+                        }
+                    }
+                    else {
+                        ctx.value.globalAlpha = 1;
+                    }
                     drawLine(link)
                 }
             })
             // console.log(nodes)
             // Draw nodes
-            nodes.forEach(node => {
+            nodes.value.forEach(node => {
                 if (!node.hide) {
+                    if (toggle) {
+                        if (linkedByIndex[selectedNodeName.value + "," + node.name] ||
+                            linkedByIndex[node.name + "," + selectedNodeName.value])
+                        {
+                            ctx.value.globalAlpha = 1;
+                        }
+                        else {
+                            ctx.value.globalAlpha = 0.05;
+                        }
+                    }
+                    else {
+                        ctx.value.globalAlpha = 1;
+                    }
                     drawNode(node);
                 }
             })
@@ -475,6 +455,30 @@ app.component("graphviz", {
         }
 
         /**
+         * Description
+         * @param {Array} nodes The array of node objects that exists in the graph.
+         * @param {number} x The x value
+         * @param {number} y The y value
+         * @param {number} radius The node radius
+         * @returns {object} The node object if the pointer is on a node, else it will return undefined.
+         */
+        function findNode(x, y, radius) {
+            if (nodes.value.length > 0) {
+                const rSq = radius * radius;
+                for (const node of nodes.value) {
+                    const dx = x - node.x,
+                          dy = y - node.y,
+                          distSq = (dx * dx) + (dy * dy);
+                    if (distSq < rSq) {
+                        return node;
+                    }
+                }
+            }
+            // No node selected
+            return undefined;
+        }
+
+        /**
          * When the mouse moves, the position will check wether it hovers over a node.
          * When the mouse hovers a node, a tooltip will pop up with the name of that node.
          * @param {object} event the mouse event
@@ -482,7 +486,7 @@ app.component("graphviz", {
         function mouseMove(event) {
             x = transform.invert(d3.pointer(event))[0];
             y = transform.invert(d3.pointer(event))[1];
-            const node = findNode(nodes, x, y, nodeRadius);
+            const node = findNode(x, y, nodeRadius);
             if (node) {
                 if (!node.hide) {
                     d3.select('#tooltip')
@@ -492,8 +496,8 @@ app.component("graphviz", {
                     .html(node.name);
                 }
             } else {
-            d3.select('#tooltip')
-                .style('opacity', 0);
+                d3.select('#tooltip')
+                    .style('opacity', 0);
             }
         }
 
@@ -504,15 +508,22 @@ app.component("graphviz", {
         function clicked(event) {
             x = transform.invert(d3.pointer(event))[0];
             y = transform.invert(d3.pointer(event))[1];
-            const node = findNode(nodes, x, y, nodeRadius);
+            const node = findNode(x, y, nodeRadius);
             if (node){
                 if (!node.hide) {
                     selectedNode.value = node
                     selectedNodeName.value = node.name
                     drawUpdate()
+                    // update the nodes that are connected to the selected node
+                    linkedByIndex = {};
+                    linkedByIndex[node.name + "," + node.name] = 1;
+                    links.value.forEach(function (l) {
+                        linkedByIndex[l.source.name + "," + l.target.name] = 1;
+                    });
                 }
             }
             console.log("clicked")
+
         }
 
 
@@ -523,7 +534,7 @@ app.component("graphviz", {
         function dragSubject(event) {
             const x = transform.invert(d3.pointer(event))[0];
             const y = transform.invert(d3.pointer(event))[1];
-            const node = findNode(nodes, x, y, nodeRadius);
+            const node = findNode(x, y, nodeRadius);
             if (node) {
                 if (!node.hide) {
                     node.x = transform.applyX(node.x);
@@ -570,9 +581,9 @@ app.component("graphviz", {
          * @param {Array} nodes
          * @param {Array} links
          */
-        function updateData(nodes, links){
-            nodes = nodes
-            links = links
+        function updateData(newNodes, newLinks){
+            nodes.value = newNodes
+            links.value = newLinks
         }
 
         function onResize() {
@@ -581,6 +592,15 @@ app.component("graphviz", {
             width.value = window.innerWidth - 20;
             height.value = window.innerHeight - 200;
             doit = setTimeout(drawUpdate, 100);
+        }
+
+        function showConnectedNodes(){
+            toggle = !toggle;
+            drawUpdate()
+        }
+
+        function searchConnectedNodes() {
+
         }
 
         Vue.onMounted(async function() {
@@ -608,6 +628,48 @@ app.component("graphviz", {
 
             window.addEventListener("resize", onResize)
             onResize();
+
+            /**
+             * When the nodes and links change, the graph will be updated
+             * @param {Array} newNodes The new nodes
+             * @param {Array} newLinks The new links
+             * @returns {Array, Array} The new nodes and links
+             */
+            Vue.watch([nodes, links], ([newNodes, newLinks]) => {
+                selectedNode.value = null
+                selectedNodeName.value = ""
+                ctx.value.save();
+                ctx.value.clearRect(0, 0, width.value, height.value);
+                ctx.value.restore();
+
+                if (props.config["layered"]){
+                    simulation.nodes(newNodes)
+                        .force("forceY", d3.forceY(function (n){
+                            for (group of Object.keys(yScale)){
+                                const re = new RegExp(group)
+                                if (re.test(n.group)){
+                                    return yScale[group]
+                                }
+                            }
+                            return height.value / 2
+                        }).strength(3))
+                        .force('forceX', d3.forceX().strength(0.01).x(width.value / 2));
+                }
+                else {
+                    simulation.nodes(newNodes);
+
+                }
+                simulation.on("tick", drawUpdate)
+                simulation.force("link").links(newLinks);
+                // simulation.stop();
+
+                simulation.alpha(0.3).restart()
+                for (var i = 0; i < 4; ++i) simulation.tick(); // 300
+                // simulation.tick(100)
+                // drawUpdate();
+                itemColors.value = updateLegendData(newNodes, "group", "item_colors")
+                linkColors.value = updateLegendData(newLinks, "type", "link_colors")
+            })
         });
 
         Vue.onUnmounted(() => {
@@ -648,6 +710,8 @@ app.component("graphviz", {
             updateHiddenGroups,
             updateHiddenLinks,
             requestUrl,
+            showConnectedNodes,
+            searchConnectedNodes
         }
     },
     asyncComputed: {
