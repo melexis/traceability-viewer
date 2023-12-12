@@ -566,13 +566,13 @@ app.component("graphviz", {
                 if (!node.hide) {
                     selectedNode.value = node
                     selectedNodeName.value = node.name
-                    drawUpdate()
                     // update the nodes that are connected to the selected node
                     linkedByIndex = {};
                     linkedByIndex[node.name + "," + node.name] = 1;
                     links.value.forEach(function (l) {
                         linkedByIndex[l.source.name + "," + l.target.name] = 1;
                     });
+                    drawUpdate()
                 }
             }
             console.log("clicked")
@@ -659,18 +659,16 @@ app.component("graphviz", {
             newLinks = newData.data.links
 
             for (newNode of newNodes){
-                // console.log(newNode)
-                console.log(nodesNames)
                 if (!nodesNames.includes(newNode.name)){
-                    console.log(newNode)
                     nodes.value.push(newNode);
                     nodesNames.push(newNode["name"])
                 }
             }
             for (newLink of newLinks){
-                console.log(newLink)
                 if (!containsObject(newLink, links.value)){
                     links.value.push(newLink);
+                    // update the nodes that are connected to the selected node
+                    linkedByIndex[newLink["source"] + "," + newLink["target"]] = 1;
                 }
             }
             simulation.nodes(nodes.value);
