@@ -10,6 +10,12 @@ function dataRequest(request){
         });
 }
 
+function postDataRequest(url, data){
+    return axios.post(url, data)
+                .catch(function (error)  {
+                    console.log(error);
+    });
+}
 
 app.component("traceability-viewer", {
     delimiters: ["[[", "]]"],

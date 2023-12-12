@@ -15,4 +15,5 @@ urlpatterns = [
     path("layers/", views.layers),
     path("query/", views.query),
     path("search/", views.search),
+    path("search_connected_nodes/", views.searchConnectedNodes),
 ]

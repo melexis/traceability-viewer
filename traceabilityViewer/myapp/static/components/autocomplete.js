@@ -1,10 +1,3 @@
-function postDataRequest(url, data){
-    return axios.post(url, data)
-                .catch(function (error)  {
-                    console.log(error);
-    });
-}
-//
 app.component("autocomplete", {
     delimiters: ["[[", "]]"],
     template:
@@ -83,6 +76,24 @@ app.component("autocomplete", {
                 }
             })
         })
+
+
+        // var styledAndOrderedMatches = Vue.computed(() => {
+        //     newMatches = []
+        //     console.log(matches)
+        //     if (matches.length > 0){
+        //         for (match of matches){
+        //             console.log(match)
+        //             if (match.substring(0, search.value.length).toUpperCase() == search.value.toUpperCase()) {
+        //                 styledMatch = "<strong>" + match.substr(0, search.value.length) + "</strong>";
+        //                 styledMatch += match.substr(search.value.length);
+        //                 newMatches.push(styledMatch)
+        //             }
+        //         }
+        //     }
+        //     console.log(newMatches)
+        //     return newMatches
+        // })
 
         // The flag
         var openSuggestion = Vue.computed( () => {

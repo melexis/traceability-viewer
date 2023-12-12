@@ -197,3 +197,39 @@ def search(request):
             nodes.append(target)
             nodes_made.append(target)
     return Response({"nodes": nodes, "links": links})
+
+
+@api_view(["POST"])
+def searchConnectedNodes(request):
+    """Return the connected nodes of the requested node name."""
+    search_name = request.body.decode('utf-8')
+    nodes = []
+    links = []
+    try:
+        results, _ = db.cypher_query(f"MATCH (n)-[r]-(m) where n.name = '{search_name}' return n,r,m",
+                                     resolve_objects=True)
+        nodes_made = []
+        for result in results:
+            for element in result:
+                if isinstance(element, DocumentItem):
+                    node = element.to_json()
+                    if node["name"] not in nodes_made:
+                        nodes.append(node)
+                        nodes_made.append(node["name"])
+
+                elif isinstance(element, Rel):
+                    link = {"source": element.start_node().name,
+                            "target": element.end_node().name,
+                            "type": element.type,
+                            "color": element.color}
+                    if link not in links:
+                        links.append(link)
+                # else:
+                    # TODO: Error element is not an instance of DocumentItem or Rel
+        return Response({"nodes": nodes, "links": links})
+    except CypherSyntaxError as error:
+        return Response(error.message)
+    except BufferError as error:
+        return Response(error)
+    except:
+        return Response({"nodes": nodes, "links": links})

@@ -1,4 +1,21 @@
 /**
+ * Returns true if object is in list of objects, false otherwise
+ * @param {Object} obj The object to search in the list
+ * @param {Array} list The list of objects
+ * @returns {Boolean}
+ */
+function containsObject(obj, list) {
+    var i;
+    for (i = 0; i < list.length; i++) {
+        if (list[i] === obj) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
  * Returns max value of attribute 'x' in array.
  * @param {object} arr Array of objects
  * @returns {number} Number of the maximum x value
@@ -141,6 +158,8 @@ app.component("graphviz", {
 
         // The y scale for the layers
         let yScale = null
+
+        let nodesNames
 
         // The name of the selected node
         let selectedNodeName = Vue.ref("")
@@ -599,8 +618,31 @@ app.component("graphviz", {
             drawUpdate()
         }
 
-        function searchConnectedNodes() {
+        async function searchConnectedNodes() {
+            newData = await postDataRequest("search_connected_nodes/", selectedNodeName.value)
+            console.log(newData.data)
+            newNodes = newData.data.nodes
+            newLinks = newData.data.links
 
+            for (newNode of newNodes){
+                // console.log(newNode)
+                console.log(nodesNames)
+                if (!nodesNames.includes(newNode.name)){
+                    console.log(newNode)
+                    nodes.value.push(newNode);
+                    nodesNames.push(newNode["name"])
+                }
+            }
+            for (newLink of newLinks){
+                console.log(newLink)
+                if (!containsObject(newLink, links.value)){
+                    links.value.push(newLink);
+                }
+            }
+            simulation.nodes(nodes.value);
+            simulation.force("link").links(links.value);
+            simulation.alpha(0.3).restart();
+            drawUpdate()
         }
 
         Vue.onMounted(async function() {
@@ -669,6 +711,8 @@ app.component("graphviz", {
                 // drawUpdate();
                 itemColors.value = updateLegendData(newNodes, "group", "item_colors")
                 linkColors.value = updateLegendData(newLinks, "type", "link_colors")
+
+                nodesNames = nodes.value.map((obj) => obj.name);
             })
         });
 
