@@ -564,14 +564,10 @@ app.component("graphviz", {
             const node = findNode(x, y, nodeRadius);
             if (node){
                 if (!node.hide) {
+                    linkedByIndex[selectedNodeName.value + "," + selectedNodeName.value] = 0
                     selectedNode.value = node
                     selectedNodeName.value = node.name
-                    // update the nodes that are connected to the selected node
-                    linkedByIndex = {};
                     linkedByIndex[node.name + "," + node.name] = 1;
-                    links.value.forEach(function (l) {
-                        linkedByIndex[l.source.name + "," + l.target.name] = 1;
-                    });
                     drawUpdate()
                 }
             }
@@ -717,6 +713,9 @@ app.component("graphviz", {
                 ctx.value.clearRect(0, 0, width.value, height.value);
                 ctx.value.restore();
 
+                newLinks.forEach(function (l) {
+                    linkedByIndex[l["source"] + "," + l["target"]] = 1;
+                });
                 if (props.config["layered"]){
                     simulation.nodes(newNodes)
                         .force("forceY", d3.forceY(function (n){
