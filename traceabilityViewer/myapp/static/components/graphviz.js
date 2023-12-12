@@ -60,6 +60,10 @@ app.component("graphviz", {
     template:
     /*html*/
     `
+    <!-- Checkboxes -->
+    <div id="checkboxes">
+        <input type="checkbox" id="text" @click="drawUpdate"><label class="ms-1" for="text"> Nodes with labels </label>
+    </div>
     <!-- Legend -->
     <item-legend :items="itemColors" @hidden-items="updateHiddenGroups"></item-legend>
     <item-legend :items="linkColors" @hidden-items="updateHiddenLinks"></item-legend>
@@ -180,7 +184,7 @@ app.component("graphviz", {
             // .velocityDecay(0.2)
             .force("link", d3.forceLink().id(function (d) {
                 return d.name; }))
-            .force("charge", d3.forceManyBodyReuse().strength(-50))
+            .force("charge", d3.forceManyBody().strength(-50))
             .force("collide", d3.forceCollide().radius(nodeRadius + 5));
 
 
@@ -383,19 +387,66 @@ app.component("graphviz", {
                             linkedByIndex[node.name + "," + selectedNodeName.value])
                         {
                             ctx.value.globalAlpha = 1;
+                            drawNode(node);
+
                         }
                         else {
                             ctx.value.globalAlpha = 0.05;
+                            drawNode(node);
                         }
                     }
                     else {
                         ctx.value.globalAlpha = 1;
+                        drawNode(node);
                     }
-                    drawNode(node);
                 }
             })
 
+            showLabels()
+
             ctx.value.restore();
+        }
+
+        function showLabels() {
+            if (d3.select("#text").property("checked")) {
+                nodes.value.forEach(node => {
+                    if (!node.hide) {
+                        if (toggle) {
+                            if (linkedByIndex[selectedNodeName.value + "," + node.name] ||
+                                linkedByIndex[node.name + "," + selectedNodeName.value])
+                            {
+                                showLabel(node)
+
+                            }
+                        }
+                        else {
+                            showLabel(node)
+                        }
+                    }
+                })
+            }
+        }
+
+        /**
+         * The name of a specific node will be visible.
+         * @param {object} node The node where the name needs to be visible
+         */
+        function showLabel(node) {
+            ctx.value.globalAlpha = 1;
+            ctx.value.font = 'bolt 7pt Verdana';
+            ctx.value.fillStyle = 'black';
+            ctx.value.strokeStyle = 'white';
+            ctx.value.lineWidth = 0.1;
+            if (node.name == selectedNodeName.value){
+                ctx.value.fillText(node.name, node.x + nodeRadius + 6, node.y + nodeRadius / 2);
+                ctx.value.strokeText(node.name, node.x + nodeRadius + 6, node.y + nodeRadius / 2);
+            }
+            else {
+                ctx.value.fillText(node.name, node.x + nodeRadius + 2, node.y + nodeRadius / 2);
+                ctx.value.strokeText(node.name, node.x + nodeRadius + 2, node.y + nodeRadius / 2);
+            }
+            ctx.value.stroke();
+            ctx.value.fill();
         }
 
         /**
@@ -403,9 +454,7 @@ app.component("graphviz", {
          * @param {object} node the node object
          */
         function drawNode(node) {
-            // ctx.value.globalAlpha = node.globalAlpha;
             ctx.value.beginPath();
-
             if (node.name == selectedNodeName.value) {
             ctx.value.arc(node.x, node.y, nodeRadius + 3, 0, 2 * Math.PI);
             ctx.value.strokeStyle = "black";
@@ -415,7 +464,6 @@ app.component("graphviz", {
             ctx.value.strokeStyle = "white";
             }
             ctx.value.fillStyle = node.color;
-
             ctx.value.closePath();
             ctx.value.lineWidth = "3";
             ctx.value.stroke();
@@ -772,7 +820,8 @@ app.component("graphviz", {
             updateHiddenLinks,
             requestUrl,
             showConnectedNodes,
-            searchConnectedNodes
+            searchConnectedNodes,
+            showLabels,
         }
     },
     asyncComputed: {

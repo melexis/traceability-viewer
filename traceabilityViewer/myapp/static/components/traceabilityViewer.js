@@ -41,10 +41,6 @@ app.component("traceability-viewer", {
             @loading="changeLoading">
         </groupfilter>
     </div>
-    <!-- Checkboxes -->
-    <div id="checkboxes">
-        <input type="checkbox" id="text"><label for="text"> Nodes with labels </label>
-    </div>
     <!-- Input Fields -->
     <div v-if="activeGroup==='home'">
         <br>
