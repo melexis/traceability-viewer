@@ -712,6 +712,7 @@ app.component("graphviz", {
              * @returns {Array, Array} The new nodes and links
              */
             Vue.watch([nodes, links], ([newNodes, newLinks]) => {
+                toggle = false;
                 selectedNode.value = null
                 selectedNodeName.value = ""
                 ctx.value.save();
