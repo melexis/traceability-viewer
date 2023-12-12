@@ -75,7 +75,8 @@ app.component("graphviz", {
         <button v-if="!selectedNodeName == ''"
                 id="show_connected_nodes"
                 class="btn btn-light border-dark"
-                @click="showConnectedNodes">
+                @click="showConnectedNodes"
+                :class="{active: toggle}">
         &#x1F441;
         </button>
         <button v-if="!selectedNodeName == ''"
@@ -155,7 +156,7 @@ app.component("graphviz", {
         let linkedByIndex = {};
 
         // Toggle to show connected nodes
-        let toggle = false
+        let toggle = Vue.ref(false)
 
         // The radius of a normal node
         let nodeRadius = 6;
@@ -363,7 +364,7 @@ app.component("graphviz", {
             // Draw edges
             links.value.forEach(link => {
                 if ((!hiddenLinks.value.includes(link.type)) && (!link.source.hide) && (!link.target.hide)) {
-                    if (toggle) {
+                    if (toggle.value) {
                         if (link.source.name == selectedNodeName.value || link.target.name == selectedNodeName.value)
                         {
                             ctx.value.globalAlpha = 1;
@@ -382,7 +383,7 @@ app.component("graphviz", {
             // Draw nodes
             nodes.value.forEach(node => {
                 if (!node.hide) {
-                    if (toggle) {
+                    if (toggle.value) {
                         if (linkedByIndex[selectedNodeName.value + "," + node.name] ||
                             linkedByIndex[node.name + "," + selectedNodeName.value])
                         {
@@ -411,7 +412,7 @@ app.component("graphviz", {
             if (d3.select("#text").property("checked")) {
                 nodes.value.forEach(node => {
                     if (!node.hide) {
-                        if (toggle) {
+                        if (toggle.value) {
                             if (linkedByIndex[selectedNodeName.value + "," + node.name] ||
                                 linkedByIndex[node.name + "," + selectedNodeName.value])
                             {
@@ -644,7 +645,7 @@ app.component("graphviz", {
         }
 
         function showConnectedNodes(){
-            toggle = !toggle;
+            toggle.value = !toggle.value;
             drawUpdate()
         }
 
@@ -706,7 +707,7 @@ app.component("graphviz", {
              * @returns {Array, Array} The new nodes and links
              */
             Vue.watch([nodes, links], ([newNodes, newLinks]) => {
-                toggle = false;
+                toggle.value = false;
                 selectedNode.value = null
                 selectedNodeName.value = ""
                 ctx.value.save();
@@ -802,6 +803,7 @@ app.component("graphviz", {
             selectedNodeName,
             hiddenLinks,
             showInfo,
+            toggle,
             zoomed,
             zoomIn,
             zoomOut,
