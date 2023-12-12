@@ -273,25 +273,6 @@ app.component("graphviz", {
         }
 
         /**
-         * Updates the data of the legend corresponding to the new data.
-         * @param {Array} newData The new data (nodes or links)
-         * @param {string} key The key of that is used of an element of the new data
-         * @param {string} configKey The key of the configuration where the colors are specified
-         * @returns {Object} The new legend object
-         */
-        function updateLegendData(newData, key, configKey){
-            var newSet = new Set
-            var newLegend = {}
-            for (element in newData){
-                newSet.add(newData[element][key])
-            }
-            for (const element of newSet){
-                newLegend[element] = props.config[configKey][element]
-            }
-            return newLegend
-        }
-
-        /**
          * Update the hide attribute of the nodes corresponding to the legend of the node groups.
          * The graph will be updated.
          * @param {Array} hiddenItems The array of the hidden items
@@ -299,12 +280,17 @@ app.component("graphviz", {
         function updateHiddenGroups(hiddenItems){
             // Draw edges
             nodes.value.forEach(node => {
-                if (hiddenItems.includes(node.group)){
+                node.hide = false
+                if ((node["group"] == "others") && (hiddenItems.includes("others"))){
                     node.hide = true
-                    // console.log(node)
                 }
                 else {
-                    node.hide = false
+                    for (regex of hiddenItems){
+                        re = new RegExp("^" + regex , "i")
+                        if (re.test(node["name"])){
+                            node.hide = true
+                        }
+                    }
                 }
             })
             drawUpdate()
@@ -709,12 +695,43 @@ app.component("graphviz", {
                 for (var i = 0; i < 4; ++i) simulation.tick(); // 300
                 // simulation.tick(100)
                 // drawUpdate();
-                itemColors.value = updateLegendData(newNodes, "group", "item_colors")
+                // itemColors.value = updateLegendData(newNodes, "group", "item_colors")
+                itemColors.value = {}
+                for (node of newNodes){
+                    for (regex in props.config["item_colors"]){
+                        re = new RegExp("^" + regex , "i")
+                        if (re.test(node["name"])){
+                            itemColors.value[regex] = props.config["item_colors"][regex]
+                        }
+                        else {
+                            itemColors.value["others"] = props.config["item_colors"]["others"]
+                        }
+                    }
+                }
                 linkColors.value = updateLegendData(newLinks, "type", "link_colors")
 
                 nodesNames = nodes.value.map((obj) => obj.name);
             })
         });
+
+        /**
+         * Updates the data of the legend corresponding to the new data.
+         * @param {Array} newData The new data (nodes or links)
+         * @param {string} key The key of that is used of an element of the new data
+         * @param {string} configKey The key of the configuration where the colors are specified
+         * @returns {Object} The new legend object
+         */
+                function updateLegendData(newData, key, configKey){
+                    var newSet = new Set
+                    var newLegend = {}
+                    for (element in newData){
+                        newSet.add(newData[element][key])
+                    }
+                    for (const element of newSet){
+                        newLegend[element] = props.config[configKey][element]
+                    }
+                    return newLegend
+                }
 
         Vue.onUnmounted(() => {
             window.removeEventListener('resize', onResize)
