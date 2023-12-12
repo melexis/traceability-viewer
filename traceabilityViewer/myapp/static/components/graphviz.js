@@ -332,12 +332,12 @@ app.component("graphviz", {
          * Zoom to fit the content of the graph when the button zoom to fit is clicked.
          */
         function zoomToFit() {
-            if (nodes.length > 0){
+            if (nodes.value.length > 0){
                 console.log("zoom to fit")
-                let minx = minX(nodes);
-                let miny = minY(nodes);
-                let dataWidth = maxX(nodes) - minx;
-                let dataHeight = maxY(nodes) - miny;
+                let minx = minX(nodes.value);
+                let miny = minY(nodes.value);
+                let dataWidth = maxX(nodes.value) - minx;
+                let dataHeight = maxY(nodes.value) - miny;
                 let scale = 0.80 * Math.min(width.value / dataWidth, height.value / dataHeight);
                 transform = d3.zoomIdentity
                     .translate((width.value / 2) - ((dataWidth / 2) + minx) * scale,
