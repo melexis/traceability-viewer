@@ -42,3 +42,11 @@ div#tooltip {
   right: -80px;
   clip: rect(-6px, 90px, 14px, -6px);
 }
+
+#info {
+  opacity: 0.90;
+}
+
+#info:hover {
+  opacity: 1;
+}

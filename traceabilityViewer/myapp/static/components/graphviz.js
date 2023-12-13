@@ -87,7 +87,7 @@ app.component("graphviz", {
         </button>
     </div>
     <!-- Info node -->
-    <div v-if="showInfo" v-html="info" id="info" class="m-2 p-2 rounded position-absolute bg-body-secondary bg-opacity-75 "></div>
+    <div v-if="showInfo" v-html="info" id="info" class="m-2 p-2 rounded position-absolute bg-body-secondary"></div>
     <!-- Graph -->
     <div id="loading" class="d-flex justify-content-center">
         <strong role="status" class="m-5">Loading...</strong>
