@@ -21,14 +21,15 @@ config_path = getenv("CONFIG_FILE")
 with open(config_path, "r", encoding="utf-8") as open_file:
     configuration = YAML().load(open_file)
 
-groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
-unique_groups = list(dict.fromkeys(groups_list))
+if "layers" in configuration:
+    groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
+    unique_groups = list(dict.fromkeys(groups_list))
 
 
 def index(request):
     """The page index page will be loaded when starting the app"""
     # create_database()
-    return render(request, "myapp/index.html", {"groups": json.dumps(unique_groups), "config": configuration})
+    return render(request, "myapp/index.html")
 
 
 # @cache_page(None)
@@ -60,24 +61,41 @@ def filter_group(request, filtergroup):
     nodes_ids = []
     nodes = []
     links = []
-    for item in DocumentItem.nodes.filter(group__iregex=filtergroup):
-        node = item.to_json()
-        if node["name"] not in nodes_ids:
-            nodes_ids.append(node["name"])
-            nodes.append(node)
-            for rel in node["relations"]:
-                links.append(rel)
-                target = DocumentItem.nodes.get(name=rel["target"]).to_json()
-                if target["name"] not in nodes_ids:
-                    nodes_ids.append(target["name"])
-                    nodes.append(target)
+    if "layers" in configuration:
+        for item in DocumentItem.nodes.filter(layer_group__iregex=filtergroup):
+            node = item.to_json()
+            if node["name"] not in nodes_ids:
+                nodes_ids.append(node["name"])
+                nodes.append(node)
+                for rel in node["relations"]:
+                    links.append(rel)
+                    target = DocumentItem.nodes.get(name=rel["target"]).to_json()
+                    if target["name"] not in nodes_ids:
+                        nodes_ids.append(target["name"])
+                        nodes.append(target)
+    else:
+        for item in DocumentItem.nodes.filter(legend_group__iregex=filtergroup):
+            node = item.to_json()
+            if node["name"] not in nodes_ids:
+                nodes_ids.append(node["name"])
+                nodes.append(node)
+                for rel in node["relations"]:
+                    links.append(rel)
+                    target = DocumentItem.nodes.get(name=rel["target"]).to_json()
+                    if target["name"] not in nodes_ids:
+                        nodes_ids.append(target["name"])
+                        nodes.append(target)
     return Response({"nodes": nodes, "links": links})
 
 
 @api_view(["GET"])
 def config(request):
     """Get the configuration"""
-    return Response({"config": configuration, "groups": unique_groups})
+    print(configuration["item_colors"].keys())
+    if "layers" in configuration:
+        return Response({"config": configuration, "groups": unique_groups})
+    else:
+        return Response({"config": configuration, "groups": configuration["item_colors"].keys()})
 
 
 # @cache_page(None)
@@ -92,13 +110,14 @@ def autocomplete(request):
     words = set()
     # search_ids will contain the node IDs for in the search input field.
     search_ids = set()
-    for item in DocumentItem.nodes.filter(group__in=unique_groups):
-        node = item.to_json()
-        words.add(node["name"])
-        search_ids.add(node["name"])
-        for rel in node["relations"]:
-            label = rel["type"]
-            words.add(label)
+    if "layers" in configuration:
+        for item in DocumentItem.nodes.filter(layer_group__in=unique_groups):
+            node = item.to_json()
+            words.add(node["name"])
+            search_ids.add(node["name"])
+            for rel in node["relations"]:
+                label = rel["type"]
+                words.add(label)
     # add the words of a query that are used the most.
     words.update(["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"])
     return Response({"words": words, "searchIds": search_ids})

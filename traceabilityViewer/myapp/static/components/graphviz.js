@@ -286,13 +286,12 @@ app.component("graphviz", {
             // Draw edges
             nodes.value.forEach(node => {
                 node.hide = false
-                if ((node["group"] == "others") && (hiddenItems.includes("others"))){
+                if ((node["legend_group"] == "others") && (hiddenItems.includes("others"))){
                     node.hide = true
                 }
                 else {
-                    for (regex of hiddenItems){
-                        re = new RegExp("^" + regex , "i")
-                        if (re.test(node["name"])){
+                    for (hiddenGroup of hiddenItems){
+                        if (node["legend_group"] == hiddenGroup){
                             node.hide = true
                         }
                     }
@@ -721,8 +720,7 @@ app.component("graphviz", {
                     simulation.nodes(newNodes)
                         .force("forceY", d3.forceY(function (n){
                             for (group of Object.keys(yScale)){
-                                const re = new RegExp(group)
-                                if (re.test(n.group)){
+                                if (n.layer_group == group){
                                     return yScale[group]
                                 }
                             }
@@ -731,7 +729,9 @@ app.component("graphviz", {
                         .force('forceX', d3.forceX().strength(0.01).x(width.value / 2));
                 }
                 else {
-                    simulation.nodes(newNodes);
+                    simulation.nodes(newNodes)
+                        .force("forceY", d3.forceY().strength(0.01).y(height.value / 2) )
+                        .force("forceX", d3.forceX().strength(0.01).x(width.value / 2))
 
                 }
                 simulation.on("tick", drawUpdate)
@@ -745,15 +745,7 @@ app.component("graphviz", {
                 // itemColors.value = updateLegendData(newNodes, "group", "item_colors")
                 itemColors.value = {}
                 for (node of newNodes){
-                    for (regex in props.config["item_colors"]){
-                        re = new RegExp("^" + regex , "i")
-                        if (re.test(node["name"])){
-                            itemColors.value[regex] = props.config["item_colors"][regex]
-                        }
-                        else {
-                            itemColors.value["others"] = props.config["item_colors"]["others"]
-                        }
-                    }
+                    itemColors.value[node.legend_group] = node.color
                 }
                 linkColors.value = updateLegendData(newLinks, "type", "link_colors")
 
@@ -768,17 +760,17 @@ app.component("graphviz", {
          * @param {string} configKey The key of the configuration where the colors are specified
          * @returns {Object} The new legend object
          */
-                function updateLegendData(newData, key, configKey){
-                    var newSet = new Set
-                    var newLegend = {}
-                    for (element in newData){
-                        newSet.add(newData[element][key])
-                    }
-                    for (const element of newSet){
-                        newLegend[element] = props.config[configKey][element]
-                    }
-                    return newLegend
-                }
+        function updateLegendData(newData, key, configKey){
+            var newSet = new Set
+            var newLegend = {}
+            for (element in newData){
+                newSet.add(newData[element][key])
+            }
+            for (const element of newSet){
+                newLegend[element] = props.config[configKey][element]
+            }
+            return newLegend
+        }
 
         Vue.onUnmounted(() => {
             window.removeEventListener('resize', onResize)

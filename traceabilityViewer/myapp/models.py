@@ -18,8 +18,9 @@ class DocumentItem(StructuredNode):
     name = StringProperty(required=True)
     props = StringProperty()
     attributes = StringProperty()
-    group = StringProperty()
+    layer_group = StringProperty()
     color = StringProperty()
+    legend_group = StringProperty()
     # serialized_data = JSONProperty()
     relations = RelationshipTo("DocumentItem", "REL", model=Rel)
 
@@ -39,7 +40,8 @@ class DocumentItem(StructuredNode):
             "name": self.name,
             "properties": self.props,
             "attributes": self.attributes,
-            "group": self.group,
+            "layer_group": self.layer_group,
+            "legend_group": self.legend_group,
             "color": self.color,
             "relations": links,
             "hide": self.hide,

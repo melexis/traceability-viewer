@@ -82,20 +82,21 @@ def define_group(item_id, unique_groups):
     return "others"
 
 
-def get_value_by_regex(item_colors, item_id):
+def get_legend_group_and_color(item_colors, item_id):
     """str: Get the value by a regex"""
     for regex in item_colors:
         if re.match(regex, item_id):
-            return item_colors[regex]
-    return item_colors["others"]
+            return regex, item_colors[regex]
+    return "others", item_colors["others"]
 
 
 def run():
     """Create a Neo4j database"""
 
     configuration = validate()
-    groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
-    unique_groups = list(dict.fromkeys(groups_list))
+    if "layers" in configuration:
+        groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
+        unique_groups = list(dict.fromkeys(groups_list))
     data = {}
     path = getenv("JSON_EXPORT")
     print(path)
@@ -115,9 +116,13 @@ def run():
         del props["id"]
         del props["name"]
         if source not in node_objects:
-            source_group = define_group(source, unique_groups)
-            source_color = get_value_by_regex(configuration["item_colors"], source)
-            node_objects[source] = DocumentItem(name=source, group=source_group, color=source_color)
+            if "layers" in configuration:
+                source_layer_group = define_group(source, unique_groups)
+            source_legend_group, source_color = get_legend_group_and_color(configuration["item_colors"], source)
+            node_objects[source] = DocumentItem(name=source,
+                                                layer_group=source_layer_group,
+                                                color=source_color,
+                                                legend_group = source_legend_group)
         source_object = node_objects[source]
         source_object.props = json.dumps(props)
         source_object.attributes = attributes
@@ -128,9 +133,13 @@ def run():
             link_color = define_linkcolor(configuration["link_colors"], link)
             for target in targets:
                 if target not in node_objects:
-                    target_group = define_group(target, unique_groups)
-                    target_color = get_value_by_regex(configuration["item_colors"], target)
-                    node_objects[target] = DocumentItem(name=target, group=target_group, color=target_color)
+                    if "layers" in configuration:
+                        target_layer_group = define_group(target, unique_groups)
+                    target_legend_group, target_color = get_legend_group_and_color(configuration["item_colors"], target)
+                    node_objects[target] = DocumentItem(name=target,
+                                                        layer_group=target_layer_group,
+                                                        color=target_color,
+                                                        legend_group=target_legend_group)
                 relationships.append(
                     {
                         "source": source_object,
