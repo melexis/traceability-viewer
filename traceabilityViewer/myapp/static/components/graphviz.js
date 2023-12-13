@@ -658,6 +658,7 @@ app.component("graphviz", {
                 if (!nodesNames.includes(newNode.name)){
                     nodes.value.push(newNode);
                     nodesNames.push(newNode["name"])
+                    itemColors.value[newNode.legend_group] = newNode.color
                 }
             }
             for (newLink of newLinks){
@@ -665,6 +666,7 @@ app.component("graphviz", {
                     links.value.push(newLink);
                     // update the nodes that are connected to the selected node
                     linkedByIndex[newLink["source"] + "," + newLink["target"]] = 1;
+                    linkColors.value[newLink["type"]] = props.config["link_colors"][newLink["type"]]
                 }
             }
             simulation.nodes(nodes.value);
