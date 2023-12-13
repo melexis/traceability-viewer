@@ -9,23 +9,23 @@ from neomodel import db, clear_neo4j_database
 from myapp.models import DocumentItem
 
 
-def validate_keyword(config, keyword, expected_type, required=True):
+def validate_keyword(config, keyword, expected_types, required=False):
     """Validate a keyword of the configuration file if it exists and it is the expected type"""
     if required:
         if keyword not in config:
             raise ValueError(f"Failed to find mandatory parameter {keyword!r} in the configuration file")
-        if not isinstance(config[keyword], expected_type):
+        if not isinstance(config[keyword], expected_types):
             part_of_config = config[keyword]
             raise TypeError(
-                f"Expected the {keyword} in the configuration file to be a {expected_type}; "
+                f"Expected the {keyword} in the configuration file to be a {expected_types}; "
                 f"got {type(part_of_config)}"
             )
     else:
         if keyword in config:
-            if not isinstance(config[keyword], expected_type):
+            if not isinstance(config[keyword], expected_types):
                 part_of_config = config[keyword]
                 raise TypeError(
-                    f"Expected the {keyword} in the configuration file to be a {expected_type}; "
+                    f"Expected the {keyword} in the configuration file to be a {expected_types}; "
                     f"got {type(part_of_config)}"
                 )
 
@@ -50,13 +50,14 @@ def validate():
 
     # validate_keyword(config, "database_path", list)
     # validate_keyword(config, "html_dir", list, required=False)
-    validate_keyword(config, "layered", bool)
+
+    validate_keyword(config, "layered", bool, True)
     if config["layered"]:
-        validate_keyword(config, "layers", dict)
+        validate_keyword(config, "layers", (dict, list), True)
 
     file_changed = False
     for keyword in ["item_colors", "link_colors"]:
-        validate_keyword(config, keyword, dict)
+        validate_keyword(config, keyword, dict, True)
         if config[keyword].get("others") is None:
             config[keyword]["others"] = "black"
             file_changed = True
