@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from django.views.decorators.cache import cache_page
 
 from django.shortcuts import render
-from neomodel import db
+from neomodel import db, NeomodelPath
 from neo4j.exceptions import CypherSyntaxError
 
 
@@ -191,8 +191,38 @@ def query(request):
                             "color": element.color}
                     if link not in links:
                         links.append(link)
-                # else:
-                    # TODO: Error element is not an instance of DocumentItem or Rel
+
+                elif isinstance(element, NeomodelPath):
+                    for path_element in element:
+                        if isinstance(path_element, DocumentItem):
+                            node = path_element.to_json()
+                            if node["name"] not in nodes_made:
+                                nodes.append(node)
+                                nodes_made.append(node["name"])
+                        elif isinstance(path_element, Rel):
+                            link = {"source": path_element.start_node().name,
+                                    "target": path_element.end_node().name,
+                                    "type": path_element.type,
+                                    "color": path_element.color}
+                            if link not in links:
+                                links.append(link)
+                            for node_name in [path_element.start_node().name, path_element.end_node().name]:
+                                node = DocumentItem.nodes.get(name=node_name)
+                                node = node.to_json()
+                                if node["name"] not in nodes_made:
+                                    nodes.append(node)
+                                    nodes_made.append(node["name"])
+
+                        else:
+                            error = TypeError(f"Expected Node or Relationship types to be returned from the query; "
+                                              f"got {type(element)}")
+                            return Response(error)
+
+                else:
+                    error = TypeError(f"Expected Node or Relationship types to be returned from the query; "
+                                    f"got {type(element)}")
+                    return Response(error)
+
         return Response({"nodes": nodes, "links": links})
     except CypherSyntaxError as error:
         return Response(error.message)
