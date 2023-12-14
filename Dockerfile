@@ -9,8 +9,8 @@ ENV PYTHONBUFFERED 1
 
 COPY py-requirements.txt /tmp/py-requirements.txt
 COPY /traceabilityViewer /traceabilityViewer
-COPY ${CONFIG_FILE} /traceabilityViewer/config.yml
-COPY ${JSON_EXPORT} traceabilityViewer/${JSON_EXPORT}
+COPY ${CONFIG_FILE} /traceabilityViewer/
+COPY ${JSON_EXPORT} /traceabilityViewer/
 
 WORKDIR /traceabilityViewer
 

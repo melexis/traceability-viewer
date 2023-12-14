@@ -8,6 +8,7 @@ services:
         JSON_EXPORT: ${JSON_EXPORT}
         BASE_URL: ${BASE_URL}
         IP_ADDRESS: ${IP_ADDRESS}
+        PRODUCT: ${PRODUCT}
     ports:
       - "8000:8000"
     expose:
