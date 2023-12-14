@@ -1,25 +1,26 @@
-function dataRequest(request){
-    return axios
-        .get(request)
-        // .then(function (response){
-        //     return response.data;
-        // })
-        .catch(function (error)  {
-            console.log(error);
-            return {}
-        });
+function dataRequest(request) {
+  return (
+    axios
+      .get(request)
+      // .then(function (response){
+      //     return response.data;
+      // })
+      .catch(function (error) {
+        console.log(error);
+        return {};
+      })
+  );
 }
 
-function postDataRequest(url, data){
-    return axios.post(url, data)
-                .catch(function (error)  {
-                    console.log(error);
-    });
+function postDataRequest(url, data) {
+  return axios.post(url, data).catch(function (error) {
+    console.log(error);
+  });
 }
 
 app.component("traceability-viewer", {
-    delimiters: ["[[", "]]"],
-    template:
+  delimiters: ["[[", "]]"],
+  template:
     /*html*/
     `
     <!-- ! symbol -->
@@ -32,103 +33,119 @@ app.component("traceability-viewer", {
     <!-- Navbar -->
     <div class="d-flex flex-wrap">
         <button type="button" @click="clicked" class="btn"
-        :class="{'btn btn-lg btn-outline-primary active mb-1 me-1': activeGroup == 'home', 'btn btn-lg btn-outline-primary mb-1 me-1': activeGroup != 'home'}">Home</button>
+            :class="{'btn btn-lg btn-outline-primary active mb-1 me-1': activeGroup == 'home',
+                     'btn btn-lg btn-outline-primary mb-1 me-1': activeGroup != 'home'}"
+        >
+            Home
+        </button>
         <groupfilter class="btn"
             :class="{'btn btn-lg btn-outline-primary active mb-1 me-1': activeGroup == group, 'btn btn-lg btn-outline-primary mb-1 me-1': activeGroup != group}"
             v-for="group in groups"
             :group="group"
             @changeGroup="changeGroup"
-            @loading="changeLoading">
+            @loading="changeLoading"
+        >
         </groupfilter>
     </div>
     <!-- Input Fields -->
     <div v-if="activeGroup==='home'">
         <br>
         <label>Cypher query: </label>
-        <autocomplete :suggestions="words" :sentenceAllowed="true" @loading="changeLoading" @onSubmit="changeData"></autocomplete>
+        <autocomplete
+            :suggestions="words"
+            :sentenceAllowed="true"
+            @loading="changeLoading"
+            @onSubmit="changeData"
+        >
+        </autocomplete>
         <label>Search: </label>
-        <autocomplete :suggestions="searchIds" :sentenceAllowed="false" @loading="changeLoading" @onSubmit="changeData"></autocomplete>
+        <autocomplete
+            :suggestions="searchIds"
+            :sentenceAllowed="false"
+            @loading="changeLoading"
+            @onSubmit="changeData"
+        >
+        </autocomplete>
     </div>
     <graphviz :loading="loading" :nodes="nodes" :links="links" :config="config"> </graphviz>
     `,
-    setup() {
-        var loading = Vue.ref(true);
-        var query = Vue.ref("");
-        var activeGroup=Vue.ref("home");
-        var groups=Vue.ref([]);
-        var config=Vue.ref({});
-        var words=Vue.ref([]);
-        var searchIds=Vue.ref([]);
-        const linkTypes=[];
-        var nodes = Vue.ref([]);
-        var links = Vue.ref([]);
-        var initNodes = [];
-        var initLinks = [];
+  setup() {
+    var loading = Vue.ref(true);
+    var query = Vue.ref("");
+    var activeGroup = Vue.ref("home");
+    var groups = Vue.ref([]);
+    var config = Vue.ref({});
+    var words = Vue.ref([]);
+    var searchIds = Vue.ref([]);
+    const linkTypes = [];
+    var nodes = Vue.ref([]);
+    var links = Vue.ref([]);
+    var initNodes = [];
+    var initLinks = [];
 
-        function clicked() {
-            activeGroup.value = "home"
-            nodes.value = initNodes
-            links.value= initLinks
-        };
+    function clicked() {
+      activeGroup.value = "home";
+      nodes.value = initNodes;
+      links.value = initLinks;
+    }
 
-        function changeGroup(data){
-            activeGroup.value = data.group
-            nodes.value = data.nodes
-            links.value = data.links
-        };
+    function changeGroup(data) {
+      activeGroup.value = data.group;
+      nodes.value = data.nodes;
+      links.value = data.links;
+    }
 
-        function changeData(data){
-            nodes.value = data.nodes
-            links.value = data.links
-        }
+    function changeData(data) {
+      nodes.value = data.nodes;
+      links.value = data.links;
+    }
 
-        function changeLoading(newValue){
-            loading.value =  newValue
-        }
+    function changeLoading(newValue) {
+      loading.value = newValue;
+    }
 
-        async function initialize(){
-            configData = await dataRequest("/config")
-            groups.value = configData.data.groups
-            config.value = configData.data.config
+    async function initialize() {
+      configData = await dataRequest("/config");
+      groups.value = configData.data.groups;
+      config.value = configData.data.config;
 
-            // data = await dataRequest("/data/init")
-            // nodes.value = data.data.nodes
-            // links.value = data.data.links
-            // initNodes = data.data.nodes
-            // initLinks = data.data.links
-            nodes.value = []
-            links.value = []
-            initNodes = []
-            initLinks = []
+      // data = await dataRequest("/data/init")
+      // nodes.value = data.data.nodes
+      // links.value = data.data.links
+      // initNodes = data.data.nodes
+      // initLinks = data.data.links
+      nodes.value = [];
+      links.value = [];
+      initNodes = [];
+      initLinks = [];
 
-            autocompleteData = await dataRequest("/autocomplete")
-            words.value = autocompleteData.data.words
-            searchIds.value = autocompleteData.data.searchIds
+      autocompleteData = await dataRequest("/autocomplete");
+      words.value = autocompleteData.data.words;
+      searchIds.value = autocompleteData.data.searchIds;
 
-            loading.value = false
-        };
+      loading.value = false;
+    }
 
-        Vue.onMounted(async function() {
-            await initialize()
-        });
+    Vue.onMounted(async function () {
+      await initialize();
+    });
 
-        return {
-            loading,
-            query,
-            activeGroup,
-            groups,
-            config,
-            words,
-            searchIds,
-            linkTypes,
-            nodes,
-            links,
-            clicked,
-            changeGroup,
-            changeData,
-            changeLoading,
-            initialize,
-
-        }
-    },
-})
+    return {
+      loading,
+      query,
+      activeGroup,
+      groups,
+      config,
+      words,
+      searchIds,
+      linkTypes,
+      nodes,
+      links,
+      clicked,
+      changeGroup,
+      changeData,
+      changeLoading,
+      initialize,
+    };
+  },
+});
