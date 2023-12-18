@@ -811,6 +811,7 @@ app.component("graphviz", {
         linkColors.value = updateLegendData(newLinks, "type", "link_colors");
 
         nodesNames = nodes.value.map((obj) => obj.name);
+        zoomToFit();
       });
     });
 

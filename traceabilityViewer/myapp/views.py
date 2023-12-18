@@ -15,7 +15,7 @@ from neo4j.exceptions import CypherSyntaxError
 
 
 # from traceabilityViewer.scripts.create_database import unique_groups, configuration
-from .models import DocumentItem,Rel
+from .models import DocumentItem, Rel
 
 config_path = getenv("CONFIG_FILE")
 with open(config_path, "r", encoding="utf-8") as open_file:
@@ -241,6 +241,94 @@ def search(request):
     links = []
     search_node = DocumentItem.nodes.get(name = search_name)
     node = search_node.to_json()
+    node_name = node["name"]
+    indexed_layers = {}
+    index = None
+    for key, value in configuration["layers"].items():
+        if key == node["layer_group"]:
+            index = list(configuration["layers"]).index(key)
+        indexed_layers[list(configuration["layers"]).index(key)] = [key, value]
+    length = len(list(configuration["layers"]))
+    print(length)
+    print(indexed_layers)
+
+    try:
+        query = ""
+        if index is not None:
+            i = index
+            query += f"MATCH p = (n {{name: '{node_name}'}})<-[rel]->(t) RETURN p as paths"
+            while i < length:
+                print(i)
+                for layer_group in indexed_layers[i]:
+                    print(layer_group)
+                    query += f""" UNION MATCH p = (n {{name: '{node_name}'}})<-[rel*1..{i - index + 2}]->
+                             (t {{layer_group: '{layer_group}'}}) RETURN p as paths"""
+                i += 1
+            i = index
+            while i >= 0:
+                print(i)
+                for layer_group in indexed_layers[i]:
+                    query += f""" UNION MATCH p = (n {{name: '{node_name}'}})<-[rel*1..{index - i + 2}]->
+                             (t {{layer_group: '{layer_group}'}}) RETURN p as paths"""
+                i -= 1
+        print(query)
+        results, _ = db.cypher_query(query, resolve_objects=True)
+        nodes_made = []
+        print(results)
+        for result in results:
+            for element in result:
+                if isinstance(element, DocumentItem):
+                    node = element.to_json()
+                    if node["name"] not in nodes_made:
+                        nodes.append(node)
+                        nodes_made.append(node["name"])
+
+                elif isinstance(element, Rel):
+                    link = {"source": element.start_node().name,
+                            "target": element.end_node().name,
+                            "type": element.type,
+                            "color": element.color}
+                    if link not in links:
+                        links.append(link)
+                elif isinstance(element, NeomodelPath):
+                    for path_element in element:
+                        if isinstance(path_element, DocumentItem):
+                            node = path_element.to_json()
+                            if node["name"] not in nodes_made:
+                                nodes.append(node)
+                                nodes_made.append(node["name"])
+                        elif isinstance(path_element, Rel):
+                            link = {"source": path_element.start_node().name,
+                                    "target": path_element.end_node().name,
+                                    "type": path_element.type,
+                                    "color": path_element.color}
+                            if link not in links:
+                                links.append(link)
+                            for node_name in [path_element.start_node().name, path_element.end_node().name]:
+                                node = DocumentItem.nodes.get(name=node_name)
+                                node = node.to_json()
+                                if node["name"] not in nodes_made:
+                                    nodes.append(node)
+                                    nodes_made.append(node["name"])
+
+                        else:
+                            error = TypeError(f"Expected Node or Relationship types to be returned from the query; "
+                                              f"got {type(element)}")
+                            return Response(error)
+
+                else:
+                    error = TypeError(f"Expected Node or Relationship types to be returned from the query; "
+                                    f"got {type(element)}")
+                    return Response(error)
+        return Response({"nodes": nodes, "links": links})
+    except CypherSyntaxError as error:
+        return Response(error.message)
+    except BufferError as error:
+        return Response(error)
+    except:
+        return Response({"nodes": nodes, "links": links})
+
+
     nodes_made.append(node["name"])
     nodes.append(node)
     links = node["relations"]
@@ -278,8 +366,36 @@ def searchConnectedNodes(request):
                             "color": element.color}
                     if link not in links:
                         links.append(link)
-                # else:
-                    # TODO: Error element is not an instance of DocumentItem or Rel
+                elif isinstance(element, NeomodelPath):
+                    for path_element in element:
+                        if isinstance(path_element, DocumentItem):
+                            node = path_element.to_json()
+                            if node["name"] not in nodes_made:
+                                nodes.append(node)
+                                nodes_made.append(node["name"])
+                        elif isinstance(path_element, Rel):
+                            link = {"source": path_element.start_node().name,
+                                    "target": path_element.end_node().name,
+                                    "type": path_element.type,
+                                    "color": path_element.color}
+                            if link not in links:
+                                links.append(link)
+                            for node_name in [path_element.start_node().name, path_element.end_node().name]:
+                                node = DocumentItem.nodes.get(name=node_name)
+                                node = node.to_json()
+                                if node["name"] not in nodes_made:
+                                    nodes.append(node)
+                                    nodes_made.append(node["name"])
+
+                        else:
+                            error = TypeError(f"Expected Node or Relationship types to be returned from the query; "
+                                              f"got {type(element)}")
+                            return Response(error)
+
+                else:
+                    error = TypeError(f"Expected Node or Relationship types to be returned from the query; "
+                                    f"got {type(element)}")
+                    return Response(error)
         return Response({"nodes": nodes, "links": links})
     except CypherSyntaxError as error:
         return Response(error.message)

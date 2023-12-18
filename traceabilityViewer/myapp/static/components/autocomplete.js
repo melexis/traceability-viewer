@@ -199,7 +199,7 @@ app.component("autocomplete", {
             "The input is empty. Please enter a Cypher query.";
         } else {
           data = await postDataRequest("query/", fullInput.value);
-          console.log(typeof data.data);
+          console.log(data.data);
           if (typeof data.data === "string") {
             console.log(alert);
             alert.value.style.display = "block";
