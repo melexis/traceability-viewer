@@ -249,16 +249,12 @@ def search(request):
             index = list(configuration["layers"]).index(key)
         indexed_layers[list(configuration["layers"]).index(key)] = [key, value]
     length = len(list(configuration["layers"]))
-    print(length)
-    print(indexed_layers)
-
     try:
         query = ""
         if index is not None:
             i = index
             query += f"MATCH p = (n {{name: '{node_name}'}})<-[rel]->(t) RETURN p as paths"
             while i < length:
-                print(i)
                 for layer_group in indexed_layers[i]:
                     print(layer_group)
                     query += f""" UNION MATCH p = (n {{name: '{node_name}'}})<-[rel*1..{i - index + 2}]->
@@ -266,15 +262,12 @@ def search(request):
                 i += 1
             i = index
             while i >= 0:
-                print(i)
                 for layer_group in indexed_layers[i]:
                     query += f""" UNION MATCH p = (n {{name: '{node_name}'}})<-[rel*1..{index - i + 2}]->
                              (t {{layer_group: '{layer_group}'}}) RETURN p as paths"""
                 i -= 1
-        print(query)
         results, _ = db.cypher_query(query, resolve_objects=True)
         nodes_made = []
-        print(results)
         for result in results:
             for element in result:
                 if isinstance(element, DocumentItem):
