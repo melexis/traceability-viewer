@@ -1,28 +1,20 @@
 variables:
-  PRODUCT: ${PRODUCT}
-  BASE_URL: ${BASE_URL}
-  # PRODUCT: &PRODUCT 90427
-  # BASE_URL: &BASE_URL /home/joke/Documents
-#   #/path/to/product/build/doc/    # CHANGE THIS
+  product: ${PRODUCT}
+  base_url: ${BASE_URL}
+  release: ${PACKAGE_TAG}
+  json_export: build/doc/${product}/traceability_export.json
 
-# database_path: [*BASE_URL, *PRODUCT, traceability_export.json]
-# # URL: [*BASE_URL, *PRODUCT, /rom/html/document.html#id]
-# html_dir: [*BASE_URL, *PRODUCT, html]
+item_documentation: $base_url/${product}/${release}/html/${item.document}.html#${item.identifier}
 
 layered: true
 
-# Keep this order ! 
+# Keep this order !
 # TODO: documentation
 layers:
   SYSRQT: (SW|MSDE)(QTEST|INSPECTION)
   SWRQT: (SW|MSDE)(QTEST|INSPECTION)
   SWARCH: SWITEST
   SWDESIGN: SWUTEST
-  # - SYSRQT
-  # - SWRQT
-  # - SWARCH
-  # - SWDESIGN
-  # - (SW|MSDE)(QTEST|INSPECTION|ITEST|UTEST)
 
 item_colors:
   SYSRQT: '#fc851c'
@@ -32,11 +24,13 @@ item_colors:
   SWQTEST: '#00FF00'
   SWITEST: '#00FF00'
   SWUTEST: '#00FF00'
+  MSDE: yellow
+  SWINSPECTION: MediumSeaGreen
   MLX: purple
   others: black
 
 link_colors:
-  impacts_on: yellow
+  impacts_on: indigo
   fulfilled_by: violet
   realized_by: teal
   validated_by: thistle
@@ -52,6 +46,7 @@ link_colors:
   ext_robotframeworklog: aquamarine
   raised_by: brown
   guaranteed_by: darkgreen
+  others: black
 
 backwards_relationships:
   depends_on: impacts_on
