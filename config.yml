@@ -1,10 +1,6 @@
-variables:
-  product: ${PRODUCT}
-  base_url: ${BASE_URL}
-  release: ${PACKAGE_TAG}
-  json_export: build/doc/${product}/traceability_export.json
-
-item_documentation: $base_url/${product}/${release}/html/${item.document}.html#${item.identifier}
+traceability_export: build/doc/${PRODUCT}/traceability_export.json
+html_documentation_root: ${BASE_URL}/${PRODCT}/${PACKAGE_TAG}/html
+# ${item.document}.html#${item.identifier}
 
 layered: true
 
