@@ -1,12 +1,15 @@
 """Python module to create the database using the config file"""
 
-from os import getenv
+import os
 import re
 import json
+from string import Template
 from pathlib import Path
 from ruamel.yaml import YAML
 from neomodel import db, clear_neo4j_database
 from myapp.models import DocumentItem
+
+CONFIG_PATH = Path(__file__).parent.parent.parent / "config.yml"
 
 
 def validate_keyword(config, keyword, expected_types, required=False):
@@ -31,13 +34,9 @@ def validate_keyword(config, keyword, expected_types, required=False):
 
 
 def validate():
-    """Validate the igiguration file"""
-    config_path = getenv("CONFIG_FILE")
-    if config_path is None:
-        raise ValueError("No configuration path is given")
-
+    """Validate the configuration file. Variable substitution is done where needed."""
     yaml = YAML()
-    with open(config_path, "r", encoding="utf-8") as open_file:
+    with open(CONFIG_PATH, "r", encoding="utf-8") as open_file:
         config = yaml.load(open_file)
 
     validate_keyword(config, "variables", dict)
@@ -63,9 +62,20 @@ def validate():
             file_changed = True
 
     if file_changed:
-        with open(config_path, "w", encoding="utf-8") as config_file:
+        with open(CONFIG_PATH, "w", encoding="utf-8") as config_file:
             yaml.dump(config, config_file)
 
+    validate_keyword(config, "traceability_export", str, True)
+
+    for variable_name in ["traceability_export", "html_documentation_root"]:
+        template = config.get(variable_name, "")
+        try:
+            variable_value = Template(template).substitute(os.environ)
+            config[variable_name] = variable_value
+        except KeyError as error:
+            raise ValueError(
+                f"The configuration for {variable_name} contains an undefined environment variable: {error}"
+            ) from error
     return config
 
 
@@ -99,7 +109,7 @@ def run():
         groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
         unique_groups = list(dict.fromkeys(groups_list))
     data = {}
-    path = getenv("JSON_EXPORT")
+    path = configuration["traceability_export"]
     print(path)
     with open(path, encoding="utf-8") as json_file:
         data = json.load(json_file)
@@ -120,10 +130,9 @@ def run():
             if "layers" in configuration:
                 source_layer_group = define_group(source, unique_groups)
             source_legend_group, source_color = get_legend_group_and_color(configuration["item_colors"], source)
-            node_objects[source] = DocumentItem(name=source,
-                                                layer_group=source_layer_group,
-                                                color=source_color,
-                                                legend_group = source_legend_group)
+            node_objects[source] = DocumentItem(
+                name=source, layer_group=source_layer_group, color=source_color, legend_group=source_legend_group
+            )
         source_object = node_objects[source]
         source_object.props = json.dumps(props)
         source_object.attributes = attributes
@@ -137,10 +146,12 @@ def run():
                     if "layers" in configuration:
                         target_layer_group = define_group(target, unique_groups)
                     target_legend_group, target_color = get_legend_group_and_color(configuration["item_colors"], target)
-                    node_objects[target] = DocumentItem(name=target,
-                                                        layer_group=target_layer_group,
-                                                        color=target_color,
-                                                        legend_group=target_legend_group)
+                    node_objects[target] = DocumentItem(
+                        name=target,
+                        layer_group=target_layer_group,
+                        color=target_color,
+                        legend_group=target_legend_group,
+                    )
                 relationships.append(
                     {
                         "source": source_object,
