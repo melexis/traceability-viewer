@@ -1,6 +1,9 @@
 *venv
 __pycache__
 
-*.env
 run.sh
 **/db.sqlite3
+
+/node_modules
+
+*.env
