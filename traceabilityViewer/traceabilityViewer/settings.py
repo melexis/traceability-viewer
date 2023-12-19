@@ -28,7 +28,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 
-config.DATABASE_URL = "bolt://neo4j:password@localhost:7687"
+# config.DATABASE_URL = "bolt://neo4j:password@localhost:7687"
+config.DATABASE_URL = "bolt://neo4j:password@neo4j_db:7687"
 # NEO4J_BOLT_URL="bolt://neo4j:password@neo4j_db:7687"
 
 # Application definition
