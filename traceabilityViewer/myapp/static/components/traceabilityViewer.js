@@ -78,8 +78,8 @@ app.component("traceability-viewer", {
     var words = Vue.ref([]);
     var searchIds = Vue.ref([]);
     const linkTypes = [];
-    var nodes = Vue.ref([]);
-    var links = Vue.ref([]);
+    var nodes = Vue.shallowRef([]);
+    var links = Vue.shallowRef([]);
     var initNodes = [];
     var initLinks = [];
 
