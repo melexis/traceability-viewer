@@ -15,13 +15,13 @@ class DocumentItem(StructuredNode):
 
     # uid = UniqueIdProperty()
     hide = BooleanProperty(default=False)
-    name = StringProperty(required=True)
+    name = StringProperty(unique_index=True, required=True)
     props = StringProperty()
     attributes = StringProperty()
     layer_group = StringProperty()
     color = StringProperty()
     legend_group = StringProperty()
-    # serialized_data = JSONProperty()
+    url = StringProperty()
     relations = RelationshipTo("DocumentItem", "REL", model=Rel)
 
     def to_json(self):
