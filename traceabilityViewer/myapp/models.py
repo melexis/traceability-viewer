@@ -1,6 +1,6 @@
 """Python module for the models that are used to create the database with Neomodel"""
 
-from neomodel import StructuredNode, StringProperty, RelationshipTo, install_labels, StructuredRel, BooleanProperty
+from neomodel import StructuredNode, StringProperty, RelationshipTo, StructuredRel, BooleanProperty
 
 
 class Rel(StructuredRel):
@@ -20,7 +20,7 @@ class DocumentItem(StructuredNode):
     attributes = StringProperty()
     layer_group = StringProperty()
     color = StringProperty()
-    legend_group = StringProperty()
+    legend_group = StringProperty(default="others")
     url = StringProperty(default="")
     relations = RelationshipTo("DocumentItem", "REL", model=Rel)
 
@@ -47,7 +47,3 @@ class DocumentItem(StructuredNode):
             "relations": links,
             "hide": self.hide,
         }
-
-
-install_labels(DocumentItem)
-install_labels(Rel)
