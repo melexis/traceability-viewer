@@ -225,7 +225,7 @@ app.component("graphviz", {
         }
         else {
           text +=
-            "<a class='link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover'" +
+            "<a target='_blank' class='link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover'" +
             "href='" +
             url +
             "'><b>" +
