@@ -59,7 +59,7 @@ def filter_group(request, filtergroup):
     nodes = []
     links = []
     query = ""
-    if "layers" in configuration:
+    if configuration["layered"]:
         query = f"MATCH (n)-[r]-(m) WHERE n.layer_group = '{filtergroup}' RETURN n,r,m"
     else:
         query = f"MATCH (n)-[r]-(m) WHERE n.legend_group = '{filtergroup}' RETURN n,r,m"
