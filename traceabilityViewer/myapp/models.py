@@ -21,7 +21,7 @@ class DocumentItem(StructuredNode):
     layer_group = StringProperty()
     color = StringProperty()
     legend_group = StringProperty()
-    url = StringProperty()
+    url = StringProperty(default="")
     relations = RelationshipTo("DocumentItem", "REL", model=Rel)
 
     def to_json(self):
@@ -40,6 +40,7 @@ class DocumentItem(StructuredNode):
             "name": self.name,
             "properties": self.props,
             "attributes": self.attributes,
+            "url": self.url,
             "layer_group": self.layer_group,
             "legend_group": self.legend_group,
             "color": self.color,

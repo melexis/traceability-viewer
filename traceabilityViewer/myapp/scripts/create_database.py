@@ -4,7 +4,7 @@ import os
 import re
 import json
 from string import Template
-from pathlib import Path
+from pathlib import Path, PurePath
 from ruamel.yaml import YAML
 from neomodel import db, clear_neo4j_database
 from myapp.models import DocumentItem
@@ -40,15 +40,6 @@ def validate():
         config = yaml.load(open_file)
 
     validate_keyword(config, "variables", dict)
-    # validate_keyword(config["variables"], "BASE_URL", str)
-    # variables = conf["variables"]
-    # if variables.get("BASE_URL") is None:
-    #     raise TypeError(f"Expected 'BASE_URL' to be in 'variables' of the configuration file; got 'None'")
-    # elif not isinstance(variables, dict):
-    #     raise TypeError(f"Expected the 'variables' in the configuration file to be a dict; got {type(variables)} ")
-
-    # validate_keyword(config, "database_path", list)
-    # validate_keyword(config, "html_dir", list, required=False)
 
     validate_keyword(config, "layered", bool, True)
     if config["layered"]:
@@ -66,6 +57,7 @@ def validate():
             yaml.dump(config, config_file)
 
     validate_keyword(config, "traceability_export", str, True)
+    validate_keyword(config, "html_documentation_root", str)
 
     for variable_name in ["traceability_export", "html_documentation_root"]:
         template = config.get(variable_name, "")
@@ -76,6 +68,7 @@ def validate():
             raise ValueError(
                 f"The configuration for {variable_name} contains an undefined environment variable: {error}"
             ) from error
+
     return config
 
 
@@ -121,7 +114,7 @@ def run():
         attributes = item["attributes"]
         props = {}
         props = item
-        source = item["id"]
+        source = item["name"]
         del props["targets"]
         del props["attributes"]
         del props["id"]
@@ -130,8 +123,16 @@ def run():
             if "layers" in configuration:
                 source_layer_group = define_group(source, unique_groups)
             source_legend_group, source_color = get_legend_group_and_color(configuration["item_colors"], source)
+            url = ""
+            if props["document"] and configuration["html_documentation_root"] != "":
+                document = props["document"]
+                url += str(PurePath(configuration["html_documentation_root"]).joinpath(f"{document}.html#{source}"))
             node_objects[source] = DocumentItem(
-                name=source, layer_group=source_layer_group, color=source_color, legend_group=source_legend_group
+                name=source,
+                layer_group=source_layer_group,
+                color=source_color,
+                legend_group=source_legend_group,
+                url=url,
             )
         source_object = node_objects[source]
         source_object.props = json.dumps(props)

@@ -1,8 +1,6 @@
 """Django views"""
 
 from os import getenv
-import json
-from pathlib import PurePath
 from ruamel.yaml import YAML
 
 from rest_framework.decorators import api_view
@@ -126,23 +124,6 @@ def autocomplete(request):
     # add the words of a query that are used the most.
     words.update(["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"])
     return Response({"words": words, "searchIds": search_ids})
-
-
-@api_view(["GET"])
-def node_url(request, node_name):
-    """Request the url of the selected node."""
-    PRODUCT = getenv("PRODUCT")
-    BASE_URL = getenv("BASE_URL")
-    node = DocumentItem.nodes.get(name=node_name)
-    node = node.to_json()
-    url = None
-    if node["properties"]:
-        properties = json.loads(node["properties"])
-        node_name = node["name"]
-        document = properties["document"]
-        url = PurePath(BASE_URL).joinpath(PRODUCT, "latest", "flash", "html", f"{document}.html#{node_name}")
-
-    return Response(str(url))
 
 
 @api_view(["GET"])
@@ -320,18 +301,6 @@ def search(request):
         return Response(error)
     except:
         return Response({"nodes": nodes, "links": links})
-
-
-    nodes_made.append(node["name"])
-    nodes.append(node)
-    links = node["relations"]
-    for relation in node["relations"]:
-        if relation["target"] not in nodes_made:
-            target_node = DocumentItem.nodes.get(name = relation["target"])
-            target = target_node.to_json()
-            nodes.append(target)
-            nodes_made.append(target)
-    return Response({"nodes": nodes, "links": links})
 
 
 @api_view(["POST"])
