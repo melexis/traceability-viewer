@@ -27,13 +27,15 @@ class DocumentItem(StructuredNode):
     def to_json(self):
         """dict: Return the node data as a dictionary"""
         links = []
+
         for rel in self.relations:
+            relation = self.relations.relationship(rel)
             links.append(
                 {
-                    "source": self.relations.relationship(rel).start_node().name,
-                    "target": self.relations.relationship(rel).end_node().name,
-                    "type": self.relations.relationship(rel).type,
-                    "color": self.relations.relationship(rel).color,
+                    "source": relation.start_node().name,
+                    "target": relation.end_node().name,
+                    "type": relation.type,
+                    "color": relation.color,
                 }
             )
         return {
