@@ -136,20 +136,20 @@ def run():
     for item in data:
         targets_per_relationship = item["targets"]
         attributes = item["attributes"]
-        props = {}
-        props = item
+        properties = {}
+        properties = item
         source = item["name"]
-        del props["targets"]
-        del props["attributes"]
-        del props["id"]
-        del props["name"]
+        del properties["targets"]
+        del properties["attributes"]
+        del properties["id"]
+        del properties["name"]
         if source not in node_objects:
             if "layered":
                 source_layer_group = define_group(source, unique_groups)
             source_legend_group, source_color = get_legend_group_and_color(configuration["item_colors"], source)
             url = ""
-            if props["document"] and configuration["html_documentation_root"] != "":
-                document = props["document"]
+            if properties["document"] and configuration["html_documentation_root"] != "":
+                document = properties["document"]
                 url += str(PurePath(configuration["html_documentation_root"]).joinpath(f"{document}.html#{source}"))
             node_objects[source] = DocumentItem(
                 name=source,
@@ -159,7 +159,7 @@ def run():
                 url=url,
             )
         source_object = node_objects[source]
-        source_object.props = json.dumps(props)
+        source_object.properties = json.dumps(properties)
         source_object.attributes = attributes
 
         for link, targets in targets_per_relationship.items():

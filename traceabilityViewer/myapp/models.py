@@ -16,7 +16,7 @@ class DocumentItem(StructuredNode):
     # uid = UniqueIdProperty()
     hide = BooleanProperty(default=False)
     name = StringProperty(unique_index=True, required=True)
-    props = StringProperty(default="")
+    properties = StringProperty(default="")
     attributes = StringProperty(default="")
     layer_group = StringProperty(default="")
     color = StringProperty(default="")
@@ -38,7 +38,7 @@ class DocumentItem(StructuredNode):
             )
         return {
             "name": self.name,
-            "properties": self.props,
+            "properties": self.properties,
             "attributes": self.attributes,
             "url": self.url,
             "layer_group": self.layer_group,
