@@ -49,6 +49,8 @@ def validate():
     if config["layered"]:
         validate_keyword(config, "layers", (dict, list), True)
 
+    validate_keyword(config, "backwards_relationships", dict, True)
+
     file_changed = False
     for keyword in ["item_colors", "link_colors"]:
         validate_keyword(config, keyword, dict)
