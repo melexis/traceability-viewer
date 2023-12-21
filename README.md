@@ -11,6 +11,7 @@
   - [item_colors](#item_colors)
   - [link_colors](#link_colors)
   - [backwards_relationships](#backwards_relationships)
+  - [visualised_properties](#visualised_properties)
 - [Usage](#Usage)
 
 
@@ -140,3 +141,25 @@ If `link_colors` is defined but `others` isn't, it automatically adds `others: b
 
 A dictionary where the key is the backwards relationship and the value the forward relationship. To reduct the amount of links, only the forward relationhsips (values) will be displayed.
 
+### visualised_properties
+
+> [!NOTE]
+> `visualised_properties` is not a required configuration parameter.
+
+The properies of the clicked node that need to be visualised in the as info about that node.
+If the `visualised_properties` are not defined, it automatically adds following code to the configuration file.
+
+```
+visualised_properties:
+    - name
+```
+
+If [`html_documentation_root`](#html_documentation_root) is defined it automatically adds following code instead of the previous one.
+
+```
+visualised_properties:
+    - name
+    - document
+```
+
+## Usage

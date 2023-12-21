@@ -55,3 +55,10 @@ backwards_relationships:
   has_attribute: is_attribute_of
   raises: raised_by
   guarantees: guaranteed_by
+
+visualised_properties:
+  - name
+  - caption
+  - document
+  - line
+  - attributes
