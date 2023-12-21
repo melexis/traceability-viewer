@@ -3,8 +3,7 @@ html_documentation_root: ${BASE_URL}/${PRODUCT}/${PACKAGE_TAG}/html
 
 layered: true
 
-# Keep this order !
-# TODO: documentation
+# Order is important!
 layers:
   SYSRQT: (SW|MSDE)(QTEST|INSPECTION)
   SWRQT: (SW|MSDE)(QTEST|INSPECTION)
