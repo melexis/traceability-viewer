@@ -124,7 +124,7 @@ def run():
         del props["id"]
         del props["name"]
         if source not in node_objects:
-            if "layers" in configuration:
+            if "layered":
                 source_layer_group = define_group(source, unique_groups)
             source_legend_group, source_color = get_legend_group_and_color(configuration["item_colors"], source)
             url = ""
