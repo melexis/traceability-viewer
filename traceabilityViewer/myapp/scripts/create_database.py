@@ -43,6 +43,8 @@ def validate():
     with open(CONFIG_PATH, "r", encoding="utf-8") as open_file:
         config = yaml.load(open_file)
 
+    validate_keyword(config, "traceability_export", str, True)
+    validate_keyword(config, "html_documentation_root", str)
     validate_keyword(config, "variables", dict)
 
     validate_keyword(config, "layered", bool, True)
@@ -62,12 +64,24 @@ def validate():
                 config[keyword]["others"] = "black"
                 file_changed = True
 
+    validate_keyword(config, "visualised_properties", list)
+    if config.get("visualised_properties") is None:
+        if config.get("html_documentation_root") is None:
+            config["visualised_properties"] = ["name"]
+        else:
+            config["visualised_properties"] = ["name", "document"]
+        file_changed = True
+    else:
+        if "name" not in config["visualised_properties"]:
+            config["visualised_properties"] = ["name"] + config["visualised_properties"]
+            file_changed = True
+        elif config.get("html_documentation_root") and "document" not in config["visualised_properties"]:
+            config["visualised_properties"] += ["document"]
+            file_changed = True
+
     if file_changed:
         with open(CONFIG_PATH, "w", encoding="utf-8") as config_file:
             yaml.dump(config, config_file)
-
-    validate_keyword(config, "traceability_export", str, True)
-    validate_keyword(config, "html_documentation_root", str)
 
     for variable_name in ["traceability_export", "html_documentation_root"]:
         template = config.get(variable_name, "")
