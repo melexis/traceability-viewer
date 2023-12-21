@@ -1,5 +1,18 @@
 # traceability-viewer
 
+## Content Table
+
+- [Getting Started](#GettingStarted)
+- [Configuration](#Configuration)
+  - [traceability_export](#traceability_export)
+  - [html_documentation_root](#html_documentation_root)
+  - [layered](#layered)
+  - [layers](#layers)
+  - [item_colors](#item_colors)
+  - [link_colors](#link_colors)
+  - [backwards_relationships](#backwards_relationships)
+- [Usage](#Usage)
+
 
 ## Getting Started
 
@@ -88,7 +101,7 @@ The layers can be a _list_ or a _dict_ of [regular expressions](https://docs.pyt
 The order of the layers defines the layer's position. The top and bottom layers are respectively to the first and last layer defined in the _list_ or _dict_.
 
 
-### item_colors:
+### item_colors
 
 > [!NOTE]
 > `item_colors` is not a required configuration parameter, but keep in mind that when it is not specified, all nodes will be black (`others`).
