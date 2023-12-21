@@ -216,11 +216,10 @@ app.component("graphviz", {
      */
     let info = Vue.computed(() =>  {
       let text = "";
-      if (selectedNode.value != null) {
-        console.log(selectedNode.value)
+      if (selectedNode.value) {
         let url = selectedNode.value.url
-        console.log(url)
-        if (url == "") {
+        if (!url) {
+          // url was empty string, false, 0, null, undefined, ...
           text += "<b>" + selectedNode.value.name + "</b>";
         }
         else {
@@ -234,10 +233,13 @@ app.component("graphviz", {
         }
         if (selectedNode.value.properties) {
           let properties = JSON.parse(selectedNode.value.properties);
-          text += "<br><b><i>" + properties.caption + "</i></b>";
-          text += "<br><b>Content hash: </b>" + properties["content-hash"];
+          for (const [key, value] of Object.entries(properties)){
+            if (value){
+              text += "<br><b>" + key + ": </b>" + value;
+            }
+          }
         }
-        if (selectedNode.value.attributes) {
+        if (selectedNode.value.attributes && selectedNode.value.attributes !== "{}") {
           let attributes = JSON.parse(
             selectedNode.value.attributes.replaceAll("'", '"')
           );
