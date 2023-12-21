@@ -139,6 +139,7 @@ def run():
         properties = {}
         properties = item
         source = item["name"]
+        # TODO: when these are not defined it will give an error
         del properties["targets"]
         del properties["attributes"]
         del properties["id"]
