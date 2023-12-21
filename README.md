@@ -147,7 +147,8 @@ A dictionary where the key is the backwards relationship and the value the forwa
 > `visualised_properties` is not a required configuration parameter.
 
 The properies of the clicked node that need to be visualised in the as info about that node.
-If the `visualised_properties` are not defined, it automatically adds following code to the configuration file.
+
+If the `visualised_properties` and [`html_documentation_root`](#html_documentation_root) are not defined , it automatically adds following code to the configuration file.
 
 ```
 visualised_properties:
@@ -161,5 +162,10 @@ visualised_properties:
     - name
     - document
 ```
+
+If [`html_documentation_root`](#html_documentation_root) and `visualised_properties` are defined but `document` is not in the list, it automatically adds `document` to the end of the list.
+
+If `visualised_properties` is defined but `name` is missing, it automatically adds `name` to the end of the list
+
 
 ## Usage
