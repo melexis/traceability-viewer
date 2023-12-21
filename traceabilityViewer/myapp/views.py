@@ -2,6 +2,7 @@
 
 from os import getenv
 from ruamel.yaml import YAML
+from pathlib import Path
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -15,8 +16,8 @@ from neo4j.exceptions import CypherSyntaxError
 # from traceabilityViewer.scripts.create_database import unique_groups, configuration
 from .models import DocumentItem, Rel
 
-config_path = getenv("CONFIG_FILE")
-with open(config_path, "r", encoding="utf-8") as open_file:
+CONFIG_PATH = Path(__file__).parent.parent / "config.yml"
+with open(CONFIG_PATH, "r", encoding="utf-8") as open_file:
     configuration = YAML().load(open_file)
 
 if "layers" in configuration:

@@ -51,10 +51,14 @@ def validate():
 
     file_changed = False
     for keyword in ["item_colors", "link_colors"]:
-        validate_keyword(config, keyword, dict, True)
-        if config[keyword].get("others") is None:
-            config[keyword]["others"] = "black"
+        validate_keyword(config, keyword, dict)
+        if config.get(keyword) is None:
+            config[keyword] = {"others": "black"}
             file_changed = True
+        else:
+            if config[keyword].get("others") is None:
+                config[keyword]["others"] = "black"
+                file_changed = True
 
     if file_changed:
         with open(CONFIG_PATH, "w", encoding="utf-8") as config_file:
