@@ -71,7 +71,7 @@ This is only workable when you use the exported JSON of the [traceability-plugin
 > `layered` is a required configuration parameter.
 
 The boolean option to layer the nodes or not.
-- `true`: the layers will be made according to the [layers](### layers) configuration parameter.
+- `true`: the layers will be made according to the [layers](###layers) configuration parameter.
 - `false`: there are no layers. The nodes will be force directed.
 
 
