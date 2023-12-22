@@ -13,11 +13,9 @@ class Rel(StructuredRel):
 class DocumentItem(StructuredNode):
     """Class that represents a node in the database"""
 
-    # uid = UniqueIdProperty()
     hide = BooleanProperty(default=False)
     name = StringProperty(unique_index=True, required=True)
     properties = StringProperty(default="")
-    attributes = StringProperty(default="")
     layer_group = StringProperty(default="")
     color = StringProperty(default="")
     legend_group = StringProperty(default="others")
@@ -41,7 +39,6 @@ class DocumentItem(StructuredNode):
         return {
             "name": self.name,
             "properties": self.properties,
-            "attributes": self.attributes,
             "url": self.url,
             "layer_group": self.layer_group,
             "legend_group": self.legend_group,

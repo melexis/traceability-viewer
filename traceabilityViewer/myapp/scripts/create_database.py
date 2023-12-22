@@ -134,34 +134,46 @@ def run():
     node_objects = {}
     relationships = []
     for item in data:
-        targets_per_relationship = item["targets"]
-        attributes = item["attributes"]
-        properties = {}
-        properties = item
+        if "targets" not in item:
+            raise ValueError(
+                f"The required key 'targets' is missing for item {item}."
+                f"If this item has no targets, please make sure you give an empty dictionary as value of 'targets'."
+            )
+        if "name" not in item:
+            raise ValueError(
+                f"The required key 'name' is missing for item {item}. This needs to be unique."
+            )
+        if "document" not in item and configuration.get("html_documentation_root"):
+            raise ValueError(
+                f"'html_documentation_root' is defined in the configuration, "
+                f"but there is no key 'document' for item {item}."
+            )
         source = item["name"]
-        # TODO: when these are not defined it will give an error
-        del properties["targets"]
-        del properties["attributes"]
-        del properties["id"]
-        del properties["name"]
+        targets_per_relationship = item["targets"]
+        properties = {}
+
+        for prop in configuration["visualised_properties"]:
+            if (prop in item) and (prop not in ["name", "targets"]):
+                properties[prop] = item[prop]
+
         if source not in node_objects:
             if "layered":
                 source_layer_group = define_group(source, unique_groups)
             source_legend_group, source_color = get_legend_group_and_color(configuration["item_colors"], source)
-            url = ""
-            if properties["document"] and configuration["html_documentation_root"] != "":
-                document = properties["document"]
-                url += str(PurePath(configuration["html_documentation_root"]).joinpath(f"{document}.html#{source}"))
             node_objects[source] = DocumentItem(
                 name=source,
                 layer_group=source_layer_group,
                 color=source_color,
                 legend_group=source_legend_group,
-                url=url,
             )
+        url = ""
+        if properties.get("document") and configuration.get("html_documentation_root") != "":
+            document = properties["document"]
+            url += str(PurePath(configuration["html_documentation_root"]).joinpath(f"{document}.html#{source}"))
         source_object = node_objects[source]
         source_object.properties = json.dumps(properties)
-        source_object.attributes = attributes
+        source_object.url = url
+        # source_object.attributes = attributes
 
         for link, targets in targets_per_relationship.items():
             if link in configuration["backwards_relationships"].keys():
@@ -169,7 +181,7 @@ def run():
             link_color = define_linkcolor(configuration["link_colors"], link)
             for target in targets:
                 if target not in node_objects:
-                    if "layers" in configuration:
+                    if "layered":
                         target_layer_group = define_group(target, unique_groups)
                     target_legend_group, target_color = get_legend_group_and_color(configuration["item_colors"], target)
                     node_objects[target] = DocumentItem(

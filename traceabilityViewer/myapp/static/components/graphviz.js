@@ -232,27 +232,48 @@ app.component("graphviz", {
             "</b></a>";
         }
         if (selectedNode.value.properties) {
-          let properties = JSON.parse(selectedNode.value.properties);
-          for (const [key, value] of Object.entries(properties)){
-            if (value){
-              text += "<br><b>" + key + ": </b>" + value;
-            }
-          }
-        }
-        if (selectedNode.value.attributes && selectedNode.value.attributes !== "{}") {
-          let attributes = JSON.parse(
-            selectedNode.value.attributes.replaceAll("'", '"')
+          properties = JSON.parse(
+            selectedNode.value.properties.replaceAll("'", '"')
           );
-          text += "<br><b>Attributes: </b><br>";
-          for (item in attributes) {
-            text += " &emsp; <i>" + item + "</i>";
-            if (attributes[item]) {
-              text += ": " + attributes[item] + "<br>";
-            } else {
-              text += "<br>";
+          console.log(properties)
+          for (propertyName of props.config["visualised_properties"]){
+            if (propertyName in properties){
+
+              let propertyValue = properties[propertyName];
+              console.log(propertyValue)
+              if (propertyValue){
+                text += "<br><b>" + propertyName + ": </b>"
+                if(typeof propertyValue === "object"){
+                  console.log(propertyValue)
+                  for (const [key, value] of Object.entries(propertyValue)){
+                    if (value){
+                      text += "<br>&emsp; " + key + ": <i>" + value + "</i>";
+                    }
+                  }
+                }
+                else {
+                  text += propertyValue;
+                }
+
+              }
             }
           }
         }
+
+        // if (selectedNode.value.attributes && selectedNode.value.attributes !== "{}") {
+        //   let attributes = JSON.parse(
+        //     selectedNode.value.attributes.replaceAll("'", '"')
+        //   );
+        //   text += "<br><b>Attributes: </b><br>";
+        //   for (item in attributes) {
+        //     text += " &emsp; <i>" + item + "</i>";
+        //     if (attributes[item]) {
+        //       text += ": " + attributes[item] + "<br>";
+        //     } else {
+        //       text += "<br>";
+        //     }
+        //   }
+        // }
         return text;
       }
       return text;
@@ -638,6 +659,7 @@ app.component("graphviz", {
             selectedNodeName.value + "," + selectedNodeName.value
           ] = 0;
           selectedNode.value = node;
+          console.log(node)
           selectedNodeName.value = node.name;
           linkedByIndex[node.name + "," + node.name] = 1;
           drawUpdate();
