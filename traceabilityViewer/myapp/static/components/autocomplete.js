@@ -214,8 +214,16 @@ app.component("autocomplete", {
         // search ID
         if (props.suggestions.includes(fullInput.value)) {
           data = await postDataRequest("search/", fullInput.value);
-          nodes = data.data.nodes;
-          links = data.data.links;
+          console.log(data);
+          if (typeof data.data === "string") {
+            console.log(alert);
+            alert.value.style.display = "block";
+            info.value.innerText = "Check if you entered a valid name.";
+            errorText = data.data;
+          } else {
+            nodes = data.data.nodes;
+            links = data.data.links;
+          }
         }
       }
       console.log(nodes);
