@@ -1,6 +1,5 @@
 """Django views"""
 
-from os import getenv
 from ruamel.yaml import YAML
 from pathlib import Path
 
@@ -9,7 +8,7 @@ from rest_framework.response import Response
 from django.views.decorators.cache import cache_page
 
 from django.shortcuts import render
-from neomodel import db, NeomodelPath
+from neomodel import db, NeomodelPath, Traversal, match
 from neo4j.exceptions import CypherSyntaxError
 
 
@@ -48,8 +47,8 @@ def initialize(request):
             links.append(rel)
             target = DocumentItem.nodes.get(name=rel["target"]).to_json()
             if target["name"] not in nodes_made:
-                    nodes_made.append(target["name"])
-                    nodes.append(target)
+                nodes_made.append(target["name"])
+                nodes.append(target)
     return Response({"nodes": nodes, "links": links})
 
 
@@ -61,35 +60,39 @@ def filter_group(request, filtergroup):
     links = []
     query = ""
     if configuration["layered"]:
-        query = f"MATCH (n)-[r]-(m) WHERE n.layer_group = '{filtergroup}' RETURN n,r,m"
+        all_filter_nodes = DocumentItem.nodes.filter(layer_group=filtergroup)
     else:
-        query = f"MATCH (n)-[r]-(m) WHERE n.legend_group = '{filtergroup}' RETURN n,r,m"
-
+        all_filter_nodes = DocumentItem.nodes.filter(legend_group=filtergroup)
+    nodes_made = []
+    all_links = []
     try:
-        results, _ = db.cypher_query(query, resolve_objects=True)
-        nodes_made = []
-        for result in results:
-            for element in result:
-                if isinstance(element, DocumentItem):
-                    node = element.to_json()
-                    if node["name"] not in nodes_made:
-                        nodes.append(node)
-                        nodes_made.append(node["name"])
-
-                elif isinstance(element, Rel):
-                    link = {"source": element.start_node().name,
-                            "target": element.end_node().name,
-                            "type": element.type,
-                            "color": element.color}
-                    if link not in links:
-                        links.append(link)
-                else:
-                    error = TypeError(f"Expected Node or Relationship types to be returned from the query; "
-                                      f"got {type(element)}")
-                    return Response(error)
+        definition = dict(node_class=DocumentItem, direction=match.EITHER, relation_type=None, model=Rel)
+        relations_traversal = Traversal(all_filter_nodes, DocumentItem.__label__, definition)
+        all_relations = relations_traversal.all()
+        for element in all_relations:
+            node = element.to_json()
+            if node["name"] not in nodes_made:
+                nodes.append(node)
+                nodes_made.append(node["name"])
+            for link in node["relations"]:
+                all_links.append(link)
+        for filter_node in all_filter_nodes.all():
+            node = filter_node.to_json()
+            if node["name"] not in nodes_made:
+                nodes.append(node)
+                nodes_made.append(node["name"])
+            for link in node["relations"]:
+                all_links.append(link)
+        for link in all_links:
+            if link["source"] in nodes_made and link["target"] in nodes_made:
+                links.append(link)
         return Response({"nodes": nodes, "links": links})
-    except CypherSyntaxError as error:
-        return Response(error.message)
+    except ValueError as error:
+        return Response(error)
+    except TypeError as error:
+        return Response(error)
+    except:
+        return Response("Something went wrong")
 
 
 @api_view(["GET"])
@@ -151,7 +154,7 @@ def layers(request):
 @api_view(["POST"])
 def query(request):
     """Return the result of nodes and links depending on the query."""
-    query = request.body.decode('utf-8')
+    query = request.body.decode("utf-8")
     error = ""
     nodes = []
     links = []
@@ -167,10 +170,12 @@ def query(request):
                         nodes_made.append(node["name"])
 
                 elif isinstance(element, Rel):
-                    link = {"source": element.start_node().name,
-                            "target": element.end_node().name,
-                            "type": element.type,
-                            "color": element.color}
+                    link = {
+                        "source": element.start_node().name,
+                        "target": element.end_node().name,
+                        "type": element.type,
+                        "color": element.color,
+                    }
                     if link not in links:
                         links.append(link)
 
@@ -182,10 +187,12 @@ def query(request):
                                 nodes.append(node)
                                 nodes_made.append(node["name"])
                         elif isinstance(path_element, Rel):
-                            link = {"source": path_element.start_node().name,
-                                    "target": path_element.end_node().name,
-                                    "type": path_element.type,
-                                    "color": path_element.color}
+                            link = {
+                                "source": path_element.start_node().name,
+                                "target": path_element.end_node().name,
+                                "type": path_element.type,
+                                "color": path_element.color,
+                            }
                             if link not in links:
                                 links.append(link)
                             for node_name in [path_element.start_node().name, path_element.end_node().name]:
@@ -196,13 +203,16 @@ def query(request):
                                     nodes_made.append(node["name"])
 
                         else:
-                            error = TypeError(f"Expected Node or Relationship types to be returned from the query; "
-                                              f"got {type(element)}")
+                            error = TypeError(
+                                f"Expected Node or Relationship types to be returned from the query; "
+                                f"got {type(element)}"
+                            )
                             return Response(error)
 
                 else:
-                    error = TypeError(f"Expected Node or Relationship types to be returned from the query; "
-                                    f"got {type(element)}")
+                    error = TypeError(
+                        f"Expected Node or Relationship types to be returned from the query; " f"got {type(element)}"
+                    )
                     return Response(error)
 
         return Response({"nodes": nodes, "links": links})
@@ -217,11 +227,11 @@ def query(request):
 @api_view(["POST"])
 def search(request):
     """Return the connected nodes or the layers that are connected to the node with the requested node name."""
-    search_name = request.body.decode('utf-8')
+    search_name = request.body.decode("utf-8")
     nodes_made = []
     nodes = []
     links = []
-    search_node = DocumentItem.nodes.get(name = search_name)
+    search_node = DocumentItem.nodes.get(name=search_name)
     node = search_node.to_json()
     node_name = node["name"]
     indexed_layers = {}
@@ -231,6 +241,29 @@ def search(request):
             index = list(configuration["layers"]).index(key)
         indexed_layers[list(configuration["layers"]).index(key)] = [key, value]
     length = len(list(configuration["layers"]))
+
+    # try:
+    #     definition = dict(node_class=DocumentItem, direction=EITHER, relation_type=None, model=Rel)
+    #     relations_traversal = Traversal(all_filter_nodes, DocumentItem.__label__, definition)
+    #     all_relations = relations_traversal.all()
+    #     for element in all_relations:
+    #         node = element.to_json()
+    #         if node["name"] not in nodes_made:
+    #             nodes.append(node)
+    #             nodes_made.append(node["name"])
+    #         for link in node["relations"]:
+    #             all_links.append(link)
+    #     for link in all_links:
+    #         if link["source"] in nodes_made and link["target"] in nodes_made:
+    #             links.append(link)
+    #     return Response({"nodes": nodes, "links": links})
+    # except ValueError as error:
+    #     return Response(error)
+    # except TypeError as error:
+    #     return Response(error)
+    # except:
+    #     return Response("Something went wrong")
+
     try:
         query = ""
         if index is not None:
@@ -259,10 +292,12 @@ def search(request):
                         nodes_made.append(node["name"])
 
                 elif isinstance(element, Rel):
-                    link = {"source": element.start_node().name,
-                            "target": element.end_node().name,
-                            "type": element.type,
-                            "color": element.color}
+                    link = {
+                        "source": element.start_node().name,
+                        "target": element.end_node().name,
+                        "type": element.type,
+                        "color": element.color,
+                    }
                     if link not in links:
                         links.append(link)
                 elif isinstance(element, NeomodelPath):
@@ -273,10 +308,12 @@ def search(request):
                                 nodes.append(node)
                                 nodes_made.append(node["name"])
                         elif isinstance(path_element, Rel):
-                            link = {"source": path_element.start_node().name,
-                                    "target": path_element.end_node().name,
-                                    "type": path_element.type,
-                                    "color": path_element.color}
+                            link = {
+                                "source": path_element.start_node().name,
+                                "target": path_element.end_node().name,
+                                "type": path_element.type,
+                                "color": path_element.color,
+                            }
                             if link not in links:
                                 links.append(link)
                             for node_name in [path_element.start_node().name, path_element.end_node().name]:
@@ -287,13 +324,16 @@ def search(request):
                                     nodes_made.append(node["name"])
 
                         else:
-                            error = TypeError(f"Expected Node or Relationship types to be returned from the query; "
-                                              f"got {type(element)}")
+                            error = TypeError(
+                                f"Expected Node or Relationship types to be returned from the query; "
+                                f"got {type(element)}"
+                            )
                             return Response(error)
 
                 else:
-                    error = TypeError(f"Expected Node or Relationship types to be returned from the query; "
-                                    f"got {type(element)}")
+                    error = TypeError(
+                        f"Expected Node or Relationship types to be returned from the query; " f"got {type(element)}"
+                    )
                     return Response(error)
         return Response({"nodes": nodes, "links": links})
     except CypherSyntaxError as error:
@@ -307,12 +347,13 @@ def search(request):
 @api_view(["POST"])
 def searchConnectedNodes(request):
     """Return the connected nodes of the requested node name."""
-    search_name = request.body.decode('utf-8')
+    search_name = request.body.decode("utf-8")
     nodes = []
     links = []
     try:
-        results, _ = db.cypher_query(f"MATCH (n)-[r]-(m) where n.name = '{search_name}' return n,r,m",
-                                     resolve_objects=True)
+        results, _ = db.cypher_query(
+            f"MATCH (n)-[r]-(m) where n.name = '{search_name}' return n,r,m", resolve_objects=True
+        )
         nodes_made = []
         for result in results:
             for element in result:
@@ -323,10 +364,12 @@ def searchConnectedNodes(request):
                         nodes_made.append(node["name"])
 
                 elif isinstance(element, Rel):
-                    link = {"source": element.start_node().name,
-                            "target": element.end_node().name,
-                            "type": element.type,
-                            "color": element.color}
+                    link = {
+                        "source": element.start_node().name,
+                        "target": element.end_node().name,
+                        "type": element.type,
+                        "color": element.color,
+                    }
                     if link not in links:
                         links.append(link)
                 elif isinstance(element, NeomodelPath):
@@ -337,10 +380,12 @@ def searchConnectedNodes(request):
                                 nodes.append(node)
                                 nodes_made.append(node["name"])
                         elif isinstance(path_element, Rel):
-                            link = {"source": path_element.start_node().name,
-                                    "target": path_element.end_node().name,
-                                    "type": path_element.type,
-                                    "color": path_element.color}
+                            link = {
+                                "source": path_element.start_node().name,
+                                "target": path_element.end_node().name,
+                                "type": path_element.type,
+                                "color": path_element.color,
+                            }
                             if link not in links:
                                 links.append(link)
                             for node_name in [path_element.start_node().name, path_element.end_node().name]:
@@ -351,13 +396,16 @@ def searchConnectedNodes(request):
                                     nodes_made.append(node["name"])
 
                         else:
-                            error = TypeError(f"Expected Node or Relationship types to be returned from the query; "
-                                              f"got {type(element)}")
+                            error = TypeError(
+                                f"Expected Node or Relationship types to be returned from the query; "
+                                f"got {type(element)}"
+                            )
                             return Response(error)
 
                 else:
-                    error = TypeError(f"Expected Node or Relationship types to be returned from the query; "
-                                    f"got {type(element)}")
+                    error = TypeError(
+                        f"Expected Node or Relationship types to be returned from the query; " f"got {type(element)}"
+                    )
                     return Response(error)
         return Response({"nodes": nodes, "links": links})
     except CypherSyntaxError as error:
