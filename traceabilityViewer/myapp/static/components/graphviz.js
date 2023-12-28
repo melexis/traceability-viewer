@@ -238,20 +238,21 @@ app.component("graphviz", {
           console.log(properties)
           for (propertyName of props.config["visualised_properties"]){
             if (propertyName in properties){
-
               let propertyValue = properties[propertyName];
-              console.log(propertyValue)
               if (propertyValue){
-                text += "<br><b>" + propertyName + ": </b>"
+                console.log(propertyValue)
                 if(typeof propertyValue === "object"){
-                  console.log(propertyValue)
-                  for (const [key, value] of Object.entries(propertyValue)){
-                    if (value){
-                      text += "<br>&emsp; " + key + ": <i>" + value + "</i>";
+                  if (Object.keys(propertyValue).length !== 0){
+                    text += "<br><b>" + propertyName + ": </b>"
+                    for (const [key, value] of Object.entries(propertyValue)){
+                      if (value){
+                        text += "<br>&emsp; " + key + ": <i>" + value + "</i>";
+                      }
                     }
                   }
                 }
                 else {
+                  text += "<br><b>" + propertyName + ": </b>"
                   text += propertyValue;
                 }
 
