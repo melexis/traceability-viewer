@@ -4,6 +4,10 @@ __pycache__
 run.sh
 **/db.sqlite3
 
-/node_modules
-
 *.env
+
+traceabilityViewer/config.yml
+
+*.json
+
+.pre-commit-config.yaml
