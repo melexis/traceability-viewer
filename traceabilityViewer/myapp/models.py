@@ -1,5 +1,5 @@
 """Python module for the models that are used to create the database with Neomodel"""
-
+from functools import cached_property
 from neomodel import StructuredNode, StringProperty, RelationshipTo, StructuredRel, BooleanProperty
 
 
@@ -22,10 +22,9 @@ class DocumentItem(StructuredNode):
     url = StringProperty(default="")
     relations = RelationshipTo("DocumentItem", "REL", model=Rel)
 
-    def to_json(self):
-        """dict: Return the node data as a dictionary"""
+    @cached_property
+    def links(self):
         links = []
-
         for rel in self.relations:
             relation = self.relations.relationship(rel)
             links.append(
@@ -36,6 +35,10 @@ class DocumentItem(StructuredNode):
                     "color": relation.color,
                 }
             )
+        return links
+
+    def to_json(self):
+        """dict: Return the node data as a dictionary"""
         return {
             "name": self.name,
             "properties": self.properties,
@@ -43,6 +46,7 @@ class DocumentItem(StructuredNode):
             "layer_group": self.layer_group,
             "legend_group": self.legend_group,
             "color": self.color,
-            "relations": links,
             "hide": self.hide,
         }
+
+
