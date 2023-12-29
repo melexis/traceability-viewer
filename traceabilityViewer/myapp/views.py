@@ -1,5 +1,8 @@
 """Django views"""
 
+import sys, os
+import logging
+
 from ruamel.yaml import YAML
 from pathlib import Path
 
@@ -8,8 +11,16 @@ from rest_framework.response import Response
 from django.views.decorators.cache import cache_page
 
 from django.shortcuts import render
-from neomodel import db, NeomodelPath, Traversal, match
+from neomodel import db, NeomodelPath, Traversal, match, NodeSet
 from neo4j.exceptions import CypherSyntaxError
+
+
+# from traceabilityViewer.scripts.create_database import unique_groups, configuration
+from .models import DocumentItem, Rel
+
+
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.INFO)
 
 
 # from traceabilityViewer.scripts.create_database import unique_groups, configuration
@@ -56,40 +67,31 @@ def initialize(request):
 @api_view(["GET"])
 def filter_group(request, filtergroup):
     """Get the data according to the filter"""
-    nodes = []
+    nodes = {}
     links = []
     if configuration["layered"]:
         all_filter_nodes = DocumentItem.nodes.filter(layer_group=filtergroup)
     else:
         all_filter_nodes = DocumentItem.nodes.filter(legend_group=filtergroup)
-    nodes_made = []
     all_links = []
     try:
         definition = dict(node_class=DocumentItem, direction=match.EITHER, relation_type=None, model=Rel)
-        relations_traversal = Traversal(all_filter_nodes, DocumentItem.__label__, definition)
-        all_relations = relations_traversal.all()
-        for element in all_relations:
-            node = element.to_json()
-            if node["name"] not in nodes_made:
-                nodes.append(node)
-                nodes_made.append(node["name"])
-            for link in node["relations"]:
-                all_links.append(link)
-        for filter_node in all_filter_nodes.all():
-            node = filter_node.to_json()
-            if node["name"] not in nodes_made:
-                nodes.append(node)
-                nodes_made.append(node["name"])
-            for link in node["relations"]:
-                all_links.append(link)
+        traversal_nodes = Traversal(all_filter_nodes, DocumentItem.__label__, definition)
+        all_relations = traversal_nodes.all()
+        for node in all_relations:
+            nodes[node.name] = node.to_json()
+            all_links.extend(node.links)
+        for node in all_filter_nodes.all():
+            nodes[node.name] = node.to_json()
+            all_links.extend(node.links)
         for link in all_links:
-            if link["source"] in nodes_made and link["target"] in nodes_made:
+            if link["source"] in nodes and link["target"] in nodes:
                 links.append(link)
-        return Response({"nodes": nodes, "links": links})
+        return Response({"nodes": nodes.values(), "links": links})
     except ValueError as error:
-        return Response(error)
+        return Response(str(error))
     except TypeError as error:
-        return Response(error)
+        return Response(str(error))
     except:
         return Response("Something went wrong")
 
@@ -112,21 +114,14 @@ def autocomplete(request):
     links and words that are often used in a Cypher query. The second one is for the search input field.
     This contains all the node IDs where the group is a main group of the V model (not the group "Others").
     """
-    # words will contain the autocomplete words for the query input field.
-    words = set()
-    # search_ids will contain the node IDs for in the search input field.
+    query_keywords = ["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"]
+    link_types = configuration["backwards_relationships"].values()
     search_ids = set()
     if "layers" in configuration:
         for item in DocumentItem.nodes.filter(layer_group__in=unique_groups):
-            node = item.to_json()
-            words.add(node["name"])
-            search_ids.add(node["name"])
-            for rel in node["relations"]:
-                label = rel["type"]
-                words.add(label)
-    # add the words of a query that are used the most.
-    words.update(["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"])
-    return Response({"words": words, "searchIds": search_ids})
+            search_ids.add(item.name)
+
+    return Response({"words": query_keywords, "searchIds": search_ids, "link_types": link_types})
 
 
 @api_view(["GET"])
@@ -222,144 +217,60 @@ def query(request):
     except:
         return Response({"nodes": nodes, "links": links})
 
+def search_nodes_recursively(source_node, groups, nodes, links):
+    # LOGGER.info(f"search_nodes_recursively() function is called, {source_node}")
+    print(f"search_nodes_recursively() function is called, {source_node}")
+    definition = dict(node_class=DocumentItem, direction=match.EITHER, relation_type=None, model=Rel)
+    traversal_nodes = Traversal(source_node, DocumentItem.__label__, definition)
+    target_nodes = traversal_nodes.all()
+    if target_nodes:
+        for target_node in target_nodes:
+            group = target_node.legend_group
+            if group != source_node.legend_group and group in groups:
+                continue
+            groups.add(target_node.legend_group)
+            if target_node.name not in nodes:
+                nodes[target_node.name] = target_node.to_json()
+            for link in target_node.links:
+                if (link["target"] == source_node.name) or (link["source"] == source_node.name):
+                    links.append(link)
+                    break
+            else:
+                for link in source_node.links:
+                    if (link["target"] == target_node.name) or (link["source"] == target_node.name):
+                        links.append(link)
+                        break
+            search_nodes_recursively(target_node, groups, nodes, links)
+    else:
+        return nodes, links
 
 @api_view(["POST"])
 def search(request):
     """Return the connected nodes or the layers that are connected to the node with the requested node name."""
     search_name = request.body.decode("utf-8")
-    nodes_made = []
-    nodes = []
+    nodes = {}
     links = []
     print(configuration["layered"])
-    if configuration["layered"]:
-        try:
-            search_node = DocumentItem.nodes.get(name=search_name)
-            node = search_node.to_json()
-            indexed_layers = {}
-            index = None
-            for key, value in configuration["layers"].items():
-                if key == node["layer_group"]:
-                    index = list(configuration["layers"]).index(key)
-                indexed_layers[list(configuration["layers"]).index(key)] = [key, value]
-            length = len(list(configuration["layers"]))
-            query = ""
-            if index is not None:
-                i = index
-                query += f"MATCH p = (n {{name: '{search_name}'}})<-[rel]->(t) RETURN p as paths"
-                while i < length:
-                    for layer_group in indexed_layers[i]:
-                        query += f""" UNION MATCH p = (n {{name: '{search_name}'}})<-[rel*1..{i - index + 2}]->
-                                (t {{layer_group: '{layer_group}'}}) RETURN p as paths"""
-                    i += 1
-                i = index
-                while i >= 0:
-                    for layer_group in indexed_layers[i]:
-                        query += f""" UNION MATCH p = (n {{name: '{search_name}'}})<-[rel*1..{index - i + 2}]->
-                                (t {{layer_group: '{layer_group}'}}) RETURN p as paths"""
-                    i -= 1
-            print(query)
-            results, _ = db.cypher_query(query, resolve_objects=True)
-            nodes_made = []
-            for result in results:
-                for element in result:
-                    if isinstance(element, DocumentItem):
-                        node = element.to_json()
-                        if node["name"] not in nodes_made:
-                            nodes.append(node)
-                            nodes_made.append(node["name"])
+    try:
+        search_node = DocumentItem.nodes.get(name=search_name)
+        nodes[search_node.name] = search_node.to_json()
+        nodes, links = search_nodes_recursively(search_node, set(), nodes, links)
 
-                    elif isinstance(element, Rel):
-                        link = {
-                            "source": element.start_node().name,
-                            "target": element.end_node().name,
-                            "type": element.type,
-                            "color": element.color,
-                        }
-                        if link not in links:
-                            links.append(link)
-                    elif isinstance(element, NeomodelPath):
-                        for path_element in element:
-                            if isinstance(path_element, DocumentItem):
-                                node = path_element.to_json()
-                                if node["name"] not in nodes_made:
-                                    nodes.append(node)
-                                    nodes_made.append(node["name"])
-                            elif isinstance(path_element, Rel):
-                                link = {
-                                    "source": path_element.start_node().name,
-                                    "target": path_element.end_node().name,
-                                    "type": path_element.type,
-                                    "color": path_element.color,
-                                }
-                                if link not in links:
-                                    links.append(link)
-                                for search_name in [path_element.start_node().name, path_element.end_node().name]:
-                                    node = DocumentItem.nodes.get(name=search_name)
-                                    node = node.to_json()
-                                    if node["name"] not in nodes_made:
-                                        nodes.append(node)
-                                        nodes_made.append(node["name"])
-                            else:
-                                error = TypeError(
-                                    f"Expected Node or Relationship types to be returned from the query; "
-                                    f"got {type(element)}"
-                                )
-                                return Response(error)
-                    else:
-                        error = TypeError(
-                            f"Expected Node, Relationship or Path types to be returned from the query; "
-                            f"got {type(element)}"
+        return Response({"nodes": nodes.values(), "links": links})
+    except CypherSyntaxError as error:
+        return Response(str(error.message))
+    except BufferError as error:
+        return Response(str(error))
+    except Exception as error:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        return Response(str(error) +
+                        "\n<b>Type: </b>" + str(exc_type) +
+                        "\n<b>File: </b>" + str(fname) +
+                        "\n<b>Line: </b>" + str(exc_tb.tb_lineno)
                         )
-                        return Response(error)
-            return Response({"nodes": nodes, "links": links})
-        except CypherSyntaxError as error:
-            return Response(str(error.message))
-        except BufferError as error:
-            return Response(str(error))
-        except Exception as error:
-            return Response(str(error))
-        except:
-            return Response("Something went wrong")
-
-    else:
-        all_links = []
-        try:
-            search_node = DocumentItem.nodes.get(name=search_name)
-            node = search_node.to_json()
-            nodes.append(node)
-            nodes_made.append(node["name"])
-            for link in node["relations"]:
-                all_links.append(link)
-            print(list(configuration["layers"]))
-            layers = list(configuration["layers"]) + list(configuration["layers"].values())
-            print(layers)
-            definition = dict(node_class=DocumentItem, direction=match.EITHER, relation_type=None, model=Rel)
-            relations_traversal = Traversal(search_node, DocumentItem.__label__, definition)
-            all_relations = relations_traversal.all()
-            print(all_relations)
-            for element in all_relations:
-                node = element.to_json()
-                if node["name"] not in nodes_made:
-                    nodes.append(node)
-                    nodes_made.append(node["name"])
-                for link in node["relations"]:
-                    all_links.append(link)
-            for link in all_links:
-                if link["source"] in nodes_made and link["target"] in nodes_made:
-                    links.append(link)
-            return Response({"nodes": nodes, "links": links})
-        except ValueError as error:
-            print(error)
-            return Response(str(error))
-        except TypeError as error:
-            print(error)
-            return Response(str(error))
-        except Exception as error:
-            print(error)
-            return Response(str(error))
-        except:
-            return Response("Something went wrong")
-
+    except:
+        return Response("Something went wrong")
 
 
 @api_view(["POST"])
