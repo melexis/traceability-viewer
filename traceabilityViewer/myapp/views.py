@@ -1,13 +1,15 @@
 """Django views"""
 
-import sys, os
 import logging
+import traceback
 
 from ruamel.yaml import YAML
 from pathlib import Path
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.exceptions import APIException
 from django.views.decorators.cache import cache_page
 
 from django.shortcuts import render
@@ -18,13 +20,8 @@ from neo4j.exceptions import CypherSyntaxError
 # from traceabilityViewer.scripts.create_database import unique_groups, configuration
 from .models import DocumentItem, Rel
 
-
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
-
-
-# from traceabilityViewer.scripts.create_database import unique_groups, configuration
-from .models import DocumentItem, Rel
 
 CONFIG_PATH = Path(__file__).parent.parent / "config.yml"
 with open(CONFIG_PATH, "r", encoding="utf-8") as open_file:
@@ -41,7 +38,7 @@ def index(request):
     return render(request, "myapp/index.html")
 
 
-# @cache_page(None)
+@cache_page(None)
 @api_view(["GET"])
 def initialize(request):
     """Initialize data for the 'home' button"""
@@ -60,15 +57,15 @@ def initialize(request):
             if target["name"] not in nodes_made:
                 nodes_made.append(target["name"])
                 nodes.append(target)
-    return Response({"nodes": nodes, "links": links})
+    return Response(data={"nodes": nodes, "links": links})
 
 
-# @cache_page(None)
+@cache_page(None)
 @api_view(["GET"])
 def filter_group(request, filtergroup):
     """Get the data according to the filter"""
     nodes = {}
-    links = []
+    links = set()
     if configuration["layered"]:
         all_filter_nodes = DocumentItem.nodes.filter(layer_group=filtergroup)
     else:
@@ -84,29 +81,29 @@ def filter_group(request, filtergroup):
         for node in all_filter_nodes.all():
             nodes[node.name] = node.to_json()
             all_links.extend(node.links)
-        for link in all_links:
-            if link["source"] in nodes and link["target"] in nodes:
-                links.append(link)
-        return Response({"nodes": nodes.values(), "links": links})
+        # for link in all_links:
+            # if link["source"] in nodes and link["target"] in nodes:
+                # links[f'{link["source"]}{link["type"]}{link["target"]}'] = link
+        links.update(all_links)  #TODO: links hashable maken of met dict werken
+        return Response(data={"nodes": nodes.values(), "links": links})
     except ValueError as error:
-        return Response(str(error))
+        return Response(status=status.HTTP_400_BAD_REQUEST, data=str(error))
     except TypeError as error:
-        return Response(str(error))
+        return Response(status=status.HTTP_400_BAD_REQUEST, data=str(error))
     except:
-        return Response("Something went wrong")
+        return Response(status=status.HTTP_400_BAD_REQUEST, data="Something went wrong")
 
 
 @api_view(["GET"])
 def config(request):
     """Get the configuration"""
-    print(configuration["item_colors"].keys())
     if "layers" in configuration:
-        return Response({"config": configuration, "groups": unique_groups})
+        return Response(data={"config": configuration, "groups": unique_groups})
     else:
-        return Response({"config": configuration, "groups": configuration["item_colors"].keys()})
+        return Response(data={"config": configuration, "groups": configuration.get("item_colors", {}).keys()})
 
 
-# @cache_page(None)
+@cache_page(None)
 @api_view(["GET"])
 def autocomplete(request):
     """
@@ -121,7 +118,7 @@ def autocomplete(request):
         for item in DocumentItem.nodes.filter(layer_group__in=unique_groups):
             search_ids.add(item.name)
 
-    return Response({"words": query_keywords, "searchIds": search_ids, "link_types": link_types})
+    return Response(data={"words": query_keywords, "searchIds": search_ids, "link_types": link_types})
 
 
 @api_view(["GET"])
@@ -142,7 +139,7 @@ def layers(request):
             y_scale[group2] = y
             y += 300
 
-    return Response(y_scale)
+    return Response(data=y_scale)
 
 
 @api_view(["POST"])
@@ -197,52 +194,65 @@ def query(request):
                                     nodes_made.append(node["name"])
 
                         else:
-                            error = TypeError(
+                            raise TypeError(
                                 f"Expected Node or Relationship types to be returned from the query; "
                                 f"got {type(element)}"
                             )
-                            return Response(error)
 
                 else:
-                    error = TypeError(
+                    raise TypeError(
                         f"Expected Node or Relationship types to be returned from the query; " f"got {type(element)}"
                     )
-                    return Response(error)
 
-        return Response({"nodes": nodes, "links": links})
+        return Response(data={"nodes": nodes, "links": links})
     except CypherSyntaxError as error:
-        return Response(error.message)
-    except BufferError as error:
-        return Response(error)
-    except:
-        return Response({"nodes": nodes, "links": links})
+        return Response(status=status.HTTP_400_BAD_REQUEST, data=str(error))  #TODO: error
+    except (Exception, BufferError, TypeError) as error:
+        LOGGER.error(repr(error))
+        return Response(status=status.HTTP_400_BAD_REQUEST, data=traceback.format_exc() +
+                        "\nType: " + str(type(error)) +
+                        "\nLine: " + repr(error)
+                        )
 
-def search_nodes_recursively(source_node, groups, nodes, links):
+def search_nodes_recursively(source_node, groups, nodes, links, unwanted_link_name=""):
+    """_summary_
+
+    Args:
+        source_node (_type_): _description_
+        groups (_type_): _description_
+        nodes (_type_): _description_
+        links (_type_): _description_
+        unwanted_link_name (string):
+    """
     # LOGGER.info(f"search_nodes_recursively() function is called, {source_node}")
-    print(f"search_nodes_recursively() function is called, {source_node}")
+    print(f"search_nodes_recursively() function is called, {source_node.name}")
     definition = dict(node_class=DocumentItem, direction=match.EITHER, relation_type=None, model=Rel)
     traversal_nodes = Traversal(source_node, DocumentItem.__label__, definition)
     target_nodes = traversal_nodes.all()
     if target_nodes:
         for target_node in target_nodes:
+            # breakpoint()
             group = target_node.legend_group
             if group != source_node.legend_group and group in groups:
                 continue
             groups.add(target_node.legend_group)
-            if target_node.name not in nodes:
-                nodes[target_node.name] = target_node.to_json()
             for link in target_node.links:
                 if (link["target"] == source_node.name) or (link["source"] == source_node.name):
                     links.append(link)
+                    link_name = link["type"]
+                    for link_type in configuration["backwards_relationships"].values():
+                        unwanted_link_name =  configuration["backwards_relationships"]
                     break
             else:
                 for link in source_node.links:
                     if (link["target"] == target_node.name) or (link["source"] == target_node.name):
                         links.append(link)
                         break
-            search_nodes_recursively(target_node, groups, nodes, links)
-    else:
-        return nodes, links
+            if target_node.name not in nodes:
+                nodes[target_node.name] = target_node.to_json()
+
+                search_nodes_recursively(target_node, groups, nodes, links, unwanted_link_name)  #TODO: unwanted_link_name
+    # return nodes, links
 
 @api_view(["POST"])
 def search(request):
@@ -254,24 +264,15 @@ def search(request):
     try:
         search_node = DocumentItem.nodes.get(name=search_name)
         nodes[search_node.name] = search_node.to_json()
-        nodes, links = search_nodes_recursively(search_node, set(), nodes, links)
+        search_nodes_recursively(search_node, {search_node.legend_group}, nodes, links)
 
-        return Response({"nodes": nodes.values(), "links": links})
-    except CypherSyntaxError as error:
-        return Response(str(error.message))
-    except BufferError as error:
-        return Response(str(error))
-    except Exception as error:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        return Response(str(error) +
-                        "\n<b>Type: </b>" + str(exc_type) +
-                        "\n<b>File: </b>" + str(fname) +
-                        "\n<b>Line: </b>" + str(exc_tb.tb_lineno)
+        return Response(data={"nodes": nodes.values(), "links": links})
+    except (Exception, BufferError, TypeError) as error:
+        LOGGER.error(repr(error))
+        return Response(status=status.HTTP_400_BAD_REQUEST, data=traceback.format_exc() +
+                        "\nType: " + str(type(error)) +
+                        "\nLine: " + repr(error)
                         )
-    except:
-        return Response("Something went wrong")
-
 
 @api_view(["POST"])
 def searchConnectedNodes(request):
@@ -329,17 +330,19 @@ def searchConnectedNodes(request):
                                 f"Expected Node or Relationship types to be returned from the query; "
                                 f"got {type(element)}"
                             )
-                            return Response(error)
+                            return Response(data=error)
 
                 else:
                     error = TypeError(
                         f"Expected Node or Relationship types to be returned from the query; " f"got {type(element)}"
                     )
-                    return Response(error)
-        return Response({"nodes": nodes, "links": links})
+                    return Response(data=error)
+        return Response(data={"nodes": nodes, "links": links})
     except CypherSyntaxError as error:
-        return Response(error.message)
-    except BufferError as error:
-        return Response(error)
-    except:
-        return Response({"nodes": nodes, "links": links})
+        return Response(status=status.HTTP_400_BAD_REQUEST, data=str(error))  #TODO: decorator for error
+    except (Exception, BufferError, TypeError) as error:
+        LOGGER.error(repr(error))
+        return Response(status=status.HTTP_400_BAD_REQUEST, data=traceback.format_exc() +
+                        "\nType: " + str(type(error)) +
+                        "\nLine: " + repr(error)
+                        )
