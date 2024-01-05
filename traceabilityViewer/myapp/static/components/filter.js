@@ -10,7 +10,7 @@ app.component("groupfilter", {
       type: String,
     },
   },
-  emits: ["loading", "changeGroup"],
+  emits: ["loading", "changeGroup", "onAlert"],
   setup(props, { emit }) {
     var nodes = Vue.ref([]);
     var links = Vue.ref([]);
@@ -31,10 +31,16 @@ app.component("groupfilter", {
     }
     async function getData() {
       emit("loading", true);
-      data = await dataRequest("/data/" + props.group);
-      nodes.value = data.data.nodes;
-      links.value = data.data.links;
+      try {
+        data = await dataRequest("/data/" + props.group);
+        console.log(data.data)
+        nodes.value = data.data.nodes;
+        links.value = data.data.links;
+      } catch (error) {
+        emit("onAlert", {title: "An error occured in filter " + props.group, message: error.response.data});
+      }
       emit("loading", false);
+
     }
 
     Vue.onMounted(async function () {

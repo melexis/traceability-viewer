@@ -5,17 +5,20 @@ function dataRequest(request) {
       // .then(function (response){
       //     return response.data;
       // })
-      .catch(function (error) {
-        console.log(error);
-        return {};
-      })
+      // .catch(function (error) {
+      //   console.log("this is the catch of dataRequest");
+      //   console.log(error);
+      //   // return error
+      // })
   );
 }
 
 function postDataRequest(url, data) {
-  return axios.post(url, data).catch(function (error) {
-    console.log(error);
-  });
+  return axios.post(url, data)
+  // .catch(function (error) {
+  //   console.log(error);
+  // }
+  // );
 }
 
 app.component("traceability-viewer", {
@@ -30,6 +33,19 @@ app.component("traceability-viewer", {
         </symbol>
     </svg>
 
+    <div ref="alert" id="alert" class="alert alert-danger alert-dismissible fade show" role="alert">
+      <div class="d-flex">
+          <svg width="20" height="20" class="bi flex-shrink-1 me-2" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+          <button id="arrow-button" data-bs-toggle="collapse" data-bs-target="#error" aria-expanded="false" aria-controls="error" type="button" class="btn" content-type="charset=utf-8">&#8964</button>
+          <strong>Error:&emsp;</strong><div ref="info"></div>&emsp;
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      <div id="error" class="collapse" >
+        <div class="font-monospace" style="white-space: pre-wrap">
+        [[errorText]]
+        </div>
+      </div>
+    </div>
     <!-- Navbar -->
     <div class="d-flex flex-wrap">
         <button type="button" @click="clicked" class="btn"
@@ -44,6 +60,7 @@ app.component("traceability-viewer", {
             :group="group"
             @changeGroup="changeGroup"
             @loading="changeLoading"
+            @onAlert="onAlert"
         >
         </groupfilter>
     </div>
@@ -56,6 +73,7 @@ app.component("traceability-viewer", {
             :sentenceAllowed="true"
             @loading="changeLoading"
             @onSubmit="changeData"
+            @onAlert="onAlert"
         >
         </autocomplete>
         <label>Search: </label>
@@ -64,12 +82,18 @@ app.component("traceability-viewer", {
             :sentenceAllowed="false"
             @loading="changeLoading"
             @onSubmit="changeData"
+            @onAlert="onAlert"
         >
         </autocomplete>
     </div>
     <graphviz :loading="loading" :nodes="nodes" :links="links" :config="config"> </graphviz>
     `,
   setup() {
+    var show = false;
+    var errorText = Vue.ref("");
+    var error = Vue.ref(null);
+    var alert = Vue.ref(null);
+    var info = Vue.ref(null);
     var loading = Vue.ref(true);
     var query = Vue.ref("");
     var activeGroup = Vue.ref("home");
@@ -99,6 +123,22 @@ app.component("traceability-viewer", {
       nodes.value = data.nodes;
       links.value = data.links;
     }
+
+    function onAlert(data) {
+      console.log(data)
+      errorText.value = data.message;
+      info.value.innerText = data.title;
+      alert.value.scrollIntoView({behavior: "smooth"})
+      // alert.value.style.display = "block";
+    }
+
+    // function close() {
+    //   alert.value.style.display = "none";
+    //   error.value.className = "{show: false}"
+    //   document.getElementById("arrow-button").innerHTML = "&#8964";
+    //   info.value.innerText = "";
+    //   show = false;
+    // }
 
     function changeLoading(newValue) {
       loading.value = newValue;
@@ -131,6 +171,10 @@ app.component("traceability-viewer", {
     });
 
     return {
+      error,
+      alert,
+      errorText,
+      info,
       loading,
       query,
       activeGroup,
@@ -144,6 +188,7 @@ app.component("traceability-viewer", {
       clicked,
       changeGroup,
       changeData,
+      onAlert,
       changeLoading,
       initialize,
     };

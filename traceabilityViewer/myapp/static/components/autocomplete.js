@@ -3,16 +3,6 @@ app.component("autocomplete", {
   template:
     /*html*/
     `
-    <div ref="alert" class="alert alert-danger" role="alert" style="display:none">
-        <div class="d-flex">
-            <svg width="20" height="20" class="bi flex-shrink-1 me-2" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
-            <button id="arrow-button" @click="showError" type="button" class="btn btn-sm" content-type="charset=utf-8">&#8964</button>
-            <strong>Error:&emsp;</strong><div ref="info"></div>&emsp;
-            <button type="button" class="btn-close" @click="close" aria-label="Close"></button>
-        </div>
-        <div ref="error" class="collapse font-monospace"></div>
-    </div>
-
     <div class="w-100 autocomplete" tabindex="0"
         @focusin="startFocus"
         @focusout="stopFocus"
@@ -52,13 +42,8 @@ app.component("autocomplete", {
       default: false,
     },
   },
-  emits: ["loading", "onSubmit"],
+  emits: ["loading", "onSubmit", "onAlert"],
   setup(props, { emit }) {
-    var alert = Vue.ref(null);
-    var info = Vue.ref(null);
-    var error = Vue.ref(null);
-    var show = false;
-    var errorText = "";
     var fullInput = Vue.ref("");
     var search = Vue.ref("");
     var isOpen = Vue.ref(false);
@@ -178,72 +163,44 @@ app.component("autocomplete", {
     // When the button is pressed
     async function submitted() {
       emit("loading", true);
-      errorText = "";
       show = false;
       nodes = [];
-      links = [];
+      let links = [];
       emit("onSubmit", { nodes: nodes, links: links });
+      let endpoint = ""
       if (props.sentenceAllowed) {
         // query
-        if (
-          ["SET ", "CREATE ", "DELETE", "MERGE ", "REMOVE"].some((substring) =>
-            fullInput.value.toUpperCase().includes(substring)
-          )
-        ) {
-          alert.value.style.display = "block";
-          info.value.innerText =
-            "SET, CREATE, DELETE, MERGE or REMOVE cannot be used!";
-        } else if (fullInput.value === "") {
-          alert.value.style.display = "block";
-          info.value.innerText =
-            "The input is empty. Please enter a Cypher query.";
+        const invalidWords = ["SET ", "CREATE ", "DELETE", "MERGE ", "REMOVE"]
+        if (fullInput.value === "") {
+          emit("onAlert", {title: "The input is empty. Please enter a Cypher query.", message: ""});
+        }
+        else if (invalidWords.some((substring) => fullInput.value.toUpperCase().includes(substring))) {
+          emit("onAlert", {title: "SET, CREATE, DELETE, MERGE or REMOVE cannot be used!", message: ""});  //TODO:
         } else {
-          data = await postDataRequest("query/", fullInput.value);
-          console.log(data.data);
-          if (typeof data.data === "string") {
-            console.log(alert);
-            alert.value.style.display = "block";
-            info.value.innerText = "Please enter a valid cypher query.";
-            errorText = data.data;
-          } else {
-            nodes = data.data.nodes;
-            links = data.data.links;
-          }
+          endpoint = "query/"
         }
       } else {
         // search ID
         if (props.suggestions.includes(fullInput.value)) {
-          data = await postDataRequest("search/", fullInput.value);
-          console.log(data);
-          if (typeof data.data === "string") {
-            console.log(alert);
-            alert.value.style.display = "block";
-            info.value.innerText = "Check if you entered a valid name.";
-            errorText = data.data;
-          } else {
-            nodes = data.data.nodes;
-            links = data.data.links;
-          }
+          endpoint = "search/";
         }
       }
-      console.log(nodes);
-      console.log(links);
-      emit("onSubmit", { nodes: nodes, links: links });
-      emit("loading", false);
-    }
-
-    function showError() {
-      show = !show;
-      if (errorText != "" && show == true) {
-        error.value.innerText = errorText;
-        error.value.className = "collapsed font-monospace";
-        document.getElementById("arrow-button").innerHTML = "&#8963;";
-      } else {
-        error.value.innerText = errorText;
-        error.value.className = "collapse font-monospace";
-        document.getElementById("arrow-button").innerHTML = "&#8964";
+      if (endpoint){
+        try {
+          data = await postDataRequest(endpoint, fullInput.value);
+          console.log(data);
+          nodes = data.data.nodes;
+          links = data.data.links;
+          emit("onSubmit", { nodes: nodes, links: links });
+          emit("loading", false);
+        } catch (error) {
+          emit("onAlert", {title: "Please enter a valid cypher query.", message: error.response.data});
+          console.log(error.response)
+        }
       }
     }
+
+
 
     // When the input changes
     function change(event) {
@@ -258,14 +215,8 @@ app.component("autocomplete", {
       }
     }
 
-    function close() {
-      alert.value.className = "alert alert-danger d-none align-items-center";
-    }
     // selection = ""
     return {
-      alert,
-      info,
-      error,
       fullInput,
       search,
       isOpen,
@@ -283,9 +234,7 @@ app.component("autocomplete", {
       isActive,
       suggestionClick,
       submitted,
-      showError,
       change,
-      close,
     };
   },
 });
