@@ -26,7 +26,6 @@ app.component("alert", {
     setup(props, { emit }) {
         let show = Vue.ref(false);
         let alert = Vue.ref(null);
-        let alertData = Vue.toRef(props, "alertData")
 
         let buttonText = Vue.computed(() =>  {
             if (show.value){
@@ -36,7 +35,7 @@ app.component("alert", {
         })
 
         function removeAlert() {
-            emit("removeAlert", alertData.value.index);
+            emit("removeAlert", props.alertData.index);
         }
 
         Vue.onMounted(function () {
@@ -45,7 +44,6 @@ app.component("alert", {
 
         return {
             show,
-            alertData,
             alert,
             buttonText,
             removeAlert,
