@@ -35,7 +35,7 @@ app.component("traceability-viewer", {
     <alert
       v-for="alert in alerts"
       :alertData="alert"
-      @closeAlert="closeAlert"
+      @removeAlert="removeAlert"
     >
     </alert>
     <!-- Navbar -->
@@ -119,7 +119,7 @@ app.component("traceability-viewer", {
       alertNumber += 1;
     }
 
-    function closeAlert(number){
+    function removeAlert(number){
       alerts.value = alerts.value.filter((element) => {
         if (element.number == number){
           return false
@@ -174,7 +174,7 @@ app.component("traceability-viewer", {
       changeGroup,
       changeData,
       onAlert,
-      closeAlert,
+      removeAlert,
       changeLoading,
       initialize,
     };
