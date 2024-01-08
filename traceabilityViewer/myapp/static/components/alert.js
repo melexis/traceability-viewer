@@ -3,14 +3,14 @@ app.component("alert", {
     template:
         /*html*/
         `
-        <div ref="alert" :id="'alert-' + alertData.number" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div ref="alert" :id="'alert-' + alertData.index" class="alert alert-danger alert-dismissible fade show" role="alert">
             <div class="d-flex">
                 <svg width="25" height="25" class="bi flex-shrink-1 me-2" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
-                <button style="--bs-btn-padding-y: 0; --bs-btn-padding-x: .5rem;" data-bs-toggle="collapse" :data-bs-target="'#error-' + alertData.number" aria-expanded="false" :aria-controls="'error-' + alertData.number" type="button" class="me-2 btn btn-outline-secondary" @click="show = !show">[[buttonText]]</button>
+                <button style="--bs-btn-padding-y: 0; --bs-btn-padding-x: .5rem;" data-bs-toggle="collapse" :data-bs-target="'#error-' + alertData.index" aria-expanded="false" :aria-controls="'error-' + alertData.index" type="button" class="me-2 btn btn-outline-secondary" @click="show = !show">[[buttonText]]</button>
                 <strong>Error: &nbsp;</strong><div ref="title">[[alertData.title]]</div>&emsp;
-                <button type="button" class="btn-close" :data-bs-dismiss="'alert-' + alertData.number" aria-label="Close" @click="removeAlert"></button>
+                <button type="button" class="btn-close" :data-bs-dismiss="'alert-' + alertData.index" aria-label="Close" @click="removeAlert"></button>
             </div>
-            <div :id="'error-' + alertData.number" class="collapse" >
+            <div :id="'error-' + alertData.index" class="collapse" >
                 <div class="font-monospace mt-2" style="white-space: pre-wrap">
                 [[alertData.message]]
                 </div>
@@ -26,6 +26,7 @@ app.component("alert", {
     setup(props, { emit }) {
         let show = Vue.ref(false);
         let alert = Vue.ref(null);
+        let alertData = Vue.toRef(props, "alertData")
 
         let buttonText = Vue.computed(() =>  {
             if (show.value){
@@ -35,7 +36,7 @@ app.component("alert", {
         })
 
         function removeAlert() {
-            emit("removeAlert", props.alertData.number);
+            emit("removeAlert", alertData.value.index);
         }
 
         Vue.onMounted(function () {
@@ -44,6 +45,7 @@ app.component("alert", {
 
         return {
             show,
+            alertData,
             alert,
             buttonText,
             removeAlert,

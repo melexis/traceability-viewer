@@ -94,7 +94,6 @@ app.component("traceability-viewer", {
     var initNodes = [];
     var initLinks = [];
     var alerts = Vue.ref([]);
-    var alertNumber = 0;
 
     function clicked() {
       activeGroup.value = "home";
@@ -114,18 +113,18 @@ app.component("traceability-viewer", {
     }
 
     function onAlert(alertData) {
-      alertData["number"] = alertNumber;
+      alertData["index"] = alerts.value.length;
       alerts.value.push(alertData);
-      alertNumber += 1;
     }
 
-    function removeAlert(number){
-      alerts.value = alerts.value.filter((element) => {
-        if (element.number == number){
-          return false
-        }
-        return true
-      })
+    function removeAlert(index){
+      alerts.value.splice(index, 1)
+      newIndex = 0
+      alerts.value.forEach(element => {
+        element.index = newIndex
+        newIndex += 1
+      });
+
     }
 
     function changeLoading(newValue) {
