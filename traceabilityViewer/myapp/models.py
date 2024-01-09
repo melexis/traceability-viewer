@@ -1,7 +1,12 @@
 """Python module for the models that are used to create the database with Neomodel"""
+from collections import namedtuple
+
 from functools import cached_property
 from neomodel import StructuredNode, StringProperty, RelationshipTo, StructuredRel, BooleanProperty
 
+
+Link = namedtuple("Link", "source target type color")
+Node = namedtuple("Node", "name properties url layer_group legend_group color hide")
 
 class Rel(StructuredRel):
     """Class that represents the relationships between the nodes in the database"""
@@ -24,30 +29,28 @@ class DocumentItem(StructuredNode):
 
     @cached_property
     def links(self):
-        links = []
+        """list[Link]: the node data without relationships"""
+        links = set()
         for rel in self.relations:
             relation = self.relations.relationship(rel)
-            links.append(
-                {
-                    "source": relation.start_node().name,
-                    "target": relation.end_node().name,
-                    "type": relation.type,
-                    "color": relation.color,
-                }
-            )
+            link = Link(
+                source=relation.start_node().name,
+                target=relation.end_node().name,
+                type=relation.type,
+                color=relation.color)
+            links.add(link)
         return links
 
     @property
     def node_data(self):
-        """dict: Return the node data as a dictionary"""
-        return {
-            "name": self.name,
-            "properties": self.properties,
-            "url": self.url,
-            "layer_group": self.layer_group,
-            "legend_group": self.legend_group,
-            "color": self.color,
-            "hide": self.hide,
-        }
-
+        """Node: the node data without relationships"""
+        return Node(
+            name=self.name,
+            properties=self.properties,
+            url=self.url,
+            layer_group=self.layer_group,
+            legend_group=self.legend_group,
+            color=self.color,
+            hide=self.hide,
+        )
 
