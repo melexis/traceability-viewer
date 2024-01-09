@@ -3,7 +3,7 @@ app.component("alert", {
     template:
         /*html*/
         `
-        <div ref="alert" :id="'alert-' + alertData.index" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div ref="alert" :key="alertData.index" :id="'alert-' + alertData.index" class="alert alert-danger alert-dismissible fade show" role="alert">
             <div class="d-flex">
                 <svg width="25" height="25" class="bi flex-shrink-1 me-2" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
                 <button style="--bs-btn-padding-y: 0; --bs-btn-padding-x: .5rem;" data-bs-toggle="collapse" :data-bs-target="'#error-' + alertData.index" aria-expanded="false" :aria-controls="'error-' + alertData.index" type="button" class="me-2 btn btn-outline-secondary" @click="show = !show">[[buttonText]]</button>
