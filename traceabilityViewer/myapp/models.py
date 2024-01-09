@@ -37,7 +37,8 @@ class DocumentItem(StructuredNode):
             )
         return links
 
-    def to_json(self):
+    @property
+    def node_data(self):
         """dict: Return the node data as a dictionary"""
         return {
             "name": self.name,

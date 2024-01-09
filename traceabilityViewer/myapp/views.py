@@ -64,13 +64,13 @@ def initialize(request):
     links = []
     items = DocumentItem.nodes.all()
     for item in items:
-        node = item.to_json()
+        node = item.node_data
         if node["name"] not in nodes_made:
             nodes.append(node)
             nodes_made.append(node["name"])
         for rel in node["relations"]:
             links.append(rel)
-            target = DocumentItem.nodes.get(name=rel["target"]).to_json()
+            target = DocumentItem.nodes.get(name=rel["target"]).node_data
             if target["name"] not in nodes_made:
                 nodes_made.append(target["name"])
                 nodes.append(target)
@@ -155,7 +155,7 @@ def query(request):
     for result in results:
         for element in result:
             if isinstance(element, DocumentItem):
-                node = element.to_json()
+                node = element.node_data
                 if node["name"] not in nodes_made:
                     nodes.append(node)
                     nodes_made.append(node["name"])
@@ -173,7 +173,7 @@ def query(request):
             elif isinstance(element, NeomodelPath):
                 for path_element in element:
                     if isinstance(path_element, DocumentItem):
-                        node = path_element.to_json()
+                        node = path_element.node_data
                         if node["name"] not in nodes_made:
                             nodes.append(node)
                             nodes_made.append(node["name"])
@@ -188,7 +188,7 @@ def query(request):
                             links.append(link)
                         for node_name in [path_element.start_node().name, path_element.end_node().name]:
                             node = DocumentItem.nodes.get(name=node_name)
-                            node = node.to_json()
+                            node = node.node_data
                             if node["name"] not in nodes_made:
                                 nodes.append(node)
                                 nodes_made.append(node["name"])
@@ -242,7 +242,7 @@ def search_nodes_recursively(source_node, groups, nodes, links, unwanted_link_na
                         links.append(link)
                         break
             if target_node.name not in nodes:
-                nodes[target_node.name] = target_node.to_json()
+                nodes[target_node.name] = target_node.node_data
 
                 search_nodes_recursively(target_node, groups, nodes, links, unwanted_link_name)  #TODO: unwanted_link_name
     # return nodes, links
@@ -258,7 +258,7 @@ def search(request):
     print(configuration["layered"])
     try:
         search_node = DocumentItem.nodes.get(name=search_name)
-        nodes[search_node.name] = search_node.to_json()
+        nodes[search_node.name] = search_node.node_data
         search_nodes_recursively(search_node, {search_node.legend_group}, nodes, links)
 
         return Response(data={"nodes": nodes.values(), "links": links})
@@ -284,7 +284,7 @@ def searchConnectedNodes(request):
     for result in results:
         for element in result:
             if isinstance(element, DocumentItem):
-                node = element.to_json()
+                node = element.node_data
                 if node["name"] not in nodes_made:
                     nodes.append(node)
                     nodes_made.append(node["name"])
@@ -301,7 +301,7 @@ def searchConnectedNodes(request):
             elif isinstance(element, NeomodelPath):
                 for path_element in element:
                     if isinstance(path_element, DocumentItem):
-                        node = path_element.to_json()
+                        node = path_element.node_data
                         if node["name"] not in nodes_made:
                             nodes.append(node)
                             nodes_made.append(node["name"])
@@ -316,7 +316,7 @@ def searchConnectedNodes(request):
                             links.append(link)
                         for node_name in [path_element.start_node().name, path_element.end_node().name]:
                             node = DocumentItem.nodes.get(name=node_name)
-                            node = node.to_json()
+                            node = node.node_data
                             if node["name"] not in nodes_made:
                                 nodes.append(node)
                                 nodes_made.append(node["name"])
