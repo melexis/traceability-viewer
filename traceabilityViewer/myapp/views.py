@@ -31,6 +31,19 @@ if "layers" in configuration:
     groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
     unique_groups = list(dict.fromkeys(groups_list))
 
+def error_handling(func):
+    def inner_function(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except ValueError as error:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=f"An error occured in function {func.__name__}.\n{error}")
+        except TypeError as error:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=f"An error occured in function {func.__name__}.\n{error}")
+        except Exception as error:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=f"Something went wrongin function {func.__name__}.\n{error}")
+
+    return inner_function
+
 
 def index(request):
     """The page index page will be loaded when starting the app"""
