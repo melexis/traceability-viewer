@@ -95,7 +95,7 @@ def filter_group(request, filtergroup):
     s = io.StringIO()
     ps = pstats.Stats(pr, stream=s).sort_stats(SortKey.CUMULATIVE)
     ps.print_stats()
-    with open(f"{filtergroup}.txt", "w+") as file:
+    with open(f"stat_{filtergroup}.txt", "w+") as file:
         file.write(s.getvalue())
     return Response(data={"nodes": nodes, "links": links})
 

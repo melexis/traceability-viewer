@@ -11,3 +11,5 @@ traceabilityViewer/config.yml
 *.json
 
 .pre-commit-config.yaml
+
+stat*.txt
