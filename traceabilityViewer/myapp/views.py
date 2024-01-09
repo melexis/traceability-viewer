@@ -34,7 +34,7 @@ if "layers" in configuration:
 def error_handling(func):
     def inner_function(*args, **kwargs):
         try:
-            func(*args, **kwargs)
+            return func(*args, **kwargs)
         except CypherSyntaxError as error:
             return Response(status=status.HTTP_400_BAD_REQUEST, data=f"An error occured in function {func.__name__}.\n{error}")
         except (BufferError, TypeError, ValueError) as error:
@@ -256,18 +256,12 @@ def search(request):
     nodes = {}
     links = []
     print(configuration["layered"])
-    try:
-        search_node = DocumentItem.nodes.get(name=search_name)
-        nodes[search_node.name] = search_node.node_data
-        search_nodes_recursively(search_node, {search_node.legend_group}, nodes, links)
+    search_node = DocumentItem.nodes.get(name=search_name)
+    nodes[search_node.name] = search_node.node_data
+    search_nodes_recursively(search_node, {search_node.legend_group}, nodes, links)
 
-        return Response(data={"nodes": nodes.values(), "links": links})
-    except (Exception, BufferError, TypeError) as error:
-        LOGGER.error(repr(error))
-        return Response(status=status.HTTP_400_BAD_REQUEST, data=traceback.format_exc() +
-                        "\nType: " + str(type(error)) +
-                        "\nLine: " + repr(error)
-                        )
+    return Response(data={"nodes": nodes.values(), "links": links})
+
 
 @error_handling
 @api_view(["POST"])
