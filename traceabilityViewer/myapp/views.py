@@ -1,5 +1,7 @@
 """Django views"""
 
+import cProfile, pstats, io
+from pstats import SortKey
 import logging
 import traceback
 
@@ -82,13 +84,20 @@ def initialize(request):
 @api_view(["GET"])
 def filter_group(request, filtergroup):
     """Get the data according to the filter"""
-    nodes = {}
+    pr = cProfile.Profile()
+    pr.enable()
     links = set()
     if configuration["layered"]:
         all_filter_nodes = DocumentItem.nodes.filter(layer_group=filtergroup)
     else:
         all_filter_nodes = DocumentItem.nodes.filter(legend_group=filtergroup)
-    return Response(data={"nodes": nodes_serialized, "links": links_as_dict})
+    pr.disable()
+    s = io.StringIO()
+    ps = pstats.Stats(pr, stream=s).sort_stats(SortKey.CUMULATIVE)
+    ps.print_stats()
+    with open(f"{filtergroup}.txt", "w+") as file:
+        file.write(s.getvalue())
+    return Response(data={"nodes": nodes, "links": links})
 
 
 @error_handling
