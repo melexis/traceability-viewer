@@ -37,16 +37,18 @@ def error_handling(func):
     def inner_function(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except CypherSyntaxError as error:
-            return Response(status=status.HTTP_400_BAD_REQUEST, data=f"An error occured in function {func.__name__}.\n{error}")
-        except (BufferError, TypeError, ValueError) as error:
+        except Exception as error:  # pylint: disable=broad-exception-caught
             LOGGER.error(repr(error))
-            return Response(status=status.HTTP_400_BAD_REQUEST,
-                            data=f"An {type(error)} occured in function {func.__name__}.\n" + traceback.format_exc()
-                            )
-        except Exception as error:
-            return Response(status=status.HTTP_400_BAD_REQUEST,
-                            data=f"Something went wrong in function {func.__name__}.\n{error}")
+            error_status = status.HTTP_400_BAD_REQUEST
+            data = {
+                "identifier": id(error),
+                "message": f"An error occurred in function {func.__name__}:",
+            }
+            if isinstance(error, (BufferError, TypeError, ValueError)):
+                data["message"] += f"\n{traceback.format_exc()}"
+            else:
+                data["message"] += f"\n{error}"
+            return Response(status=error_status, data=data)
 
     return inner_function
 
