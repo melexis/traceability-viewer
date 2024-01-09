@@ -35,12 +35,16 @@ def error_handling(func):
     def inner_function(*args, **kwargs):
         try:
             func(*args, **kwargs)
-        except ValueError as error:
+        except CypherSyntaxError as error:
             return Response(status=status.HTTP_400_BAD_REQUEST, data=f"An error occured in function {func.__name__}.\n{error}")
-        except TypeError as error:
-            return Response(status=status.HTTP_400_BAD_REQUEST, data=f"An error occured in function {func.__name__}.\n{error}")
+        except (BufferError, TypeError, ValueError) as error:
+            LOGGER.error(repr(error))
+            return Response(status=status.HTTP_400_BAD_REQUEST,
+                            data=f"An {type(error)} occured in function {func.__name__}.\n" + traceback.format_exc()
+                            )
         except Exception as error:
-            return Response(status=status.HTTP_400_BAD_REQUEST, data=f"Something went wrongin function {func.__name__}.\n{error}")
+            return Response(status=status.HTTP_400_BAD_REQUEST,
+                            data=f"Something went wrong in function {func.__name__}.\n{error}")
 
     return inner_function
 
@@ -50,7 +54,7 @@ def index(request):
     # create_database()
     return render(request, "myapp/index.html")
 
-
+@error_handling
 @cache_page(None)
 @api_view(["GET"])
 def initialize(request):
@@ -73,6 +77,7 @@ def initialize(request):
     return Response(data={"nodes": nodes, "links": links})
 
 
+@error_handling
 @cache_page(None)
 @api_view(["GET"])
 def filter_group(request, filtergroup):
@@ -83,30 +88,10 @@ def filter_group(request, filtergroup):
         all_filter_nodes = DocumentItem.nodes.filter(layer_group=filtergroup)
     else:
         all_filter_nodes = DocumentItem.nodes.filter(legend_group=filtergroup)
-    all_links = []
-    try:
-        definition = dict(node_class=DocumentItem, direction=match.EITHER, relation_type=None, model=Rel)
-        traversal_nodes = Traversal(all_filter_nodes, DocumentItem.__label__, definition)
-        all_relations = traversal_nodes.all()
-        for node in all_relations:
-            nodes[node.name] = node.to_json()
-            all_links.extend(node.links)
-        for node in all_filter_nodes.all():
-            nodes[node.name] = node.to_json()
-            all_links.extend(node.links)
-        # for link in all_links:
-            # if link["source"] in nodes and link["target"] in nodes:
-                # links[f'{link["source"]}{link["type"]}{link["target"]}'] = link
-        links.update(all_links)  #TODO: links hashable maken of met dict werken
-        return Response(data={"nodes": nodes.values(), "links": links})
-    except ValueError as error:
-        return Response(status=status.HTTP_400_BAD_REQUEST, data=str(error))
-    except TypeError as error:
-        return Response(status=status.HTTP_400_BAD_REQUEST, data=str(error))
-    except:
-        return Response(status=status.HTTP_400_BAD_REQUEST, data="Something went wrong")
+    return Response(data={"nodes": nodes_serialized, "links": links_as_dict})
 
 
+@error_handling
 @api_view(["GET"])
 def config(request):
     """Get the configuration"""
@@ -116,6 +101,7 @@ def config(request):
         return Response(data={"config": configuration, "groups": configuration.get("item_colors", {}).keys()})
 
 
+@error_handling
 @cache_page(None)
 @api_view(["GET"])
 def autocomplete(request):
@@ -134,6 +120,7 @@ def autocomplete(request):
     return Response(data={"words": query_keywords, "searchIds": search_ids, "link_types": link_types})
 
 
+@error_handling
 @api_view(["GET"])
 def layers(request):
     """Request the y values depending on the layers in the configuration file."""
@@ -155,6 +142,7 @@ def layers(request):
     return Response(data=y_scale)
 
 
+@error_handling
 @api_view(["POST"])
 def query(request):
     """Return the result of nodes and links depending on the query."""
@@ -162,70 +150,62 @@ def query(request):
     error = ""
     nodes = []
     links = []
-    try:
-        results, _ = db.cypher_query(query, resolve_objects=True)
-        nodes_made = []
-        for result in results:
-            for element in result:
-                if isinstance(element, DocumentItem):
-                    node = element.to_json()
-                    if node["name"] not in nodes_made:
-                        nodes.append(node)
-                        nodes_made.append(node["name"])
+    results, _ = db.cypher_query(query, resolve_objects=True)
+    nodes_made = []
+    for result in results:
+        for element in result:
+            if isinstance(element, DocumentItem):
+                node = element.to_json()
+                if node["name"] not in nodes_made:
+                    nodes.append(node)
+                    nodes_made.append(node["name"])
 
-                elif isinstance(element, Rel):
-                    link = {
-                        "source": element.start_node().name,
-                        "target": element.end_node().name,
-                        "type": element.type,
-                        "color": element.color,
-                    }
-                    if link not in links:
-                        links.append(link)
+            elif isinstance(element, Rel):
+                link = {
+                    "source": element.start_node().name,
+                    "target": element.end_node().name,
+                    "type": element.type,
+                    "color": element.color,
+                }
+                if link not in links:
+                    links.append(link)
 
-                elif isinstance(element, NeomodelPath):
-                    for path_element in element:
-                        if isinstance(path_element, DocumentItem):
-                            node = path_element.to_json()
+            elif isinstance(element, NeomodelPath):
+                for path_element in element:
+                    if isinstance(path_element, DocumentItem):
+                        node = path_element.to_json()
+                        if node["name"] not in nodes_made:
+                            nodes.append(node)
+                            nodes_made.append(node["name"])
+                    elif isinstance(path_element, Rel):
+                        link = {
+                            "source": path_element.start_node().name,
+                            "target": path_element.end_node().name,
+                            "type": path_element.type,
+                            "color": path_element.color,
+                        }
+                        if link not in links:
+                            links.append(link)
+                        for node_name in [path_element.start_node().name, path_element.end_node().name]:
+                            node = DocumentItem.nodes.get(name=node_name)
+                            node = node.to_json()
                             if node["name"] not in nodes_made:
                                 nodes.append(node)
                                 nodes_made.append(node["name"])
-                        elif isinstance(path_element, Rel):
-                            link = {
-                                "source": path_element.start_node().name,
-                                "target": path_element.end_node().name,
-                                "type": path_element.type,
-                                "color": path_element.color,
-                            }
-                            if link not in links:
-                                links.append(link)
-                            for node_name in [path_element.start_node().name, path_element.end_node().name]:
-                                node = DocumentItem.nodes.get(name=node_name)
-                                node = node.to_json()
-                                if node["name"] not in nodes_made:
-                                    nodes.append(node)
-                                    nodes_made.append(node["name"])
 
-                        else:
-                            raise TypeError(
-                                f"Expected Node or Relationship types to be returned from the query; "
-                                f"got {type(element)}"
-                            )
-
-                else:
-                    raise TypeError(
-                        f"Expected Node or Relationship types to be returned from the query; " f"got {type(element)}"
-                    )
-
-        return Response(data={"nodes": nodes, "links": links})
-    except CypherSyntaxError as error:
-        return Response(status=status.HTTP_400_BAD_REQUEST, data=str(error))  #TODO: error
-    except (Exception, BufferError, TypeError) as error:
-        LOGGER.error(repr(error))
-        return Response(status=status.HTTP_400_BAD_REQUEST, data=traceback.format_exc() +
-                        "\nType: " + str(type(error)) +
-                        "\nLine: " + repr(error)
+                    else:
+                        raise TypeError(
+                            f"Expected Node or Relationship types to be returned from the query; "
+                            f"got {type(element)}"
                         )
+
+            else:
+                raise TypeError(
+                    f"Expected Node or Relationship types to be returned from the query; " f"got {type(element)}"
+                )
+
+    return Response(data={"nodes": nodes, "links": links})
+
 
 def search_nodes_recursively(source_node, groups, nodes, links, unwanted_link_name=""):
     """_summary_
@@ -267,6 +247,8 @@ def search_nodes_recursively(source_node, groups, nodes, links, unwanted_link_na
                 search_nodes_recursively(target_node, groups, nodes, links, unwanted_link_name)  #TODO: unwanted_link_name
     # return nodes, links
 
+
+@error_handling
 @api_view(["POST"])
 def search(request):
     """Return the connected nodes or the layers that are connected to the node with the requested node name."""
@@ -287,75 +269,68 @@ def search(request):
                         "\nLine: " + repr(error)
                         )
 
+@error_handling
 @api_view(["POST"])
 def searchConnectedNodes(request):
     """Return the connected nodes of the requested node name."""
     search_name = request.body.decode("utf-8")
     nodes = []
     links = []
-    try:
-        results, _ = db.cypher_query(
-            f"MATCH (n)-[r]-(m) where n.name = '{search_name}' return n,r,m", resolve_objects=True
-        )
-        nodes_made = []
-        for result in results:
-            for element in result:
-                if isinstance(element, DocumentItem):
-                    node = element.to_json()
-                    if node["name"] not in nodes_made:
-                        nodes.append(node)
-                        nodes_made.append(node["name"])
 
-                elif isinstance(element, Rel):
-                    link = {
-                        "source": element.start_node().name,
-                        "target": element.end_node().name,
-                        "type": element.type,
-                        "color": element.color,
-                    }
-                    if link not in links:
-                        links.append(link)
-                elif isinstance(element, NeomodelPath):
-                    for path_element in element:
-                        if isinstance(path_element, DocumentItem):
-                            node = path_element.to_json()
+    results, _ = db.cypher_query(
+        f"MATCH (n)-[r]-(m) where n.name = '{search_name}' return n,r,m", resolve_objects=True
+    )
+    nodes_made = []
+    for result in results:
+        for element in result:
+            if isinstance(element, DocumentItem):
+                node = element.to_json()
+                if node["name"] not in nodes_made:
+                    nodes.append(node)
+                    nodes_made.append(node["name"])
+
+            elif isinstance(element, Rel):
+                link = {
+                    "source": element.start_node().name,
+                    "target": element.end_node().name,
+                    "type": element.type,
+                    "color": element.color,
+                }
+                if link not in links:
+                    links.append(link)
+            elif isinstance(element, NeomodelPath):
+                for path_element in element:
+                    if isinstance(path_element, DocumentItem):
+                        node = path_element.to_json()
+                        if node["name"] not in nodes_made:
+                            nodes.append(node)
+                            nodes_made.append(node["name"])
+                    elif isinstance(path_element, Rel):
+                        link = {
+                            "source": path_element.start_node().name,
+                            "target": path_element.end_node().name,
+                            "type": path_element.type,
+                            "color": path_element.color,
+                        }
+                        if link not in links:
+                            links.append(link)
+                        for node_name in [path_element.start_node().name, path_element.end_node().name]:
+                            node = DocumentItem.nodes.get(name=node_name)
+                            node = node.to_json()
                             if node["name"] not in nodes_made:
                                 nodes.append(node)
                                 nodes_made.append(node["name"])
-                        elif isinstance(path_element, Rel):
-                            link = {
-                                "source": path_element.start_node().name,
-                                "target": path_element.end_node().name,
-                                "type": path_element.type,
-                                "color": path_element.color,
-                            }
-                            if link not in links:
-                                links.append(link)
-                            for node_name in [path_element.start_node().name, path_element.end_node().name]:
-                                node = DocumentItem.nodes.get(name=node_name)
-                                node = node.to_json()
-                                if node["name"] not in nodes_made:
-                                    nodes.append(node)
-                                    nodes_made.append(node["name"])
 
-                        else:
-                            error = TypeError(
-                                f"Expected Node or Relationship types to be returned from the query; "
-                                f"got {type(element)}"
-                            )
-                            return Response(data=error)
-
-                else:
-                    error = TypeError(
-                        f"Expected Node or Relationship types to be returned from the query; " f"got {type(element)}"
-                    )
-                    return Response(data=error)
-        return Response(data={"nodes": nodes, "links": links})
-    except CypherSyntaxError as error:
-        return Response(status=status.HTTP_400_BAD_REQUEST, data=str(error))  #TODO: decorator for error
-    except (Exception, BufferError, TypeError) as error:
-        LOGGER.error(repr(error))
-        return Response(status=status.HTTP_400_BAD_REQUEST, data=traceback.format_exc() +
-                        "\nType: " + str(type(error)) +
-                        "\nLine: " + repr(error)
+                    else:
+                        error = TypeError(
+                            f"Expected Node or Relationship types to be returned from the query; "
+                            f"got {type(element)}"
                         )
+                        return Response(data=error)
+
+            else:
+                error = TypeError(
+                    f"Expected Node or Relationship types to be returned from the query; " f"got {type(element)}"
+                )
+                return Response(data=error)
+    return Response(data={"nodes": nodes, "links": links})
