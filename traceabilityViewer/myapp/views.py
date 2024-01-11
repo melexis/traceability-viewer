@@ -11,13 +11,12 @@ from pathlib import Path
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.exceptions import APIException
+
 from django.views.decorators.cache import cache_page
-
 from django.shortcuts import render
-from neomodel import db, NeomodelPath, Traversal, match, NodeSet
-from neo4j.exceptions import CypherSyntaxError
 
+from neomodel import db, NeomodelPath, Traversal, match
+from neo4j.exceptions import CypherSyntaxError
 
 # from traceabilityViewer.scripts.create_database import unique_groups, configuration
 from .models import DocumentItem, Rel
@@ -32,6 +31,7 @@ with open(CONFIG_PATH, "r", encoding="utf-8") as open_file:
 if "layers" in configuration:
     groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
     unique_groups = list(dict.fromkeys(groups_list))
+
 
 def error_handling(func):
     def inner_function(*args, **kwargs):
@@ -86,18 +86,56 @@ def filter_group(request, filtergroup):
     """Get the data according to the filter"""
     pr = cProfile.Profile()
     pr.enable()
+    nodes = set()
     links = set()
     if configuration["layered"]:
         all_filter_nodes = DocumentItem.nodes.filter(layer_group=filtergroup)
     else:
         all_filter_nodes = DocumentItem.nodes.filter(legend_group=filtergroup)
+
+    # serializers.serialize() of django does not apply here.
+    # This is meant for models.Models of Django. These have an attribute '_meta'.
+
+    definition = dict(node_class=DocumentItem, direction=match.EITHER, relation_type=None, model=Rel)
+    traversal_nodes = Traversal(all_filter_nodes, DocumentItem.__label__, definition).all()
+    all_source_nodes = all_filter_nodes.all()
+
+    for node in traversal_nodes:
+        nodes.add(node.node_data)
+        links.update(node.links)
+    for node in all_source_nodes:
+        nodes.add(node.node_data)
+        links.update(node.links)
+
+    # for link in links:
+    #     if link["source"] in nodes and link["target"] in nodes:
+    #         continue
+    #     links.remove(link)
+    #TODO: links hashable maken of met dict werken
+    nodes_as_dict = set_of_namedtuples_to_set_of_dicts(nodes)
+    nodes = list(nodes_as_dict)
+    links = filter_links(links, nodes)
+
+    links_as_dict = set_of_namedtuples_to_set_of_dicts(links)
+
     pr.disable()
     s = io.StringIO()
     ps = pstats.Stats(pr, stream=s).sort_stats(SortKey.CUMULATIVE)
     ps.print_stats()
     with open(f"stat_{filtergroup}.txt", "w+") as file:
         file.write(s.getvalue())
-    return Response(data={"nodes": nodes, "links": links})
+    return Response(data={"nodes": nodes, "links": list(links_as_dict)})
+
+
+def set_of_namedtuples_to_set_of_dicts(data):
+    for element in data:
+        yield element._asdict()
+
+def filter_links(links, nodes):
+    node_names = set(node["name"] for node in nodes)
+    for link in links:
+        if getattr(link, "source") in node_names and getattr(link,"target") in node_names:
+            yield link
 
 
 @error_handling
