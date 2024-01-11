@@ -34,6 +34,7 @@ app.component("traceability-viewer", {
     </svg>
     <alert
       v-for="alert in alerts"
+      :key="alert.index"
       :alertData="alert"
       @removeAlert="removeAlert"
     >
