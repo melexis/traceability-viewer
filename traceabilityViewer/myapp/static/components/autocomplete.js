@@ -175,7 +175,7 @@ app.component("autocomplete", {
           emit("onAlert", {title: "The input is empty. Please enter a Cypher query.", message: ""});
         }
         else if (invalidWords.some((substring) => fullInput.value.toUpperCase().includes(substring))) {
-          emit("onAlert", {title: "SET, CREATE, DELETE, MERGE or REMOVE cannot be used!", message: ""});  //TODO:
+          emit("onAlert", {title: "SET, CREATE, DELETE, MERGE or REMOVE cannot be used!", message: ""});
         } else {
           endpoint = "query/"
         }
@@ -194,7 +194,9 @@ app.component("autocomplete", {
           emit("onSubmit", { nodes: nodes, links: links });
           emit("loading", false);
         } catch (error) {
-          emit("onAlert", {title: "Please enter a valid cypher query.", message: error.response.data});
+          console.log(typeof error.response.data)
+          console.log(error.response.data)
+          emit("onAlert", error.response.data);
           console.log(error.response)
         }
       }
