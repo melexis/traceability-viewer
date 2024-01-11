@@ -33,24 +33,26 @@ if "layers" in configuration:
     unique_groups = list(dict.fromkeys(groups_list))
 
 
-def error_handling(func):
-    def inner_function(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except Exception as error:  # pylint: disable=broad-exception-caught
-            LOGGER.error(repr(error))
-            error_status = status.HTTP_400_BAD_REQUEST
-            data = {
-                "identifier": id(error),
-                "message": f"An error occurred in function {func.__name__}:",
-            }
-            if isinstance(error, (BufferError, TypeError, ValueError)):
-                data["message"] += f"\n{traceback.format_exc()}"
-            else:
-                data["message"] += f"\n{error}"
-            return Response(status=error_status, data=data)
-
-    return inner_function
+def error_handling(title):
+    def decorator(func):
+        def inner_function(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as error:  # pylint: disable=broad-exception-caught
+                LOGGER.error(repr(error))
+                error_status = status.HTTP_400_BAD_REQUEST
+                data = {
+                    "identifier": id(error),
+                    "title": title,
+                    "message": f"An error occurred in function {func.__name__}:",
+                }
+                if isinstance(error, (BufferError, TypeError, ValueError)):
+                    data["message"] += f"\n{traceback.format_exc()}"
+                else:
+                    data["message"] += f"\n{error}"
+                return Response(status=error_status, data=data)
+        return inner_function
+    return decorator
 
 
 def index(request):
@@ -58,7 +60,7 @@ def index(request):
     # create_database()
     return render(request, "myapp/index.html")
 
-@error_handling
+@error_handling(title="An error occured in the data initialization of the home button.")
 @cache_page(None)
 @api_view(["GET"])
 def initialize(request):
@@ -81,7 +83,7 @@ def initialize(request):
     return Response(data={"nodes": nodes, "links": links})
 
 
-@error_handling
+@error_handling(title="An error occured in the data initialization of a filter button.")
 @cache_page(None)
 @api_view(["GET"])
 def filter_group(request, filtergroup):
@@ -140,7 +142,7 @@ def filter_links(links, nodes):
             yield link
 
 
-@error_handling
+@error_handling(title="An error occured when loading the configuration and groups.")
 @api_view(["GET"])
 def config(request):
     """Get the configuration"""
@@ -150,7 +152,7 @@ def config(request):
         return Response(data={"config": configuration, "groups": configuration.get("item_colors", {}).keys()})
 
 
-@error_handling
+@error_handling(title="An error occured when loading the autocompletion words.")
 @cache_page(None)
 @api_view(["GET"])
 def autocomplete(request):
@@ -169,7 +171,7 @@ def autocomplete(request):
     return Response(data={"words": query_keywords, "searchIds": search_ids, "link_types": link_types})
 
 
-@error_handling
+@error_handling(title="An error occured when specifying the y-scale of nodes.")
 @api_view(["GET"])
 def layers(request):
     """Request the y values depending on the layers in the configuration file."""
@@ -191,7 +193,7 @@ def layers(request):
     return Response(data=y_scale)
 
 
-@error_handling
+@error_handling(title="Please enter a valid cypher query.")
 @api_view(["POST"])
 def query(request):
     """Return the result of nodes and links depending on the query."""
@@ -297,7 +299,7 @@ def search_nodes_recursively(source_node, groups, nodes, links, unwanted_link_na
     # return nodes, links
 
 
-@error_handling
+@error_handling(title="An error occured while getting data of the node name equal to search input.")
 @api_view(["POST"])
 def search(request):
     """Return the connected nodes or the layers that are connected to the node with the requested node name."""
@@ -312,7 +314,7 @@ def search(request):
     return Response(data={"nodes": nodes.values(), "links": links})
 
 
-@error_handling
+@error_handling(title="An error occured while getting the connected nodes of the requested node name.")
 @api_view(["POST"])
 def searchConnectedNodes(request):
     """Return the connected nodes of the requested node name."""
