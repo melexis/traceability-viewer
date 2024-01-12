@@ -88,8 +88,8 @@ def initialize(request):
 @api_view(["GET"])
 def filter_group(request, filtergroup):
     """Get the data according to the filter"""
-    pr = cProfile.Profile()
-    pr.enable()
+    # pr = cProfile.Profile()
+    # pr.enable()
     nodes = set()
     links = set()
     if configuration["layered"]:
@@ -111,35 +111,24 @@ def filter_group(request, filtergroup):
         nodes.add(node.node_data)
         links.update(node.links)
 
-    # for link in links:
-    #     if link["source"] in nodes and link["target"] in nodes:
-    #         continue
-    #     links.remove(link)
-    #TODO: links hashable maken of met dict werken
-    nodes_as_dict = set_of_namedtuples_to_set_of_dicts(nodes)
-    nodes = list(nodes_as_dict)
-    links = filter_links(links, nodes)
+    nodes_as_dict = [element._asdict() for element in nodes]
+    node_names = [node["name"] for node in nodes_as_dict]
+    filtered_links_as_dict = filter_links(links, node_names)
 
-    links_as_dict = set_of_namedtuples_to_set_of_dicts(links)
+    # pr.disable()
+    # s = io.StringIO()
+    # ps = pstats.Stats(pr, stream=s).sort_stats(SortKey.CUMULATIVE)
+    # ps.print_stats()
+    # with open(f"stat_{filtergroup}.txt", "w+") as file:
+    #     file.write(s.getvalue())
 
-    pr.disable()
-    s = io.StringIO()
-    ps = pstats.Stats(pr, stream=s).sort_stats(SortKey.CUMULATIVE)
-    ps.print_stats()
-    with open(f"stat_{filtergroup}.txt", "w+") as file:
-        file.write(s.getvalue())
-    return Response(data={"nodes": nodes, "links": list(links_as_dict)})
+    return Response(data={"nodes": nodes, "links": list(filtered_links_as_dict)})
 
-
-def set_of_namedtuples_to_set_of_dicts(data):
-    for element in data:
-        yield element._asdict()
-
-def filter_links(links, nodes):
-    node_names = set(node["name"] for node in nodes)
+def filter_links(links, node_names):
     for link in links:
-        if getattr(link, "source") in node_names and getattr(link,"target") in node_names:
-            yield link
+        # breakpoint()
+        if getattr(link,"target") in node_names:
+            yield link._asdict()
 
 
 @error_handling(title="An error occured when loading the configuration and groups.")
