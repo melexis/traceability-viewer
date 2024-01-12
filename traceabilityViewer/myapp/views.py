@@ -111,9 +111,8 @@ def filter_group(request, filtergroup):
         nodes.add(node.node_data)
         links.update(node.links)
 
-    nodes_as_dict = [element._asdict() for element in nodes]
-    node_names = [node["name"] for node in nodes_as_dict]
-    filtered_links_as_dict = filter_links(links, node_names)
+    serialized_nodes_per_name = {node.name: node._asdict() for node in nodes}
+    filtered_links_as_dict = filter_links(links, serialized_nodes_per_name.keys())
 
     # pr.disable()
     # s = io.StringIO()
@@ -122,11 +121,10 @@ def filter_group(request, filtergroup):
     # with open(f"stat_{filtergroup}.txt", "w+") as file:
     #     file.write(s.getvalue())
 
-    return Response(data={"nodes": nodes, "links": list(filtered_links_as_dict)})
+    return Response(data={"nodes": iter(serialized_nodes_per_name.values()), "links": list(filtered_links_as_dict)})
 
 def filter_links(links, node_names):
     for link in links:
-        # breakpoint()
         if getattr(link,"target") in node_names:
             yield link._asdict()
 
