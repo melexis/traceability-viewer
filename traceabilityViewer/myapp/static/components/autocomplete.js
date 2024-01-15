@@ -185,8 +185,14 @@ app.component("autocomplete", {
           emit("onSubmit", { nodes: nodes, links: links });
           emit("loading", false);
         } catch (error) {
-          console.log(error)
-          emit("onAlert", error.response.data);
+          console.log(error.response)
+          if (error.response.status != 400){
+            var wnd = window.open("", "_blank");
+            wnd.document.write(error.response.data);
+          }
+          else {
+            emit("onAlert", error.response.data);
+          }
         }
       }
     }

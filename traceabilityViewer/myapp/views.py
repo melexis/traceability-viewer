@@ -14,6 +14,7 @@ from rest_framework import status
 
 from django.views.decorators.cache import cache_page
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 
 from neomodel import db, NeomodelPath, Traversal, match
 from neo4j.exceptions import CypherSyntaxError
@@ -182,6 +183,7 @@ def layers(request):
     return Response(data=y_scale)
 
 
+@csrf_exempt
 @error_handling(title="Please enter a valid cypher query.")
 @api_view(["POST"])
 def query(request):
@@ -232,6 +234,7 @@ def search_nodes_recursively(source_node, groups, nodes, links, unwanted_link_na
     # return nodes, links
 
 
+@csrf_exempt
 @error_handling(title="An error occured while getting data of the node name equal to search input.")
 @api_view(["POST"])
 def search(request):
@@ -251,6 +254,7 @@ def search(request):
     return Response(data={"nodes": nodes.values(), "links": links})
 
 
+@csrf_exempt
 @error_handling(title="An error occured while getting the connected nodes of the requested node name.")
 @api_view(["POST"])
 def searchConnectedNodes(request):
