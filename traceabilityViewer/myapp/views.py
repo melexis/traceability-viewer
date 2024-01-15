@@ -28,6 +28,8 @@ CONFIG_PATH = Path(__file__).parent.parent / "config.yml"
 with open(CONFIG_PATH, "r", encoding="utf-8") as open_file:
     configuration = YAML().load(open_file)
 
+search_ids = set()
+
 if "layers" in configuration:
     groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
     unique_groups = list(dict.fromkeys(groups_list))
@@ -150,7 +152,7 @@ def autocomplete(request):
     """
     query_keywords = ["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"]
     link_types = configuration["backwards_relationships"].values()
-    search_ids = set()
+
     if "layers" in configuration:
         for item in DocumentItem.nodes.filter(layer_group__in=unique_groups):
             search_ids.add(item.name)
@@ -235,6 +237,10 @@ def search_nodes_recursively(source_node, groups, nodes, links, unwanted_link_na
 def search(request):
     """Return the connected nodes or the layers that are connected to the node with the requested node name."""
     search_name = request.body.decode("utf-8")
+    if search_name == "":
+        ValueError(f"Invalid name. The search field is empty.")
+    if search_name not in search_ids:
+        ValueError(f"Invalid name. The valid names are {search_ids}")
     nodes = {}
     links = []
     print(configuration["layered"])
@@ -254,6 +260,12 @@ def searchConnectedNodes(request):
 
 
 def get_data_with_cypher_query(query):
+    invalidWords = ["SET ", "CREATE ", "DELETE ", "MERGE ", "REMOVE "]
+    if query == "":
+        raise ValueError("The input is empty. Please enter a Cypher query.")
+
+    elif any(word in query for word in invalidWords):
+        raise ValueError("SET, CREATE, DELETE, MERGE or REMOVE cannot be used!")
     nodes = []
     links = []
     results, _ = db.cypher_query(query, resolve_objects=True)

@@ -170,25 +170,11 @@ app.component("autocomplete", {
       let endpoint = ""
       if (props.sentenceAllowed) {
         // query
-        const invalidWords = ["SET ", "CREATE ", "DELETE ", "MERGE ", "REMOVE "]
-        if (fullInput.value === "") {
-          errorData = {title: "The input is empty. Please enter a Cypher query.", message: ""}
-          errorData.identifier = cyrb53(errorData.title)
-          emit("onAlert", errorData);
-        }
-        else if (invalidWords.some((substring) => fullInput.value.toUpperCase().includes(substring)) || invalidWords.includes(fullInput.value.toUpperCase() + " ")) {
-          console.log("SET, CREATE, DELETE, MERGE or REMOVE cannot be used!")
-          errorData = {title: "SET, CREATE, DELETE, MERGE or REMOVE cannot be used!", message: ""}
-          errorData.identifier = cyrb53(errorData.title)
-          emit("onAlert", errorData);
-        } else {
-          endpoint = "query/"
-        }
+        endpoint = "query/"
+        // }
       } else {
         // search ID
-        if (props.suggestions.includes(fullInput.value)) {
-          endpoint = "search/";
-        }
+        endpoint = "search/";
       }
       if (endpoint){
         try {
@@ -199,6 +185,7 @@ app.component("autocomplete", {
           emit("onSubmit", { nodes: nodes, links: links });
           emit("loading", false);
         } catch (error) {
+          console.log(error)
           emit("onAlert", error.response.data);
         }
       }
