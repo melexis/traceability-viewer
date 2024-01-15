@@ -185,64 +185,8 @@ def layers(request):
 def query(request):
     """Return the result of nodes and links depending on the query."""
     query = request.body.decode("utf-8")
-    error = ""
-    nodes = []
-    links = []
-    results, _ = db.cypher_query(query, resolve_objects=True)
-    nodes_made = []
-    for result in results:
-        for element in result:
-            if isinstance(element, DocumentItem):
-                node = element.node_data
-                if node["name"] not in nodes_made:
-                    nodes.append(node)
-                    nodes_made.append(node["name"])
-
-            elif isinstance(element, Rel):
-                link = {
-                    "source": element.start_node().name,
-                    "target": element.end_node().name,
-                    "type": element.type,
-                    "color": element.color,
-                }
-                if link not in links:
-                    links.append(link)
-
-            elif isinstance(element, NeomodelPath):
-                for path_element in element:
-                    if isinstance(path_element, DocumentItem):
-                        node = path_element.node_data
-                        if node["name"] not in nodes_made:
-                            nodes.append(node)
-                            nodes_made.append(node["name"])
-                    elif isinstance(path_element, Rel):
-                        link = {
-                            "source": path_element.start_node().name,
-                            "target": path_element.end_node().name,
-                            "type": path_element.type,
-                            "color": path_element.color,
-                        }
-                        if link not in links:
-                            links.append(link)
-                        for node_name in [path_element.start_node().name, path_element.end_node().name]:
-                            node = DocumentItem.nodes.get(name=node_name)
-                            node = node.node_data
-                            if node["name"] not in nodes_made:
-                                nodes.append(node)
-                                nodes_made.append(node["name"])
-
-                    else:
-                        raise TypeError(
-                            f"Expected Node or Relationship types to be returned from the query; "
-                            f"got {type(element)}"
-                        )
-
-            else:
-                raise TypeError(
-                    f"Expected Node or Relationship types to be returned from the query; " f"got {type(element)}"
-                )
-
-    return Response(data={"nodes": nodes, "links": links})
+    get_data_with_cypher_query(query)
+    # return Response(data={"nodes": nodes, "links": links})
 
 
 def search_nodes_recursively(source_node, groups, nodes, links, unwanted_link_name=""):
@@ -306,12 +250,13 @@ def search(request):
 def searchConnectedNodes(request):
     """Return the connected nodes of the requested node name."""
     search_name = request.body.decode("utf-8")
+    get_data_with_cypher_query(f"MATCH (n)-[r]-(m) where n.name = '{search_name}' return n,r,m")
+
+
+def get_data_with_cypher_query(query):
     nodes = []
     links = []
-
-    results, _ = db.cypher_query(
-        f"MATCH (n)-[r]-(m) where n.name = '{search_name}' return n,r,m", resolve_objects=True
-    )
+    results, _ = db.cypher_query(query, resolve_objects=True)
     nodes_made = []
     for result in results:
         for element in result:
@@ -330,6 +275,7 @@ def searchConnectedNodes(request):
                 }
                 if link not in links:
                     links.append(link)
+
             elif isinstance(element, NeomodelPath):
                 for path_element in element:
                     if isinstance(path_element, DocumentItem):
@@ -354,15 +300,13 @@ def searchConnectedNodes(request):
                                 nodes_made.append(node["name"])
 
                     else:
-                        error = TypeError(
+                        raise TypeError(
                             f"Expected Node or Relationship types to be returned from the query; "
                             f"got {type(element)}"
                         )
-                        return Response(data=error)
 
             else:
-                error = TypeError(
+                raise TypeError(
                     f"Expected Node or Relationship types to be returned from the query; " f"got {type(element)}"
                 )
-                return Response(data=error)
     return Response(data={"nodes": nodes, "links": links})
