@@ -2,23 +2,11 @@ function dataRequest(request) {
   return (
     axios
       .get(request)
-      // .then(function (response){
-      //     return response.data;
-      // })
-      // .catch(function (error) {
-      //   console.log("this is the catch of dataRequest");
-      //   console.log(error);
-      //   // return error
-      // })
   );
 }
 
 function postDataRequest(url, data) {
   return axios.post(url, data)
-  // .catch(function (error) {
-  //   console.log(error);
-  // }
-  // );
 }
 
 // hash function
