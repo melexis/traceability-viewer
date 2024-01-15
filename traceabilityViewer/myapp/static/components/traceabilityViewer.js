@@ -37,12 +37,6 @@ const cyrb53 = (str, seed = 0) => {
   return 4294967296 * (2097151 & h2) + (h1 >>> 0);
 };
 
-function removeDuplicates(myArr, prop) {
-  return myArr.filter((obj, pos, arr) => {
-      return arr.map(mapObj => mapObj[prop]).indexOf(obj[prop]) === pos
-  })
-}
-
 app.component("traceability-viewer", {
   delimiters: ["[[", "]]"],
   template:
@@ -136,14 +130,16 @@ app.component("traceability-viewer", {
     }
 
     function onAlert(alertData) {
+      if (alerts.value.some(element => element.identifier === alertData.identifier)){
+        alerts.value.splice(alerts.value.findIndex(element => element.identifier === alertData.identifier), 1);
+      }
       alerts.value.push(alertData)
-      alerts.value = removeDuplicates(alerts.value, "identifier");
+      const element =  document.getElementById("alert-" + alertData.identifier)
+      element.scrollIntoView({behavior: "smooth"});
     }
 
     function removeAlert(id){
-      for (element of alerts.value){
-        alerts.value.splice(alerts.value.findIndex(element => element.identifier === id), 1);
-      }
+      alerts.value.splice(alerts.value.findIndex(element => element.identifier === id), 1);
     }
 
     function changeLoading(newValue) {
