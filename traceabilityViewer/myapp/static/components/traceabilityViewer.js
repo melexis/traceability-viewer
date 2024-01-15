@@ -37,6 +37,12 @@ const cyrb53 = (str, seed = 0) => {
   return 4294967296 * (2097151 & h2) + (h1 >>> 0);
 };
 
+function removeDuplicates(myArr, prop) {
+  return myArr.filter((obj, pos, arr) => {
+      return arr.map(mapObj => mapObj[prop]).indexOf(obj[prop]) === pos
+  })
+}
+
 app.component("traceability-viewer", {
   delimiters: ["[[", "]]"],
   template:
@@ -130,7 +136,8 @@ app.component("traceability-viewer", {
     }
 
     function onAlert(alertData) {
-      alerts.value.push(alertData);
+      alerts.value.push(alertData)
+      alerts.value = removeDuplicates(alerts.value, "identifier");
     }
 
     function removeAlert(id){
