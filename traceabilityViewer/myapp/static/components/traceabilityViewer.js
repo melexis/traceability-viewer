@@ -21,6 +21,22 @@ function postDataRequest(url, data) {
   // );
 }
 
+// hash function
+const cyrb53 = (str, seed = 0) => {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for(let i = 0, ch; i < str.length; i++) {
+      ch = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1  = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2  = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+};
+
 app.component("traceability-viewer", {
   delimiters: ["[[", "]]"],
   template:
@@ -114,18 +130,13 @@ app.component("traceability-viewer", {
     }
 
     function onAlert(alertData) {
-      alertData["index"] = alerts.value.length;
       alerts.value.push(alertData);
     }
 
-    function removeAlert(index){
-      alerts.value.splice(index, 1)
-      newIndex = 0
-      alerts.value.forEach(element => {
-        element.index = newIndex
-        newIndex += 1
-      });
-
+    function removeAlert(id){
+      for (element of alerts.value){
+        alerts.value.splice(alerts.value.findIndex(element => element.identifier === id), 1);
+      }
     }
 
     function changeLoading(newValue) {
