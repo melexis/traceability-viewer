@@ -3,6 +3,13 @@ app.component("autocomplete", {
   template:
     /*html*/
     `
+    <a id="info-autocomplete" v-if="sentenceAllowed"
+       class="btn border border-secondary m-1"
+       style="--bs-btn-border-radius: 50%; --bs-btn-padding-y: 0; --bs-btn-padding-x: 6px; --bs-btn-font-size: .75rem;"
+       data-bs-toggle="tooltip"
+       data-bs-title="Link to Cypher cheat sheet."
+       href="https://neo4j.com/docs/cypher-cheat-sheet/5/neo4j-community/"
+       target="_blank">?</a>
     <div class="w-100 autocomplete" tabindex="0"
         @focusin="startFocus"
         @focusout="stopFocus"
@@ -213,6 +220,10 @@ app.component("autocomplete", {
         search.value = event.target.value;
       }
     }
+
+    Vue.onMounted(function (){
+      const tooltip = new bootstrap.Tooltip(document.getElementById("info-autocomplete"));
+    });
 
     // selection = ""
     return {
