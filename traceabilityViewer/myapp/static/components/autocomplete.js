@@ -27,7 +27,7 @@ app.component("autocomplete", {
             [[ suggestion ]]
             </li>
         </ul>
-        <button @click="submitted" class="btn mt-1 mb-1 btn-primary">Submit</button>
+        <button @click="submitted" class="btn mt-1 mb-1 btn-primary" :disabled="isDisabled">Submit</button>
     </div>
     `,
   props: {
@@ -49,6 +49,7 @@ app.component("autocomplete", {
     var isOpen = Vue.ref(false);
     var current = Vue.ref(0);
     var isFocussed = Vue.ref(false);
+    var isDisabled = Vue.ref(false)
 
     //Filtering the word suggestion based on the input
     var matches = Vue.computed(() => {
@@ -163,6 +164,7 @@ app.component("autocomplete", {
     // When the button is pressed
     async function submitted() {
       emit("loading", true);
+      isDisabled.value = true;
       show = false;
       nodes = [];
       let links = [];
@@ -183,7 +185,6 @@ app.component("autocomplete", {
           nodes = data.data.nodes;
           links = data.data.links;
           emit("onSubmit", { nodes: nodes, links: links });
-          emit("loading", false);
         } catch (error) {
           console.log(error.response)
           if (error.response.status != 400){
@@ -195,8 +196,9 @@ app.component("autocomplete", {
           }
         }
       }
+      emit("loading", false);
+      isDisabled.value = false;
     }
-
 
 
     // When the input changes
@@ -221,6 +223,7 @@ app.component("autocomplete", {
       isFocussed,
       matches,
       openSuggestion,
+      isDisabled,
       // styledAndOrderedMatches,
       startFocus,
       stopFocus,
