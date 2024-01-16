@@ -189,7 +189,7 @@ def layers(request):
 def query(request):
     """Return the result of nodes and links depending on the query."""
     query = request.body.decode("utf-8")
-    get_data_with_cypher_query(query)
+    nodes, links = get_data_with_cypher_query(query + " ")
     # return Response(data={"nodes": nodes, "links": links})
 
 
@@ -263,16 +263,15 @@ def searchConnectedNodes(request):
     get_data_with_cypher_query(f"MATCH (n)-[r]-(m) where n.name = '{search_name}' return n,r,m")
 
 
-def get_data_with_cypher_query(query):
+def get_data_with_cypher_query(cypher_query):
     invalidWords = ["SET ", "CREATE ", "DELETE ", "MERGE ", "REMOVE "]
-    if query == "":
+    if cypher_query == "":
         raise ValueError("The input is empty. Please enter a Cypher query.")
-
-    elif any(word in query for word in invalidWords):
+    elif any(word in cypher_query.upper() for word in invalidWords):
         raise ValueError("SET, CREATE, DELETE, MERGE or REMOVE cannot be used!")
     nodes = []
     links = []
-    results, _ = db.cypher_query(query, resolve_objects=True)
+    results, _ = db.cypher_query(cypher_query, resolve_objects=True)
     nodes_made = []
     for result in results:
         for element in result:
