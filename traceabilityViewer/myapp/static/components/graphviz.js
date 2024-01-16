@@ -635,11 +635,25 @@ app.component("graphviz", {
       const node = findNode(x, y, nodeRadius);
       if (node) {
         if (!node.hide) {
-          d3.select("#tooltip")
-            .style("opacity", 0.9)
-            .style("top", event.pageY + 10 + "px")
-            .style("left", event.pageX + 10 + "px")
-            .html(node.name);
+          if (toggle.value){
+            if (
+              linkedByIndex[selectedNodeName.value + "," + node.name] ||
+              linkedByIndex[node.name + "," + selectedNodeName.value]
+            ) {
+              d3.select("#tooltip")
+              .style("opacity", 0.9)
+              .style("top", event.pageY + 10 + "px")
+              .style("left", event.pageX + 10 + "px")
+              .html(node.name);
+            }
+          }
+          else {
+            d3.select("#tooltip")
+              .style("opacity", 0.9)
+              .style("top", event.pageY + 10 + "px")
+              .style("left", event.pageX + 10 + "px")
+              .html(node.name);
+          }
         }
       } else {
         d3.select("#tooltip").style("opacity", 0);
