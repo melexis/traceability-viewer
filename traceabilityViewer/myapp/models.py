@@ -14,6 +14,15 @@ class Rel(StructuredRel):
     type = StringProperty(required=True)
     color = StringProperty()
 
+    @cached_property
+    def link_data(self):
+        return Link(
+            source=self.start_node().name,
+            target=self.end_node().name,
+            type=self.type,
+            color=self.color
+        )
+
 
 class DocumentItem(StructuredNode):
     """Class that represents a node in the database"""

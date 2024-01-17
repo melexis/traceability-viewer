@@ -275,17 +275,12 @@ def get_data_with_cypher_query(cypher_query):
         for element in result:
             if isinstance(element, DocumentItem):
                 node = element.node_data
-                if node["name"] not in nodes_made:
+                if node.name not in nodes_made:
                     nodes.append(node)
-                    nodes_made.append(node["name"])
+                    nodes_made.append(node.name)
 
             elif isinstance(element, Rel):
-                link = {
-                    "source": element.start_node().name,
-                    "target": element.end_node().name,
-                    "type": element.type,
-                    "color": element.color,
-                }
+                link = element.link_data
                 if link not in links:
                     links.append(link)
 
@@ -293,24 +288,19 @@ def get_data_with_cypher_query(cypher_query):
                 for path_element in element:
                     if isinstance(path_element, DocumentItem):
                         node = path_element.node_data
-                        if node["name"] not in nodes_made:
+                        if node.name not in nodes_made:
                             nodes.append(node)
-                            nodes_made.append(node["name"])
+                            nodes_made.append(node.name)
                     elif isinstance(path_element, Rel):
-                        link = {
-                            "source": path_element.start_node().name,
-                            "target": path_element.end_node().name,
-                            "type": path_element.type,
-                            "color": path_element.color,
-                        }
+                        link = path_element.link_data
                         if link not in links:
                             links.append(link)
-                        for node_name in [path_element.start_node().name, path_element.end_node().name]:
+                        for node_name in [link.source, link.target]:
                             node = DocumentItem.nodes.get(name=node_name)
                             node = node.node_data
-                            if node["name"] not in nodes_made:
+                            if node.name not in nodes_made:
                                 nodes.append(node)
-                                nodes_made.append(node["name"])
+                                nodes_made.append(node.name)
 
                     else:
                         raise TypeError(
