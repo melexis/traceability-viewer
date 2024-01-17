@@ -12,7 +12,7 @@ urlpatterns = [
     path("config/", views.config),
     path("autocomplete/", views.autocomplete),
     path("layers/", views.layers),
-    path("query/", views.query),
-    path("search/", views.search),
-    path("search_connected_nodes/", views.searchConnectedNodes),
+    path("query/<str:cypher_query>/", views.query),
+    path("search/<str:node_name>/", views.search),
+    path("search_connected_nodes/<str:node_name>/", views.search_connected_nodes),
 ]
