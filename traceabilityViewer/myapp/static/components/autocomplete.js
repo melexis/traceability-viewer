@@ -179,15 +179,15 @@ app.component("autocomplete", {
       let endpoint = ""
       if (props.sentenceAllowed) {
         // query
-        endpoint = "query/"
+        endpoint = "/query/"
         // }
       } else {
         // search ID
-        endpoint = "search/";
+        endpoint = "/search/";
       }
       if (endpoint){
         try {
-          data = await postDataRequest(endpoint, fullInput.value);
+          data = await dataRequest(endpoint + fullInput.value);
           console.log(data);
           nodes = data.data.nodes;
           links = data.data.links;
