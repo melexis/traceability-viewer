@@ -259,10 +259,12 @@ def search_connected_nodes(request, node_name):
 
 
 def get_data_with_cypher_query(cypher_query):
-    invalidWords = ["SET ", "CREATE ", "DELETE ", "MERGE ", "REMOVE "]
+    invalidWords = ["SET", "CREATE", "DELETE", "MERGE", "REMOVE"]
+    query_words = cypher_query.split()
+    query_words = [word.upper() for word in query_words]
     if cypher_query == "":
         raise ValueError("The input is empty. Please enter a Cypher query.")
-    elif any(word in cypher_query.upper() for word in invalidWords):
+    elif any(word in query_words for word in invalidWords):
         raise ValueError("SET, CREATE, DELETE, MERGE or REMOVE cannot be used!")
     nodes = []
     links = []
