@@ -14,7 +14,6 @@ from rest_framework import status
 
 from django.views.decorators.cache import cache_page
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 
 from neomodel import db, NeomodelPath, Traversal, match
 from neo4j.exceptions import CypherSyntaxError
@@ -63,9 +62,10 @@ def index(request):
     # create_database()
     return render(request, "myapp/index.html")
 
-@error_handling(title="An error occured in the data initialization of the home button.")
+
 @cache_page(None)
 @api_view(["GET"])
+@error_handling(title="An error occured in the data initialization of the home button.")
 def initialize(request):
     """Initialize data for the 'home' button"""
     nodes_made = []
@@ -86,9 +86,9 @@ def initialize(request):
     return Response(data={"nodes": nodes, "links": links})
 
 
-@error_handling(title="An error occured in the data initialization of a filter button.")
 @cache_page(None)
 @api_view(["GET"])
+@error_handling(title="An error occured in the data initialization of a filter button.")
 def filter_group(request, filtergroup):
     """Get the data according to the filter"""
     # pr = cProfile.Profile()
@@ -132,8 +132,8 @@ def filter_links(links, node_names):
             yield link._asdict()
 
 
-@error_handling(title="An error occured when loading the configuration and groups.")
 @api_view(["GET"])
+@error_handling(title="An error occured when loading the configuration and groups.")
 def config(request):
     """Get the configuration"""
     if "layers" in configuration:
@@ -142,9 +142,9 @@ def config(request):
         return Response(data={"config": configuration, "groups": configuration.get("item_colors", {}).keys()})
 
 
-@error_handling(title="An error occured when loading the autocompletion words.")
 @cache_page(None)
 @api_view(["GET"])
+@error_handling(title="An error occured when loading the autocompletion words.")
 def autocomplete(request):
     """
     Request autocompletion words. One is for the query input field that contains all node IDs,
@@ -161,8 +161,8 @@ def autocomplete(request):
     return Response(data={"words": query_keywords, "searchIds": search_ids, "link_types": link_types})
 
 
-@error_handling(title="An error occured when specifying the y-scale of nodes.")
 @api_view(["GET"])
+@error_handling(title="An error occured when specifying the y-scale of nodes.")
 def layers(request):
     """Request the y values depending on the layers in the configuration file."""
     y_scale = {}
@@ -183,14 +183,11 @@ def layers(request):
     return Response(data=y_scale)
 
 
-@csrf_exempt
+@api_view(['GET'])
 @error_handling(title="Please enter a valid cypher query.")
-@api_view(["POST"])
-def query(request):
+def query(request, cypher_query):
     """Return the result of nodes and links depending on the query."""
-    query = request.body.decode("utf-8")
-    nodes, links = get_data_with_cypher_query(query + " ")
-    # return Response(data={"nodes": nodes, "links": links})
+    get_data_with_cypher_query(cypher_query)
 
 
 def search_nodes_recursively(source_node, groups, nodes, links, unwanted_link_name=""):
@@ -234,10 +231,9 @@ def search_nodes_recursively(source_node, groups, nodes, links, unwanted_link_na
     # return nodes, links
 
 
-@csrf_exempt
+@api_view(['GET'])
 @error_handling(title="An error occured while getting data of the node name equal to search input.")
-@api_view(["POST"])
-def search(request):
+def search(request, node_name):
     """Return the connected nodes or the layers that are connected to the node with the requested node name."""
     search_name = request.body.decode("utf-8")
     if search_name == "":
@@ -254,13 +250,12 @@ def search(request):
     return Response(data={"nodes": nodes.values(), "links": links})
 
 
-@csrf_exempt
+
+@api_view(['GET'])
 @error_handling(title="An error occured while getting the connected nodes of the requested node name.")
-@api_view(["POST"])
-def searchConnectedNodes(request):
+def search_connected_nodes(request, node_name):
     """Return the connected nodes of the requested node name."""
-    search_name = request.body.decode("utf-8")
-    get_data_with_cypher_query(f"MATCH (n)-[r]-(m) where n.name = '{search_name}' return n,r,m")
+    get_data_with_cypher_query(f"MATCH (n)-[r]-(m) where n.name = '{node_name}' return n,r,m")
 
 
 def get_data_with_cypher_query(cypher_query):
