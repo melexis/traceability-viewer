@@ -235,15 +235,14 @@ def search_nodes_recursively(source_node, groups, nodes, links, unwanted_link_na
 @error_handling(title="An error occured while getting data of the node name equal to search input.")
 def search(request, node_name):
     """Return the connected nodes or the layers that are connected to the node with the requested node name."""
-    search_name = request.body.decode("utf-8")
-    if search_name == "":
-        ValueError(f"Invalid name. The search field is empty.")
-    if search_name not in search_ids:
+    if node_name == "":
+        ValueError(f"Invalid name. The search field is empty. The valid names are {search_ids}")
+    if node_name not in search_ids:
         ValueError(f"Invalid name. The valid names are {search_ids}")
     nodes = {}
     links = []
     print(configuration["layered"])
-    search_node = DocumentItem.nodes.get(name=search_name)
+    search_node = DocumentItem.nodes.get(name=node_name)
     nodes[search_node.name] = search_node.node_data
     search_nodes_recursively(search_node, {search_node.legend_group}, nodes, links)
 
