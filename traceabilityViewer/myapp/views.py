@@ -191,14 +191,14 @@ def query(request, cypher_query):
 
 
 def search_nodes_recursively(source_node, groups, nodes, links, unwanted_link_name=""):
-    """_summary_
+    """Search for nodes that are connected to one requested node recursively.
 
     Args:
-        source_node (_type_): _description_
-        groups (_type_): _description_
-        nodes (_type_): _description_
-        links (_type_): _description_
-        unwanted_link_name (string):
+        source_node (DocumentItem): The requested node
+        groups (set): The groups that are processed already
+        nodes (dict): The nodes that consist of the requested node, where the target nodes are added every cycle
+        links (list): A list of all the links of the target nodes.
+        unwanted_link_name (string): The link names that are filtered out of the Traversal
     """
     # LOGGER.info(f"search_nodes_recursively() function is called, {source_node}")
     print(f"search_nodes_recursively() function is called, {source_node.name}")
