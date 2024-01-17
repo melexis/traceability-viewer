@@ -187,7 +187,8 @@ def layers(request):
 @error_handling(title="Please enter a valid cypher query.")
 def query(request, cypher_query):
     """Return the result of nodes and links depending on the query."""
-    get_data_with_cypher_query(cypher_query)
+    nodes, links = get_data_with_cypher_query(cypher_query)
+    return Response(data={"nodes": nodes, "links": links})
 
 
 def search_nodes_recursively(source_node, groups, nodes, links, unwanted_link_name=""):
@@ -254,7 +255,8 @@ def search(request, node_name):
 @error_handling(title="An error occured while getting the connected nodes of the requested node name.")
 def search_connected_nodes(request, node_name):
     """Return the connected nodes of the requested node name."""
-    get_data_with_cypher_query(f"MATCH (n)-[r]-(m) where n.name = '{node_name}' return n,r,m")
+    nodes, links = get_data_with_cypher_query(f"MATCH (n)-[r]-(m) where n.name = '{node_name}' return n,r,m")
+    return Response(data={"nodes": nodes, "links": links})
 
 
 def get_data_with_cypher_query(cypher_query):
@@ -320,4 +322,4 @@ def get_data_with_cypher_query(cypher_query):
                 raise TypeError(
                     f"Expected Node or Relationship types to be returned from the query; " f"got {type(element)}"
                 )
-    return Response(data={"nodes": nodes, "links": links})
+    return nodes, links
