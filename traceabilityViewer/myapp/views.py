@@ -188,7 +188,9 @@ def layers(request):
 def query(request, cypher_query):
     """Return the result of nodes and links depending on the query."""
     nodes, links = get_data_with_cypher_query(cypher_query)
-    return Response(data={"nodes": nodes, "links": links})
+    serialized_nodes = [node._asdict() for node in nodes]
+    serialized_links = [link._asdict() for link in links]
+    return Response(data={"nodes": serialized_nodes, "links": serialized_links})
 
 
 def search_nodes_recursively(source_node, groups, nodes, links, unwanted_link_name=""):
@@ -260,7 +262,9 @@ def search(request, node_name):
 def search_connected_nodes(request, node_name):
     """Return the connected nodes of the requested node name."""
     nodes, links = get_data_with_cypher_query(f"MATCH (n)-[r]-(m) where n.name = '{node_name}' return n,r,m")
-    return Response(data={"nodes": nodes, "links": links})
+    serialized_nodes = [node._asdict() for node in nodes]
+    serialized_links = [link._asdict() for link in links]
+    return Response(data={"nodes": serialized_nodes, "links": serialized_links})
 
 
 def get_data_with_cypher_query(cypher_query):
@@ -271,49 +275,43 @@ def get_data_with_cypher_query(cypher_query):
         raise ValueError("The input is empty. Please enter a Cypher query.")
     elif any(word in query_words for word in invalidWords):
         raise ValueError("SET, CREATE, DELETE, MERGE or REMOVE cannot be used!")
-    nodes = []
-    links = []
+    nodes = set()
+    links = set()
     results, _ = db.cypher_query(cypher_query, resolve_objects=True)
-    nodes_made = []
     for result in results:
         for element in result:
             if isinstance(element, DocumentItem):
                 node = element.node_data
-                if node.name not in nodes_made:
-                    nodes.append(node)
-                    nodes_made.append(node.name)
+                nodes.add(node)
 
             elif isinstance(element, Rel):
                 link = element.link_data
-                if link not in links:
-                    links.append(link)
+                links.add(link)
+                for node_name in [link.source, link.target]:
+                    node = DocumentItem.nodes.get(name=node_name)
+                    node = node.node_data
+                    nodes.add(node)
 
             elif isinstance(element, NeomodelPath):
                 for path_element in element:
                     if isinstance(path_element, DocumentItem):
                         node = path_element.node_data
-                        if node.name not in nodes_made:
-                            nodes.append(node)
-                            nodes_made.append(node.name)
+                        nodes.add(node)
                     elif isinstance(path_element, Rel):
                         link = path_element.link_data
-                        if link not in links:
-                            links.append(link)
+                        links.add(link)
                         for node_name in [link.source, link.target]:
                             node = DocumentItem.nodes.get(name=node_name)
                             node = node.node_data
-                            if node.name not in nodes_made:
-                                nodes.append(node)
-                                nodes_made.append(node.name)
-
+                            nodes.add(node)
                     else:
                         raise TypeError(
-                            f"Expected Node or Relationship types to be returned from the query; "
+                            f"Expected Node or Relationship type to be returned from the query; "
                             f"got {type(element)}"
                         )
 
             else:
                 raise TypeError(
-                    f"Expected Node or Relationship types to be returned from the query; " f"got {type(element)}"
+                    f"Expected Node or Relationship type to be returned from the query; " f"got {type(element)}"
                 )
     return nodes, links
