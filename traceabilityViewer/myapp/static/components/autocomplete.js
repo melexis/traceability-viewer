@@ -188,10 +188,8 @@ app.component("autocomplete", {
       if (endpoint){
         try {
           data = await dataRequest(endpoint + fullInput.value);
-          console.log(data.data);
           emit("onSubmit", data.data);
         } catch (error) {
-          console.log(error.response)
           if (error.response.status != 400){
             var wnd = window.open("", "_blank");
             wnd.document.write(error.response.data);
