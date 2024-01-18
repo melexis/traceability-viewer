@@ -121,6 +121,10 @@ app.component("graphviz", {
       type: Array,
       default: [],
     },
+    searchNode: {
+      type: Object,
+      default: null,
+    },
   },
   setup(props) {
     // ref canvas
@@ -172,6 +176,19 @@ app.component("graphviz", {
     let selectedNodeName = Vue.ref("");
     // The selected node object
     let selectedNode = Vue.ref(null);
+
+    let searchNode = Vue.toRef(props, "searchNode");
+
+    Vue.watch(searchNode, (searchNode) => {
+
+      selectedNode.value = searchNode
+      if (searchNode){
+        selectedNodeName.value = searchNode.name
+      }
+      else {
+        selectedNodeName.value = ""
+      }
+    });
 
     // The identity transform where k=1, tx=ty=0
     let transform = d3.zoomIdentity;
@@ -820,8 +837,6 @@ app.component("graphviz", {
        */
       Vue.watch([nodes, links], ([newNodes, newLinks]) => {
         toggle.value = false;
-        selectedNode.value = null;
-        selectedNodeName.value = "";
         ctx.value.save();
         ctx.value.clearRect(0, 0, width.value, height.value);
         ctx.value.restore();
@@ -926,7 +941,7 @@ app.component("graphviz", {
       links,
       meter,
       worker,
-      // simulation,
+      searchNode,
       transform,
       selectedNode,
       selectedNodeName,

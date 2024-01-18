@@ -188,10 +188,8 @@ app.component("autocomplete", {
       if (endpoint){
         try {
           data = await dataRequest(endpoint + fullInput.value);
-          console.log(data);
-          nodes = data.data.nodes;
-          links = data.data.links;
-          emit("onSubmit", { nodes: nodes, links: links });
+          console.log(data.data);
+          emit("onSubmit", data.data);
         } catch (error) {
           console.log(error.response)
           if (error.response.status != 400){

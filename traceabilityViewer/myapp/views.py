@@ -240,14 +240,18 @@ def search(request, node_name):
         ValueError(f"Invalid name. The search field is empty. The valid names are {search_ids}")
     if node_name not in search_ids:
         ValueError(f"Invalid name. The valid names are {search_ids}")
-    nodes = {}
-    links = []
+    nodes = dict()
+    links = set()
     print(configuration["layered"])
-    search_node = DocumentItem.nodes.get(name=node_name)
-    nodes[search_node.name] = search_node.node_data
-    search_nodes_recursively(search_node, {search_node.legend_group}, nodes, links)
+    node = DocumentItem.nodes.get(name=node_name)
+    search_node = node.node_data._asdict()
+    nodes[node.name] = search_node
 
-    return Response(data={"nodes": nodes.values(), "links": links})
+    search_nodes_recursively(node, {node.legend_group}, nodes, links)
+
+    filtered_links_as_dict = filter_links(links, nodes.keys())
+    # breakpoint()
+    return Response(data={"nodes": iter(nodes.values()), "links": list(filtered_links_as_dict), "searchNode": search_node})
 
 
 

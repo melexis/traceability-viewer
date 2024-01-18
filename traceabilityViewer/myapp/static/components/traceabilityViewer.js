@@ -83,7 +83,13 @@ app.component("traceability-viewer", {
         >
         </autocomplete>
     </div>
-    <graphviz :loading="loading" :nodes="nodes" :links="links" :config="config"> </graphviz>
+    <graphviz
+      :loading="loading"
+      :nodes="nodes"
+      :links="links"
+      :config="config"
+      :searchNode="searchNode"
+    > </graphviz>
     `,
   setup() {
     var loading = Vue.ref(true);
@@ -99,6 +105,7 @@ app.component("traceability-viewer", {
     var initNodes = [];
     var initLinks = [];
     var alerts = Vue.ref([]);
+    var searchNode = Vue.ref(null);
 
     function clicked() {
       activeGroup.value = "home";
@@ -115,6 +122,12 @@ app.component("traceability-viewer", {
     function changeData(data) {
       nodes.value = data.nodes;
       links.value = data.links;
+      if (data.searchNode){
+        searchNode.value = data.searchNode
+      }
+      else {
+        searchNode.value = null
+      }
     }
 
     function onAlert(alertData) {
@@ -173,6 +186,7 @@ app.component("traceability-viewer", {
       linkTypes,
       nodes,
       links,
+      searchNode,
       clicked,
       changeGroup,
       changeData,
