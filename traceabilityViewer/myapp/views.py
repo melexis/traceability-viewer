@@ -193,45 +193,28 @@ def query(request, cypher_query):
     return Response(data={"nodes": serialized_nodes, "links": serialized_links})
 
 
-def search_nodes_recursively(source_node, groups, nodes, links, unwanted_link_name=""):
+def search_nodes_recursively(source_node, groups, nodes, links):
     """Search for nodes that are connected to one requested node recursively.
 
     Args:
         source_node (DocumentItem): The requested node
         groups (set): The groups that are processed already
         nodes (dict): The nodes that consist of the requested node, where the target nodes are added every cycle
-        links (list): A list of all the links of the target nodes.
-        unwanted_link_name (string): The link names that are filtered out of the Traversal
+        links (set): A list of all the links between source and target nodes.
     """
-    # LOGGER.info(f"search_nodes_recursively() function is called, {source_node}")
-    print(f"search_nodes_recursively() function is called, {source_node.name}")
     definition = dict(node_class=DocumentItem, direction=match.EITHER, relation_type=None, model=Rel)
     traversal_nodes = Traversal(source_node, DocumentItem.__label__, definition)
     target_nodes = traversal_nodes.all()
     if target_nodes:
         for target_node in target_nodes:
-            # breakpoint()
             group = target_node.legend_group
-            if group != source_node.legend_group and group in groups:
+            if group in groups:
                 continue
             groups.add(target_node.legend_group)
-            for link in target_node.links:
-                if (link["target"] == source_node.name) or (link["source"] == source_node.name):
-                    links.append(link)
-                    link_name = link["type"]
-                    for link_type in configuration["backwards_relationships"].values():
-                        unwanted_link_name =  configuration["backwards_relationships"]
-                    break
-            else:
-                for link in source_node.links:
-                    if (link["target"] == target_node.name) or (link["source"] == target_node.name):
-                        links.append(link)
-                        break
+            links.update(target_node.links)
             if target_node.name not in nodes:
-                nodes[target_node.name] = target_node.node_data
-
-                search_nodes_recursively(target_node, groups, nodes, links, unwanted_link_name)  #TODO: unwanted_link_name
-    # return nodes, links
+                nodes[target_node.name] = target_node.node_data._asdict()
+                search_nodes_recursively(target_node, groups, nodes, links)
 
 
 @api_view(['GET'])
@@ -245,11 +228,12 @@ def search(request, node_name):
     nodes = dict()
     links = set()
     print(configuration["layered"])
-    node = DocumentItem.nodes.get(name=node_name)
-    search_node = node.node_data._asdict()
-    nodes[node.name] = search_node
+    source_node = DocumentItem.nodes.get(name=node_name)
+    search_node = source_node.node_data._asdict()
+    links.update(source_node.links)
+    nodes[source_node.name] = search_node
 
-    search_nodes_recursively(node, {node.legend_group}, nodes, links)
+    search_nodes_recursively(source_node, set(), nodes, links)
 
     filtered_links_as_dict = filter_links(links, nodes.keys())
     # breakpoint()
