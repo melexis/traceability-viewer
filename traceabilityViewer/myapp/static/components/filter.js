@@ -33,7 +33,6 @@ app.component("groupfilter", {
       emit("loading", true);
       try {
         data = await dataRequest("/data/" + props.group);
-        console.log(data.data)
         nodes.value = data.data.nodes;
         links.value = data.data.links;
       } catch (error) {

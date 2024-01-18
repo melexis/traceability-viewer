@@ -221,7 +221,6 @@ app.component("graphviz", {
      */
     let showInfo = Vue.computed(() => {
       if (selectedNode.value != null) {
-        console.log(selectedNode.value.hide);
         return !selectedNode.value.hide;
       }
       return false;
@@ -252,12 +251,10 @@ app.component("graphviz", {
           properties = JSON.parse(
             selectedNode.value.properties.replaceAll("'", '"')
           );
-          console.log(properties)
           for (propertyName of props.config["visualised_properties"]){
             if (propertyName in properties){
               let propertyValue = properties[propertyName];
               if (propertyValue){
-                console.log(propertyValue)
                 if(typeof propertyValue === "object"){
                   if (Object.keys(propertyValue).length !== 0){
                     text += "<br><b>" + propertyName + ": </b>"
@@ -420,7 +417,6 @@ app.component("graphviz", {
      */
     function zoomToFit() {
       if (nodes.value.length > 0) {
-        console.log("zoom to fit");
         let minx = minX(nodes.value);
         let miny = minY(nodes.value);
         let dataWidth = maxX(nodes.value) - minx;
@@ -471,7 +467,6 @@ app.component("graphviz", {
           drawLine(link);
         }
       });
-      // console.log(nodes)
       // Draw nodes
       nodes.value.forEach((node) => {
         if (!node.hide) {
@@ -691,13 +686,11 @@ app.component("graphviz", {
             selectedNodeName.value + "," + selectedNodeName.value
           ] = 0;
           selectedNode.value = node;
-          console.log(node)
           selectedNodeName.value = node.name;
           linkedByIndex[node.name + "," + node.name] = 1;
           drawUpdate();
         }
       }
-      console.log("clicked");
     }
 
     /**
@@ -723,7 +716,6 @@ app.component("graphviz", {
      * @param {object} event The dragging event
      */
     function dragStart(event) {
-      console.log("dragStart");
       event.subject.x = transform.invertX(event.x);
       event.subject.y = transform.invertY(event.y);
       drawUpdate();
@@ -744,7 +736,6 @@ app.component("graphviz", {
      * @param {object} event The dragging event
      */
     function dragStop(event) {
-      console.log("dragstop");
       drawUpdate();
     }
 
@@ -802,7 +793,6 @@ app.component("graphviz", {
     Vue.onMounted(async function () {
       layersData = await dataRequest("/layers");
       yScale = layersData.data;
-      console.log(yScale);
       ctx.value = canvas.value.getContext("2d");
 
       /**
