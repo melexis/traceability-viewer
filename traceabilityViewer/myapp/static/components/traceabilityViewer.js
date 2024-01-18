@@ -5,10 +5,6 @@ function dataRequest(request) {
   );
 }
 
-function postDataRequest(url, data) {
-  return axios.post(url, data)
-}
-
 // hash function
 const cyrb53 = (str, seed = 0) => {
   let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
@@ -51,7 +47,7 @@ app.component("traceability-viewer", {
         >
             Home
         </button>
-        <groupfilter class="btn"
+        <!--<groupfilter class="btn"
             :class="{'btn btn-lg btn-outline-primary active mb-1 me-1': activeGroup == group, 'btn btn-lg btn-outline-primary mb-1 me-1': activeGroup != group}"
             v-for="group in groups"
             :group="group"
@@ -59,7 +55,7 @@ app.component("traceability-viewer", {
             @loading="changeLoading"
             @onAlert="onAlert"
         >
-        </groupfilter>
+        </groupfilter>-->
     </div>
     <!-- Input Fields -->
     <div v-if="activeGroup==='home'">

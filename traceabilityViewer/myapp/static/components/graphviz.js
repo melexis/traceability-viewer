@@ -772,10 +772,7 @@ app.component("graphviz", {
     }
 
     async function searchConnectedNodes() {
-      newData = await postDataRequest(
-        "search_connected_nodes/",
-        selectedNodeName.value
-      );
+      newData = await dataRequest("/search_connected_nodes/" + selectedNodeName.value);
       console.log(newData.data);
       newNodes = newData.data.nodes;
       newLinks = newData.data.links;
