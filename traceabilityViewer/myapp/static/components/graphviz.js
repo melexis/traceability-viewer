@@ -91,9 +91,9 @@ app.component("graphviz", {
     <!-- Info node -->
     <div v-if="showInfo" v-html="info" id="info" class="m-2 p-2 rounded position-absolute bg-body-secondary"></div>
     <!-- Graph -->
-    <div id="loading" class="d-flex justify-content-center">
+    <div id="loading" class="d-flex justify-content-center" :class="{'visually-hidden': !loading}">
         <strong role="status" class="m-5">Loading...</strong>
-        <div class="spinner-border m-5" aria-hidden="true"></div>
+        <div class="spinner-border m-5"></div>
     </div>
     <div id="progress" ref="meter"></div>
     <canvas ref="canvas" @mousemove="mouseMove($event)" @click="clicked($event)" :height="height" :width="width">
@@ -296,14 +296,9 @@ app.component("graphviz", {
 
     Vue.watch(loading, (newLoading) => {
       if (newLoading) {
-        document.getElementById("loading").className =
-          "d-flex justify-content-center";
         ctx.value.save();
         ctx.value.clearRect(0, 0, width.value, height.value);
         ctx.value.restore();
-      } else {
-        document.getElementById("loading").className =
-          "d-flex justify-content-center visually-hidden";
       }
     });
 
