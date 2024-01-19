@@ -189,7 +189,11 @@ app.component("autocomplete", {
         try {
           data = await dataRequest(endpoint + fullInput.value);
           emit("onSubmit", data.data);
+          emit("loading", false);
+          isDisabled.value = false;
         } catch (error) {
+          emit("loading", false);
+          isDisabled.value = false;
           if (error.response.status != 400){
             var wnd = window.open("", "_blank");
             wnd.document.write(error.response.data);
@@ -199,8 +203,6 @@ app.component("autocomplete", {
           }
         }
       }
-      emit("loading", false);
-      isDisabled.value = false;
     }
 
 
