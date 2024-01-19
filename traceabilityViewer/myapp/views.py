@@ -270,7 +270,7 @@ def get_data_with_cypher_query(cypher_query):
     if cypher_query == "":
         raise ValueError("The input is empty. Please enter a Cypher query.")
     elif any(word in query_words for word in invalidWords):
-        raise ValueError("SET, CREATE, DELETE, MERGE or REMOVE cannot be used!")
+        raise ValueError("SET, CREATE, DELETE, MERGE and REMOVE cannot be used!")
     nodes = set()
     links = set()
     results, _ = db.cypher_query(cypher_query, resolve_objects=True)

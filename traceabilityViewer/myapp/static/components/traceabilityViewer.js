@@ -60,7 +60,13 @@ app.component("traceability-viewer", {
     <!-- Input Fields -->
     <div v-if="activeGroup==='home'">
         <br>
-        <label>Cypher query: </label>
+        <label
+          data-bs-toggle="tooltip"
+          data-bs-title="SET, CREATE, DELETE, MERGE and REMOVE cannot be used!"
+          data-bs-placement="bottom"
+        >
+          Cypher query:
+        </label>
         <autocomplete
             :suggestions="words"
             :sentenceAllowed="true"
@@ -168,6 +174,8 @@ app.component("traceability-viewer", {
 
     Vue.onMounted(async function () {
       await initialize();
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
     });
 
     return {
