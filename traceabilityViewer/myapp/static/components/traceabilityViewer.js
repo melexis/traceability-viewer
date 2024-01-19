@@ -63,7 +63,6 @@ app.component("traceability-viewer", {
         <label
           data-bs-toggle="tooltip"
           data-bs-title="SET, CREATE, DELETE, MERGE and REMOVE cannot be used!"
-          data-bs-placement="bottom"
         >
           Cypher query:
         </label>
@@ -75,7 +74,10 @@ app.component("traceability-viewer", {
             @onAlert="onAlert"
         >
         </autocomplete>
-        <label>Search: </label>
+        <label
+          data-bs-toggle="tooltip"
+          data-bs-title="Enter the name of a node to search for."
+        >Search: </label>
         <autocomplete
             :suggestions="searchIds"
             :sentenceAllowed="false"
