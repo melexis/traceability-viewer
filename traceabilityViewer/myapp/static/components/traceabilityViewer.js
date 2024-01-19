@@ -47,15 +47,14 @@ app.component("traceability-viewer", {
         >
             Home
         </button>
-        <!--<groupfilter class="btn"
+        <groupfilter class="btn"
             :class="{'btn btn-lg btn-outline-primary active mb-1 me-1': activeGroup == group, 'btn btn-lg btn-outline-primary mb-1 me-1': activeGroup != group}"
             v-for="group in groups"
             :group="group"
             @changeGroup="changeGroup"
-            @loading="changeLoading"
             @onAlert="onAlert"
         >
-        </groupfilter>-->
+        </groupfilter>
     </div>
     <!-- Input Fields -->
     <div v-if="activeGroup==='home'">

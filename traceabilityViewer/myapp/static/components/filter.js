@@ -10,7 +10,7 @@ app.component("groupfilter", {
       type: String,
     },
   },
-  emits: ["loading", "changeGroup", "onAlert"],
+  emits: ["changeGroup", "onAlert"],
   setup(props, { emit }) {
     var nodes = Vue.ref([]);
     var links = Vue.ref([]);
@@ -30,16 +30,14 @@ app.component("groupfilter", {
       });
     }
     async function getData() {
-      emit("loading", true);
       try {
         data = await dataRequest("/data/" + props.group);
         nodes.value = data.data.nodes;
         links.value = data.data.links;
+        // named tuple to dict
       } catch (error) {
         emit("onAlert", {title: "An error occured in filter " + props.group, message: error.response.data});
       }
-      emit("loading", false);
-
     }
 
     Vue.onMounted(async function () {
