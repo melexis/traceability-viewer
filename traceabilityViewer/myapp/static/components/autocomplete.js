@@ -217,9 +217,9 @@ app.component("autocomplete", {
       }
     }
 
-    Vue.onMounted(function (){
-      const tooltip = new bootstrap.Tooltip(document.getElementById("info-autocomplete"));
-    });
+    // Vue.onMounted(function (){
+    //   const tooltip = new bootstrap.Tooltip(document.getElementById("info-autocomplete"));
+    // });
 
     // selection = ""
     return {
