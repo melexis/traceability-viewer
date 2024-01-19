@@ -193,12 +193,12 @@ def query(request, cypher_query):
     return Response(data={"nodes": serialized_nodes, "links": serialized_links})
 
 
-def search_nodes_recursively(source_node, groups, nodes, links):
+def search_nodes_recursively(source_node, groups, nodes, links, traversal_count):
     """Search for nodes that are connected to one requested node recursively.
 
     Args:
         source_node (DocumentItem): The requested node
-        groups (set): The groups that are processed already
+        groups (dict): The groups that are processed already
         nodes (dict): The nodes that consist of the requested node, where the target nodes are added every cycle
         links (set): A list of all the links between source and target nodes.
     """
@@ -206,15 +206,29 @@ def search_nodes_recursively(source_node, groups, nodes, links):
     traversal_nodes = Traversal(source_node, DocumentItem.__label__, definition)
     target_nodes = traversal_nodes.all()
     if target_nodes:
+        nodes_next_traversal = []
+        previous_group_set = set(groups[traversal_count])
+        traversal_count += 1
+        if groups.get(traversal_count):
+            previous_group_set.update(groups[traversal_count])
+        new_group_set = previous_group_set
+        groups[traversal_count] = new_group_set
         for target_node in target_nodes:
             group = target_node.legend_group
-            if group in groups:
+            if group in groups[traversal_count] or (group == "others" and source_node.legend_group == "others"):
                 continue
-            groups.add(target_node.legend_group)
+            if group != "others":
+                if groups.get(traversal_count + 1):
+                    groups[traversal_count + 1].add(group)
+                else:
+                    groups[traversal_count + 1] = {group}
             links.update(target_node.links)
             if target_node.name not in nodes:
                 nodes[target_node.name] = target_node.node_data._asdict()
-                search_nodes_recursively(target_node, groups, nodes, links)
+                nodes_next_traversal.append(target_node)
+
+        for source_node in nodes_next_traversal:
+            search_nodes_recursively(source_node, groups, nodes, links, traversal_count)
 
 
 @api_view(['GET'])
@@ -227,16 +241,13 @@ def search(request, node_name):
         ValueError(f"Invalid name. The valid names are {search_ids}")
     nodes = dict()
     links = set()
-    print(configuration["layered"])
     source_node = DocumentItem.nodes.get(name=node_name)
     search_node = source_node.node_data._asdict()
     links.update(source_node.links)
     nodes[source_node.name] = search_node
-
-    search_nodes_recursively(source_node, set(), nodes, links)
-
+    groups =  {0: set(), 1: set()}
+    search_nodes_recursively(source_node, groups, nodes, links, 0)
     filtered_links_as_dict = filter_links(links, nodes.keys())
-    # breakpoint()
     return Response(data={"nodes": iter(nodes.values()), "links": list(filtered_links_as_dict), "searchNode": search_node})
 
 
