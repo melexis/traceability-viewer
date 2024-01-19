@@ -46,12 +46,13 @@ def error_handling(title):
                 data = {
                     "identifier": id(error),
                     "title": title,
-                    "message": f"An error occurred in function {func.__name__}:",
+                    "message": f"An error occurred in function {func.__name__!r}:",
                 }
-                if isinstance(error, (BufferError, TypeError, ValueError)):
-                    data["message"] += f"\n{traceback.format_exc()}"
-                else:
+                if isinstance(error, CypherSyntaxError):
                     data["message"] += f"\n{error}"
+                else:
+                    data["message"] += f"\n{traceback.format_exc()}"
+
                 return Response(status=error_status, data=data)
         return inner_function
     return decorator
