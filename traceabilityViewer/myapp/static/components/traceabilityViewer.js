@@ -118,12 +118,7 @@ app.component("traceability-viewer", {
     }
 
     function onAlert(alertData) {
-      if (alerts.value.some(element => element.identifier === alertData.identifier)){
-        alerts.value.splice(alerts.value.findIndex(element => element.identifier === alertData.identifier), 1);
-      }
       alerts.value.push(alertData)
-      const element =  document.getElementById("alert-" + alertData.identifier)
-      element.scrollIntoView({behavior: "smooth"});
     }
 
     function removeAlert(id){

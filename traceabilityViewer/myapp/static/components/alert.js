@@ -38,6 +38,10 @@ app.component("alert", {
             emit("removeAlert", props.alertData.identifier);
         }
 
+        Vue.onMounted(function () {
+            alert.value.scrollIntoView({behavior: "smooth"})
+        });
+
         return {
             show,
             alert,
