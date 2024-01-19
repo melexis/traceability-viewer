@@ -249,7 +249,7 @@ app.component("graphviz", {
         }
         if (selectedNode.value.properties) {
           properties = JSON.parse(
-            selectedNode.value.properties.replaceAll("'", '"')
+            selectedNode.value.properties
           );
           for (propertyName of props.config["visualised_properties"]){
             if (propertyName in properties){
