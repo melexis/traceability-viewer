@@ -22,14 +22,15 @@ app.component("autocomplete", {
             @input="change"
         />
         <ul v-show="openSuggestion" class="list-group"
-        style="width:80%; position: absolute; z-index: 999;"
+
         >
             <li
-                v-for="(suggestion, index) in matches"
+                v-for="(innerhtml, suggestion, index) in matches"
                 class="list-group-item list-group-item-action"
                 v-bind:class="{'active': isActive(index), 'aria-current': isActive(index)}"
                 :key="suggestion"
                 @click="suggestionClick(index)"
+                v-html="innerhtml"
             >
             [[ suggestion ]]
             </li>
@@ -63,33 +64,36 @@ app.component("autocomplete", {
       if (search.value == "") {
         return [];
       }
-      return props.suggestions.filter((item) => {
-        if (item.toLowerCase().includes(search.value.toLowerCase())) {
-          return item;
-        }
-      });
-    });
 
-    // var styledAndOrderedMatches = Vue.computed(() => {
-    //     newMatches = []
-    //     console.log(matches)
-    //     if (matches.length > 0){
-    //         for (match of matches){
-    //             console.log(match)
-    //             if (match.substring(0, search.value.length).toUpperCase() == search.value.toUpperCase()) {
-    //                 styledMatch = "<strong>" + match.substr(0, search.value.length) + "</strong>";
-    //                 styledMatch += match.substr(search.value.length);
-    //                 newMatches.push(styledMatch)
-    //             }
-    //         }
-    //     }
-    //     console.log(newMatches)
-    //     return newMatches
-    // })
+      matchedStartingWith = {}
+      OrderedMatchedItems = {}
+      var pattern = new RegExp(search.value, "gi");
+      for (word of props.suggestions){
+        let stylesMatchedItem = ""
+        let wordUpperCase = word.toUpperCase();
+        /* check if the word starts with the same letters as the value of the input field */
+        /* if it starts with the same letters, these suggestions are the first ones in the list */
+        if (word.toUpperCase().startsWith(search.value.toUpperCase())) {
+          newItem = Object()
+          stylesMatchedItem = wordUpperCase.replaceAll(search.value.toUpperCase(), "<strong>"
+                                                       + search.value.toUpperCase() + "</strong>");
+          newItem[word] = stylesMatchedItem;
+          OrderedMatchedItems = Object.assign(newItem, OrderedMatchedItems);
+        }
+        /* check if the item contains the value of the input field somewhere else, and add them at the end of the list */
+        else if (pattern.test(word)) {
+          stylesMatchedItem = wordUpperCase.replaceAll(search.value.toUpperCase(), "<strong>"
+                                                       + search.value.toUpperCase() + "</strong>");
+          OrderedMatchedItems[word] = stylesMatchedItem
+        }
+      }
+      console.log(OrderedMatchedItems)
+      return OrderedMatchedItems
+    });
 
     // The flag
     var openSuggestion = Vue.computed(() => {
-      if (matches.value.length > 0 && isOpen.value && isFocussed.value) {
+      if (Object.keys(matches.value).length > 0 && isOpen.value && isFocussed.value) {
         return true;
       }
       current.value = 0;
@@ -105,7 +109,7 @@ app.component("autocomplete", {
     // When enter pressed on the input
     function enter() {
       if (isOpen.value && current.value >= 0) {
-        search.value = matches.value[current.value];
+        search.value = Object.keys(matches.value)[current.value];
         if (props.sentenceAllowed) {
           words = fullInput.value.split(" ");
           words = words.slice(0, words.length - 1);
@@ -124,7 +128,7 @@ app.component("autocomplete", {
     // When tab pressed on the input
     function tab() {
       if (isOpen.value && current.value >= 0) {
-        search.value = matches.value[current.value];
+        search.value = Object.keys(matches.value)[current.value];
         if (props.sentenceAllowed) {
           words = fullInput.value.split(" ");
           words = words.slice(0, words.length - 1);
@@ -145,7 +149,7 @@ app.component("autocomplete", {
 
     // When up pressed while suggestions are open
     function down() {
-      if (current.value < matches.value.length - 1) current.value++;
+      if (current.value < Object.keys(matches.value).length - 1) current.value++;
     }
 
     // For highlighting element
@@ -155,7 +159,7 @@ app.component("autocomplete", {
 
     // When one of the suggestion is clicked
     function suggestionClick(index) {
-      search.value = matches.value[index];
+      search.value = Object.keys(matches.value)[index];
       if (props.sentenceAllowed) {
         words = fullInput.value.split(" ");
         words = words.slice(0, words.length - 1);
