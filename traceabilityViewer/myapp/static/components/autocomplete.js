@@ -32,7 +32,6 @@ app.component("autocomplete", {
                 @click="suggestionClick(index)"
                 v-html="innerhtml"
             >
-            [[ suggestion ]]
             </li>
         </ul>
         <button @click="submitted" class="btn mt-1 mb-1 btn-primary" :disabled="isDisabled">Submit</button>
