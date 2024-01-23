@@ -12,28 +12,26 @@ app.component("groupfilter", {
   },
   emits: ["changeGroup", "onAlert"],
   setup(props, { emit }) {
-    var nodes = Vue.ref([]);
-    var links = Vue.ref([]);
-
-    isDisabled = Vue.computed(() => {
-      if (nodes.value.length == 0) {
-        return true;
-      }
-      return false;
-    });
+    let nodes = [];
+    let links = [];
+    let isDisabled = Vue.ref(true);
 
     function clicked() {
       emit("changeGroup", {
         group: props.group,
-        nodes: nodes.value,
-        links: links.value,
+        nodes: nodes,
+        links: links,
       });
     }
+
     async function getData() {
       try {
         data = await dataRequest("/data/" + props.group);
-        nodes.value = data.data.nodes;
-        links.value = data.data.links;
+        nodes = data.data.nodes;
+        links = data.data.links;
+        if (nodes.length > 0){
+          isDisabled.value = false
+        }
         // named tuple to dict
       } catch (error) {
         emit("onAlert", {title: "An error occured in filter " + props.group, message: error.response.data});
