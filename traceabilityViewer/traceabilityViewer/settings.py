@@ -33,7 +33,6 @@ config.DATABASE_URL = "bolt://neo4j:password@neo4j_db:7687"
 # NEO4J_BOLT_URL="bolt://neo4j:password@neo4j_db:7687"
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -44,7 +43,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "django_neomodel",
     "rest_framework",
-    "myapp",
+    "app",
 ]
 
 REST_FRAMEWORK = {
@@ -71,7 +70,7 @@ ROOT_URLCONF = "traceabilityViewer.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        # 'DIRS': [BASE_DIR, "myapp/templates"],
+        # 'DIRS': [BASE_DIR, "app/templates"],
         "DIRS": ["templates"],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -129,7 +128,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / "myapp/static"]
+STATICFILES_DIRS = [BASE_DIR / "app/static"]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

@@ -7,7 +7,7 @@ from string import Template
 from pathlib import Path, PurePath
 from ruamel.yaml import YAML
 from neomodel import db, clear_neo4j_database, remove_all_labels, install_labels
-from myapp.models import DocumentItem, Rel
+from app.models import DocumentItem, Rel
 
 remove_all_labels()
 install_labels(DocumentItem)

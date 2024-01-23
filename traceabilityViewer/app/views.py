@@ -61,7 +61,7 @@ def error_handling(title):
 def index(request):
     """The page index page will be loaded when starting the app"""
     # create_database()
-    return render(request, "myapp/index.html")
+    return render(request, "app/index.html")
 
 
 @cache_page(None)
