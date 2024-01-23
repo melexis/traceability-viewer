@@ -169,3 +169,20 @@ If `visualised_properties` is defined but `name` is missing, it automatically ad
 
 
 ## Usage
+
+
+
+## Bugs
+
+1. When showing the labels/names of the nodes, there is allways one node that turns black.
+1. When first nodes are added to a certain filter group, then go to another filter and back to the first filter, the nodes that were added are still there.
+1. When using the input fields, the autocompletion list will always look at the last part of the sentence, so when adding something in the middle the autocompletion will stay the same (focused on the last part).
+
+
+
+## Features
+
+- Errors could be popping up, you need to close it before you can go further. That way the user can't miss it.
+- Faster rendering; open to suggestions
+- Instead of disabling the button when submitted, stop the previous request when another submit is done.
+- A node that needs a layer but the group is not specified, better to place it on the same hight as the first node that is connected to it.
