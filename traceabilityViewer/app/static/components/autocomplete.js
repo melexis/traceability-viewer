@@ -222,11 +222,6 @@ app.component("autocomplete", {
       }
     }
 
-    // Vue.onMounted(function (){
-    //   const tooltip = new bootstrap.Tooltip(document.getElementById("info-autocomplete"));
-    // });
-
-    // selection = ""
     return {
       fullInput,
       search,
@@ -236,7 +231,6 @@ app.component("autocomplete", {
       matches,
       openSuggestion,
       isDisabled,
-      // styledAndOrderedMatches,
       startFocus,
       stopFocus,
       enter,

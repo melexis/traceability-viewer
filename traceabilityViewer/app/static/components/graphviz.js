@@ -109,10 +109,6 @@ app.component("graphviz", {
       type: Object,
       default: {},
     },
-    // data: {
-    //     type: Object,
-    //     default: {}
-    // },
     nodes: {
       type: Array,
       default: [],
@@ -142,9 +138,6 @@ app.component("graphviz", {
     // data nodes and links from the parent component
     var nodes = Vue.toRef(props, "nodes");
     var links = Vue.toRef(props, "links");
-    // var data = Vue.toRef(props, "data")
-    // var nodes = []
-    // var links = []
 
     // If loading = true, a loading screen is displayed
     var loading = Vue.toRef(props, "loading");
@@ -202,7 +195,6 @@ app.component("graphviz", {
     // The simulation with specified array of nodes (later) and forces that are specified.
     let simulation = d3
       .forceSimulation()
-      // .velocityDecay(0.2)
       .force(
         "link",
         d3.forceLink().id(function (d) {
@@ -211,9 +203,6 @@ app.component("graphviz", {
       )
       .force("charge", d3.forceManyBody().strength(-50))
       .force("collide", d3.forceCollide().radius(nodeRadius + 5));
-
-    // Run the simulation faster
-    // for (var i = 0; i < 300; ++i) simulation.tick();
 
     /**
      * Controlls the div for the info when a node is clicked
@@ -274,21 +263,6 @@ app.component("graphviz", {
             }
           }
         }
-
-        // if (selectedNode.value.attributes && selectedNode.value.attributes !== "{}") {
-        //   let attributes = JSON.parse(
-        //     selectedNode.value.attributes.replaceAll("'", '"')
-        //   );
-        //   text += "<br><b>Attributes: </b><br>";
-        //   for (item in attributes) {
-        //     text += " &emsp; <i>" + item + "</i>";
-        //     if (attributes[item]) {
-        //       text += ": " + attributes[item] + "<br>";
-        //     } else {
-        //       text += "<br>";
-        //     }
-        //   }
-        // }
         return text;
       }
       return text;
@@ -306,18 +280,6 @@ app.component("graphviz", {
       // var progress = data.progress;
       meter.value.style.width = 100 * progress + "%";
     }
-
-    // function ended(data) {
-    //     // nodes.value = data.nodes;
-    //     // data.links = data.links;
-    //     meter.value.style.display = "none";
-    //     itemColors.value = updateLegendData(data.nodes, "group", "item_colors")
-    //     linkColors.value = updateLegendData(data.links, "type", "link_colors")
-    //     // drawUpdate()
-    //     zoomToFit()
-    //     nodes = data.nodes
-    //     links = data.links
-    // }
 
     /**
      * Update the hide attribute of the nodes corresponding to the legend of the node groups.

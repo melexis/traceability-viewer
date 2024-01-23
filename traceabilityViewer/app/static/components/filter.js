@@ -32,7 +32,6 @@ app.component("groupfilter", {
         if (nodes.length > 0){
           isDisabled.value = false
         }
-        // named tuple to dict
       } catch (error) {
         emit("onAlert", {title: "An error occured in filter " + props.group, message: error.response.data});
       }

@@ -134,11 +134,6 @@ app.component("traceability-viewer", {
       groups.value = configData.data.groups;
       config.value = configData.data.config;
 
-      // data = await dataRequest("/data/init")
-      // nodes.value = data.data.nodes
-      // links.value = data.data.links
-      // initNodes = data.data.nodes
-      // initLinks = data.data.links
       nodes.value = [];
       links.value = [];
       initNodes = [];
