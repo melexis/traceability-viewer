@@ -170,7 +170,102 @@ If `visualised_properties` is defined but `name` is missing, it automatically ad
 
 ## Usage
 
+### Home Page
 
+The home page looks like the following image. It consists of the bottons on top, two input fields respectively for a Cypher query and search for a node and at the bottom the interactions with showed network.
+
+![home overview](images/home_overview.png)
+
+#### Cypher Query
+
+The input field for submitting a cypher query has two tooltips:
+![tooltip help](images/tooltip_help.png)
+This is a link to the Cypher cheat sheet of Neo4j.
+
+![tooltip query](images/tooltip_query.png)
+This tooltip makes you aware of the keywords that are not allowed.
+
+The input field has an autocompletion as shown in this figure:
+![autocomplete query](images/autocomplete_query.png)
+Suggestions starting with the same letter as the input, will be on top, followed by the suggestions containing it.
+
+#### Search
+
+The search input field has as well autocompletion as shown in this figure:
+![autocomplete query](images/autocomplete_search.png)
+
+The suggestions only contain the names of nodes because there is nothing else allowed.
+
+### Group Filter
+
+The group filter are based on the configuration file. If `layers` is given, these unique groups are groups to filter on. When `layers` is nog defined, the groups are based on the groups of the `item_colors`.
+The filter button gives a filtring on the specified group (the name of the button), with all their connecting nodes.
+An example of such an filter is shown in the following image.
+
+![filter](images/filter.png)
+
+The legend is based on the visible nodes and links. When diffrent nodes or links are added, the legend will be updated.
+
+### Interactions
+
+#### Hide Groups
+
+When clicking a group of the legend, this group will disappear. When clicking again, it reverts to previous.
+
+![hide group](images/hide_group.png)
+
+#### Hide Links
+
+When clicking a link of the legend, this link will disappear. When clicking again, it reverts to previous.
+
+![hide group](images/hide_link.png)
+
+
+#### Selecting a Node
+
+When clicking a node, this node will be selected and the info will be visible in the top left corner.
+
+![select node](images/select_node.png)
+
+The image shows the info of the selected node. There are two more buttons showed as well. These two buttons pop up when a node is selected. These will be explained in [highlight connecting nodes](####highlight_connecting_nodes) and [Add/show connecting nodes](####add/show_connecting_nodes).
+
+#### Hovering a Node
+
+When hovering a nodes, the name of that node is shown.
+In the previous image, the black node at the bottom was hovered by the mouse.
+
+#### HTML link in Info of Node
+
+When `html_documentation_root` is specified, the name of the node will be a link to the documentation of that specific node.
+
+#### Highlight Connected Nodes
+
+When the button with the eye is clicked, the nodes connecting to the selected node will be highlighted. The rest of the nodes get a lower opacity.
+
+![highlight connected nodes](images/highlight_connected_nodes.png)
+
+
+#### Add/Show Connecting Nodes
+
+When the button **Add/show connecting nodes** is clicked, the nodes connecting to the selected node will be obtained. It will add new nodes or links, if there are any.
+
+Before pushing the button:
+![before adding](images/before_adding.png)
+
+After pushing the button:
+![add connecting nodes](images/add_connecting_nodes.png)
+
+#### Node labels
+
+The labels/names of the nodes are shown when the checkbox of **Nodes with labels** is active.
+
+![show labels](images/show_labels.png)
+
+#### Zoom buttons
+
+There are three buttons for zooming, respectively zoom in, zoom out and zoom till the network fits the canvas.
+
+![zoom buttons](images/zoom.png)
 
 ## Bugs
 
