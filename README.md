@@ -186,3 +186,4 @@ If `visualised_properties` is defined but `name` is missing, it automatically ad
 - Faster rendering; open to suggestions
 - Instead of disabling the button when submitted, stop the previous request when another submit is done.
 - A node that needs a layer but the group is not specified, better to place it on the same hight as the first node that is connected to it.
+- Reset button when in a filter.
