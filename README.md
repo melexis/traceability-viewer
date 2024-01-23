@@ -267,6 +267,20 @@ There are three buttons for zooming, respectively zoom in, zoom out and zoom til
 
 ![zoom buttons](images/zoom.png)
 
+#### Errors
+
+When an error occurs you get a notification at the top of the page as shown in following example where an invalid Cypher query is submitted:
+
+![error](images/error.png)
+
+You can show the error by clicking **Show error message**:
+
+![error](images/show_error.png)
+
+You can close the error by clicking **X**.
+If the error is not closed and another error occurs, all errors will be listed at the top of the page.
+You will be redirected to the hight of the newest error.
+
 ## Bugs
 
 1. When showing the labels/names of the nodes, there is allways one node that turns black.
