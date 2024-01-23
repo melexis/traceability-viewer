@@ -302,37 +302,6 @@ app.component("graphviz", {
       }
     });
 
-    // var blob = new Blob([
-    //     document.querySelector("#worker").textContent
-    // ], {type: "text/javascript"})
-    // var worker = new Worker(window.URL.createObjectURL(blob));
-
-    // Vue.watch(data, (newData) => {
-    //     ctx.value.save();
-    //     ctx.value.clearRect(0, 0, width.value, height.value);
-    //     ctx.value.restore();
-
-    //     worker.terminate();
-    //     worker = new Worker(window.URL.createObjectURL(blob));
-
-    //     meter.value.style.display = "block";
-
-    //     worker.postMessage({
-    //         nodes: JSON.parse(JSON.stringify(newData.nodes)),
-    //         links: JSON.parse(JSON.stringify(newData.links)),
-    //         yScale: yScale,
-    //         width: width.value,
-    //         height: height.value,
-    //       });
-
-    //     worker.onmessage = function(event) {
-    //         switch (event.data.type) {
-    //           case "tick": return ticked(event.data);
-    //           case "end": return ended(event.data);
-    //         }
-    //     };
-    // })
-
     function ticked(progress) {
       // var progress = data.progress;
       meter.value.style.width = 100 * progress + "%";
@@ -924,7 +893,6 @@ app.component("graphviz", {
       nodes,
       links,
       meter,
-      worker,
       searchNode,
       transform,
       selectedNode,
