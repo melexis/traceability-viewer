@@ -17,7 +17,14 @@ CONFIG_PATH = Path(__file__).parent.parent.parent / "config.yml"
 
 
 def validate_keyword(config, keyword, expected_types, required=False):
-    """Validate a keyword of the configuration file if it exists and it is the expected type"""
+    """Validate a keyword of the configuration file if it exists and it is the expected type
+
+    Args:
+        config (dict): The configuration to be validated
+        keyword (str): The key in the configuration that needs to be validated
+        expected_types (type/tuple(type)): The type/types that is/are expected
+        required (bool): True if the keyword is required in the configuration, False otherwise
+    """
     if required:
         if keyword not in config:
             raise ValueError(f"Failed to find mandatory parameter {keyword!r} in the configuration file")
