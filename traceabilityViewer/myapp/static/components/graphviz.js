@@ -818,6 +818,8 @@ app.component("graphviz", {
        * @returns {Array, Array} The new nodes and links
        */
       Vue.watch([nodes, links], ([newNodes, newLinks]) => {
+        selectedNode.value = null
+        selectedNodeName.value = ""
         toggle.value = false;
         ctx.value.save();
         ctx.value.clearRect(0, 0, width.value, height.value);
