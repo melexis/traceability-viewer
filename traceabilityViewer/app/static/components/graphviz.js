@@ -95,7 +95,6 @@ app.component("graphviz", {
         <strong role="status" class="m-5">Loading...</strong>
         <div class="spinner-border m-5"></div>
     </div>
-    <div id="progress" ref="meter"></div>
     <canvas ref="canvas" @mousemove="mouseMove($event)" @click="clicked($event)" :height="height" :width="width">
     </canvas>
     <div id="tooltip"></div>
@@ -128,8 +127,6 @@ app.component("graphviz", {
 
     // The context of the canvas
     let ctx = Vue.ref(null);
-
-    meter = Vue.ref(null);
 
     // variables for the width and height
     const width = Vue.ref(window.innerWidth - 20);
@@ -275,11 +272,6 @@ app.component("graphviz", {
         ctx.value.restore();
       }
     });
-
-    function ticked(progress) {
-      // var progress = data.progress;
-      meter.value.style.width = 100 * progress + "%";
-    }
 
     /**
      * Update the hide attribute of the nodes corresponding to the legend of the node groups.
@@ -854,7 +846,6 @@ app.component("graphviz", {
       ctx,
       nodes,
       links,
-      meter,
       searchNode,
       transform,
       selectedNode,
