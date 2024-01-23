@@ -177,6 +177,7 @@ If `visualised_properties` is defined but `name` is missing, it automatically ad
 1. When showing the labels/names of the nodes, there is allways one node that turns black.
 1. When first nodes are added to a certain filter group, then go to another filter and back to the first filter, the nodes that were added are still there.
 1. When using the input fields, the autocompletion list will always look at the last part of the sentence, so when adding something in the middle the autocompletion will stay the same (focused on the last part).
+1. When something in the legend is hidden, and you go to another filter, the legend is hidden at the same place (for example you hide the first element in the legend, the first element is also hidden when you go to another filter even it is another name).
 
 
 
