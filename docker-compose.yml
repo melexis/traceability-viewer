@@ -44,7 +44,7 @@ services:
       - 7474
       - 7687
     healthcheck:
-      test: wget http://localhost:7474 || exit 1
+      test: wget http://${IP_ADDRESS}:7474 || exit 1
       interval: 1s
       timeout: 10s
       retries: 20
