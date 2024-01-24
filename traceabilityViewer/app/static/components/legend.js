@@ -10,6 +10,8 @@ app.component("itemLegend", {
             type="button"
             @click="clicked(item)"
             :id="item"
+            :key="item"
+            :class="{'opacity-25': inactiveItems.includes(item)}"
         >
             <div class="d-flex">
                 <svg width="25" height="20">
@@ -31,22 +33,24 @@ app.component("itemLegend", {
     let items = Vue.toRef(props, "items");
     let inactiveItems = Vue.ref([]);
 
+    Vue.watch(items, () => {
+      inactiveItems.value = []
+      context.emit("hidden-items", inactiveItems.value);
+    })
+
     function clicked(item) {
       if (inactiveItems.value.includes(item)) {
-        document.getElementById(item).className =
-          "btn btn-light border-dark opacity-100";
         inactiveItems.value = inactiveItems.value.filter((i) => {
           if (i != item) {
             return i;
           }
         });
       } else {
-        document.getElementById(item).className =
-          "btn btn-light border-dark opacity-25";
         inactiveItems.value.push(item);
       }
       context.emit("hidden-items", inactiveItems.value);
     }
+
     return {
       items,
       inactiveItems,
