@@ -19,8 +19,8 @@ app.component("groupfilter", {
     function clicked() {
       emit("changeGroup", {
         group: props.group,
-        nodes: nodes,
-        links: links,
+        nodes: [...nodes],
+        links: [...links],
       });
     }
 
