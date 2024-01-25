@@ -19,11 +19,12 @@ app.component("autocomplete", {
             @keydown.tab.prevent="tab"
             @keydown.down="down"
             @keydown.up="up"
-            @input="change"
+            @input="change($event, 0)"
+            @keydown.left="change($event, -1)"
+            @keydown.right="change($event, 1)"
+            @click="change($event, 0)"
         />
-        <ul v-show="openSuggestion" class="list-group"
-
-        >
+        <ul v-show="openSuggestion" class="list-group">
             <li
                 v-for="(innerhtml, suggestion, index) in matches"
                 class="list-group-item list-group-item-action"
@@ -66,7 +67,7 @@ app.component("autocomplete", {
 
       matchedStartingWith = {}
       OrderedMatchedItems = {}
-      var pattern = new RegExp(search.value, "gi");
+      var pattern = new RegExp(search.value.replace(/['"]/g,""), "gi");
       for (word of props.suggestions){
         let stylesMatchedItem = ""
         let wordUpperCase = word.toUpperCase();
@@ -86,7 +87,6 @@ app.component("autocomplete", {
           OrderedMatchedItems[word] = stylesMatchedItem
         }
       }
-      console.log(OrderedMatchedItems)
       return OrderedMatchedItems
     });
 
@@ -208,18 +208,30 @@ app.component("autocomplete", {
       }
     }
 
-
     // When the input changes
-    function change(event) {
-      isOpen.value = true;
+    function change(event, correctionNumber){
       if (props.sentenceAllowed) {
         fullInput.value = event.target.value;
-        words = event.target.value.split(" ");
-        search.value = words[words.length - 1];
+        if ( 0 > event.target.selectionStart + correctionNumber ||  event.target.selectionStart + correctionNumber > fullInput.value.length){
+          fullInput.value = event.target.value;
+          findSearchValue(event.target.selectionStart)
+        }
+        else {
+          findSearchValue(event.target.selectionStart + correctionNumber)
+        }
       } else {
         fullInput.value = event.target.value;
         search.value = event.target.value;
       }
+    }
+
+    function findSearchValue(pointer){
+      const n = fullInput.value.substring(pointer).match(/^[a-zA-Z0-9-_'"]+/)
+      const p = fullInput.value.substring(0, pointer).match(/[a-zA-Z0-9-_'"]+$/)
+      if(!p && !n) {
+        search.value = ""
+      }
+      search.value = (p || '') + (n || '')
     }
 
     return {
