@@ -27,6 +27,8 @@ services:
       - JSON_EXPORT=${JSON_EXPORT}
       - BASE_URL=${BASE_URL}
       - IP_ADDRESS=${IP_ADDRESS}
+      - PRODUCT=${PRODUCT}
+      - PACKAGE_TAG=${PACKAGE_TAG}
 
   neo4j_db:
     image: neo4j:5.7.0
