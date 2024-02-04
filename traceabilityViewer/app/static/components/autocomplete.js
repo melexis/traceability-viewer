@@ -108,14 +108,11 @@ app.component("autocomplete", {
     // When enter pressed on the input
     function enter() {
       if (isOpen.value && current.value >= 0) {
-        search.value = Object.keys(matches.value)[current.value];
+        selectedValue = Object.keys(matches.value)[current.value];
         if (props.sentenceAllowed) {
-          words = fullInput.value.split(" ");
-          words = words.slice(0, words.length - 1);
-          words.push(search.value);
-          fullInput.value = words.join(" ");
+          fullInput.value = fullInput.value.replace(search.value,selectedValue);
         } else {
-          fullInput.value = search.value;
+          fullInput.value = selectedValue;
         }
       } else {
         submitted();
@@ -127,14 +124,13 @@ app.component("autocomplete", {
     // When tab pressed on the input
     function tab() {
       if (isOpen.value && current.value >= 0) {
-        search.value = Object.keys(matches.value)[current.value];
+        selectedValue = Object.keys(matches.value)[current.value];
+        console.log(selectedValue)
+        console.log(search.value)
         if (props.sentenceAllowed) {
-          words = fullInput.value.split(" ");
-          words = words.slice(0, words.length - 1);
-          words.push(search.value);
-          fullInput.value = words.join(" ");
+          fullInput.value = fullInput.value.replace(search.value,selectedValue);
         } else {
-          fullInput.value = search.value;
+          fullInput.value = selectedValue;
         }
       }
       current.value = 0;
@@ -158,14 +154,11 @@ app.component("autocomplete", {
 
     // When one of the suggestion is clicked
     function suggestionClick(index) {
-      search.value = Object.keys(matches.value)[index];
+      selectedValue = Object.keys(matches.value)[current.value];
       if (props.sentenceAllowed) {
-        words = fullInput.value.split(" ");
-        words = words.slice(0, words.length - 1);
-        words.push(search.value);
-        fullInput.value = words.join(" ");
+        fullInput.value = fullInput.value.replace(search.value,selectedValue);
       } else {
-        fullInput.value = search.value;
+        fullInput.value = selectedValue;
       }
       current.value = 0;
       isOpen.value = false;
@@ -210,6 +203,7 @@ app.component("autocomplete", {
 
     // When the input changes
     function change(event, correctionNumber){
+      isOpen.value = true;
       if (props.sentenceAllowed) {
         fullInput.value = event.target.value;
         if ( 0 > event.target.selectionStart + correctionNumber ||  event.target.selectionStart + correctionNumber > fullInput.value.length){
