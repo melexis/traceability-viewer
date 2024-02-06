@@ -50,7 +50,6 @@ def validate():
     with open(CONFIG_PATH, "r", encoding="utf-8") as open_file:
         config = yaml.load(open_file)
 
-    validate_keyword(config, "traceability_export", str, True)
     validate_keyword(config, "html_documentation_root", str)
     validate_keyword(config, "variables", dict)
 
@@ -90,15 +89,14 @@ def validate():
         with open(CONFIG_PATH, "w", encoding="utf-8") as config_file:
             yaml.dump(config, config_file)
 
-    for variable_name in ["traceability_export", "html_documentation_root"]:
-        template = config.get(variable_name, "")
-        try:
-            variable_value = Template(template).substitute(os.environ)
-            config[variable_name] = variable_value
-        except KeyError as error:
-            raise ValueError(
-                f"The configuration for {variable_name} contains an undefined environment variable: {error}"
-            ) from error
+    template = config.get("html_documentation_root", "")
+    try:
+        variable_value = Template(template).substitute(os.environ)
+        config["html_documentation_root"] = variable_value
+    except KeyError as error:
+        raise ValueError(
+            f"The configuration for html_documentation_root contains an undefined environment variable: {error}"
+        ) from error
 
     return config
 
@@ -133,8 +131,12 @@ def run():
         groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
         unique_groups = list(dict.fromkeys(groups_list))
     data = {}
-    path = configuration["traceability_export"]
+    path = os.environ.get("JSON_EXPORT")
     print(path)
+    if path is None:
+        raise ValueError(
+            f"There is no 'JSON_EXPORT' environment variable declared."
+        )
     with open(path, encoding="utf-8") as json_file:
         data = json.load(json_file)
     clear_neo4j_database(db, clear_constraints=True, clear_indexes=True)

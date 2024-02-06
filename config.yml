@@ -1,5 +1,4 @@
-traceability_export: traceability_export.json
-html_documentation_root: ${BASE_URL}/${PRODUCT}/${PACKAGE_TAG}/html
+html_documentation_root: ${BASE_URL}/${PRODUCT}/${PACKAGE_TAG}/flash/html
 
 layered: true
 
