@@ -1,9 +1,9 @@
 # Table of Contents
 
-- [Getting Started](#Getting-Started)
-  - [JSON Data](###JSON-Data)
-- [Configuration](#Configuration)
-  - [traceability_export](#traceability_export)
+- [Overview](#overview)
+- [Getting Started](#getting-started)
+  - [JSON Data](#json-data)
+- [Configuration](#configuration)
   - [html_documentation_root](#html_documentation_root)
   - [layered](#layered)
   - [layers](#layers)
@@ -11,7 +11,25 @@
   - [link_colors](#link_colors)
   - [backwards_relationships](#backwards_relationships)
   - [visualised_properties](#visualised_properties)
-- [Usage](#Usage)
+- [Usage](#usage)
+  - [Home Page](#home-page)
+    - [Cypher Query](#cypher-query)
+    - [Search](#search)
+  - [Group Filter](#group-filter)
+  - [Interactions](#interactions)
+    - [Hide Groups](#hide-groups)
+    - [Hide Links](#hide-links)
+    - [Selecting a Node](#selecting-a-node)
+    - [Hovering a Node](#hovering-a-node)
+    - [HTML link in Info of Node](#html-link-in-info-of-node)
+    - [Highlight Connected Nodes](#highlight-connected-nodes)
+    - [Add/Show Connecting Nodes](#addshow-connecting-nodes)
+    - [Node labels](#node-labels)
+    - [Zoom buttons](#zoom-buttons)
+    - [Errors](#errors)
+- [Bugs](#bugs)
+- [Features](#features)
+
 
 
 # Getting Started
