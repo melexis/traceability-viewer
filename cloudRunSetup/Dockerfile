@@ -23,7 +23,6 @@ COPY start.sh /traceabilityViewer/start.sh
 
 EXPOSE 8000
 
-RUN addgroup --gid 7474 --system neo4j && adduser --uid 7474 --system --no-create-home --home "${NEO4J_HOME}" --ingroup neo4j neo4j
 RUN pip3 install --upgrade pip && \ 
     pip3 install -r /tmp/py-requirements.txt && \ 
     apt update && \

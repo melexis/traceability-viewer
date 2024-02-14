@@ -14,7 +14,7 @@ if [[ "${NEO4J_AUTH:-}" == neo4j/* ]]; then
 
         neo4j-admin dbms set-initial-password "${password}"
 fi
-service neo4j start
+service neo4j start --verbose
 
 
 sleep 3
