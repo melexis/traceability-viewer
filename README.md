@@ -34,16 +34,9 @@ Lastly, use docker compose to start the application.
 docker compose up --build --remove-orphans
 ```
 
-## Configuration
+### JSON Data
 
-The configuration takes the form of a YAML file. The [config.yml](config.yml) is an example that requires modification.
-
-### traceability_export
-
-> [!IMPORTANT]
-> `traceability_export` is a required configuration parameter.
-
-This is the path to the JSON file that contains all the data. The items in the JSON file needs to have a name and targets.
+The environment variable `JSON_EXPORT` needs to be defined when you want to use the traceability viewer. This is the path to the JSON file that contains all the data. The items in the JSON file needs to have at least a name and targets.
 
 It should be structured as (this is the minimum required):
 ```
@@ -66,6 +59,18 @@ It should be structured as (this is the minimum required):
     ...
 ]
 ```
+
+
+## Configuration
+
+The configuration takes the form of a YAML file. The [config.yml](config.yml) is an example that requires modification.
+
+### traceability_export
+
+> [!IMPORTANT]
+> `traceability_export` is a required configuration parameter.
+
+
 
 When you use the [traceability-plugin](https://melexis.github.io/sphinx-traceability-extension/index.html), you can [export](https://melexis.github.io/sphinx-traceability-extension/configuration.html#export) the documentation items as a JSON.
 
