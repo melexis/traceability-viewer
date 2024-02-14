@@ -240,7 +240,7 @@ When `html_documentation_root` is specified, the name of the node will be a link
 
 #### Highlight Connected Nodes
 
-When the button with the eye is clicked, the nodes connecting to the selected node will be highlighted. The rest of the nodes get a lower opacity.
+The button with the eye-icon highlights all nodes that are directly connected to the selected node and makes other nodes transparent.
 
 ![highlight connected nodes](images/highlight_connected_nodes.png)
 
