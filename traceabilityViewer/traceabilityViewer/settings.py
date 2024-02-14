@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 from neomodel import config
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,8 +30,9 @@ DEBUG = True
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 
 # config.DATABASE_URL = "bolt://neo4j:password@localhost:7687"
-config.DATABASE_URL = "bolt://neo4j:password@neo4j_db:7687"
+# config.DATABASE_URL = "bolt://neo4j:password@neo4j_db:7687"
 # NEO4J_BOLT_URL="bolt://neo4j:password@neo4j_db:7687"
+config.DATABASE_URL = os.getenv("NEO4J_BOLT_URL")
 
 # Application definition
 INSTALLED_APPS = [
