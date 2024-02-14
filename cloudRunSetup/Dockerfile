@@ -2,14 +2,11 @@ FROM python:3.11-slim
 
 USER root
 
-ARG PRODUCT
-
 ENV NEO4J_ACCEPT_LICENSE_AGREEMENT yes
 ENV NEO4J_AUTH neo4j/password
 ENV dbms.connector.bolt.listen_address 7687
 ENV dbms.connector.bolt.advertised_address 7687
 ENV IP_ADDRESS 0.0.0.0
-ENV PRODUCT ${PRODUCT}
 ENV CONFIG_FILE /traceabilityViewer/config.yml
 ENV NEO4J_BOLT_URL bolt://neo4j:password@localhost:7687
 ENV BASE_URL https://mybaseurl
