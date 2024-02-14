@@ -1,8 +1,9 @@
 # traceability-viewer
 
-## Content Table
+## Table of Contents
 
-- [Getting Started](#GettingStarted)
+- [Getting Started](#Getting-Started)
+  - [JSON Data](###JSON-Data)
 - [Configuration](#Configuration)
   - [traceability_export](#traceability_export)
   - [html_documentation_root](#html_documentation_root)
@@ -70,16 +71,15 @@ The configuration takes the form of a YAML file. The [config.yml](config.yml) is
 > [!IMPORTANT]
 > `traceability_export` is a required configuration parameter.
 
-
-
-When you use the [traceability-plugin](https://melexis.github.io/sphinx-traceability-extension/index.html), you can [export](https://melexis.github.io/sphinx-traceability-extension/configuration.html#export) the documentation items as a JSON.
+Our Sphinx plugin [mlx.traceability](https://melexis.github.io/sphinx-traceability-extension/index.html) can be configured to
+[export](https://melexis.github.io/sphinx-traceability-extension/configuration.html#export) its collection of traceable documentation items in JSON format.
 
 ### html_documentation_root
 
 > [!NOTE]
 > `html_documentation_root` is not a required configuration parameter.
 
-The html root to the documentation of that item. This can also be the path to a local html folder.
+The root of the the HTML project documentation; either a pathname or a URL.
 
 This is only workable when you use the exported JSON of the [traceability-plugin](https://melexis.github.io/sphinx-traceability-extension/configuration.html#export-to-json).
 
@@ -228,11 +228,13 @@ When clicking a link of the legend, this link will disappear. When clicking agai
 
 #### Selecting a Node
 
-When clicking a node, this node will be selected and the info will be visible in the top left corner.
+You can click on a node to select it. Additional info about the node will be displayed in the top left corner and
+two additional buttons pop up:
+
+- [Highlight Connecting Nodes](####Highlight-Connected-Nodes)
+- [Add/Show Connecting Nodes](####Add/Show-Connecting-Nodes)
 
 ![select node](images/select_node.png)
-
-The image shows the info of the selected node. There are two more buttons showed as well. These two buttons pop up when a node is selected. These will be explained in [highlight connecting nodes](####highlight_connecting_nodes) and [Add/show connecting nodes](####add/show_connecting_nodes).
 
 #### Hovering a Node
 
@@ -245,7 +247,7 @@ When `html_documentation_root` is specified, the name of the node will be a link
 
 #### Highlight Connected Nodes
 
-When the button with the eye is clicked, the nodes connecting to the selected node will be highlighted. The rest of the nodes get a lower opacity.
+The button with the eye-icon highlights all nodes that are directly connected to the selected node and makes other nodes transparent.
 
 ![highlight connected nodes](images/highlight_connected_nodes.png)
 
