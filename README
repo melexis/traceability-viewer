@@ -81,8 +81,9 @@ Our Sphinx plugin [mlx.traceability](https://melexis.github.io/sphinx-traceabili
 
 The root of the the HTML project documentation; either a pathname or a URL.
 
-This is only workable when you use the exported JSON of the [traceability-plugin](https://melexis.github.io/sphinx-traceability-extension/configuration.html#export-to-json).
-
+This configuration parameter can only be used if [the JSON database](###traceability_export) contains a ``"document"`` attribute with the relative path to the reST file in which the item is defined,
+and if the item ID/name is appended to the HTML filename with a `#`.
+Our [traceability-plugin](https://melexis.github.io/sphinx-traceability-extension/configuration.html#export-to-json) does both.
 
 ### layered
 
