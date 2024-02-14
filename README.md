@@ -67,7 +67,8 @@ It should be structured as (this is the minimum required):
 ]
 ```
 
-When you use the [traceability-plugin](https://melexis.github.io/sphinx-traceability-extension/index.html), you can [export](https://melexis.github.io/sphinx-traceability-extension/configuration.html#export) the documentation items as a JSON.
+Our Sphinx plugin [mlx.traceability](https://melexis.github.io/sphinx-traceability-extension/index.html) can be configured to
+[export](https://melexis.github.io/sphinx-traceability-extension/configuration.html#export) its collection of traceable documentation items in JSON format.
 
 ### html_documentation_root
 
