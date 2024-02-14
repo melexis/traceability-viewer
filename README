@@ -31,6 +31,12 @@
 - [Features](#features)
 
 
+# Overview
+
+The traceability visualizes a collection of traceable items in a network graph. This allows the user to gain a better understanding of the traceability between the different items. The network can be layered or force-directed. This and more options are [configurable](#configuration).
+
+It's originally designed to use the JSON database of our traceability plugin as input but it can also be used with other JSON databases as well. The minimum required JSON database is given in [this section](##json-data).
+
 
 # Getting Started
 
