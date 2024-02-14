@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 from neomodel import config
 
@@ -28,8 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 
-# config.DATABASE_URL = "bolt://neo4j:password@localhost:7687"
-config.DATABASE_URL = "bolt://neo4j:password@neo4j_db:7687"
+config.DATABASE_URL = os.environ.get("DATABASE_URL")
 # NEO4J_BOLT_URL="bolt://neo4j:password@neo4j_db:7687"
 
 # Application definition
