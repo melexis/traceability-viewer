@@ -14,14 +14,14 @@ if [[ "${NEO4J_AUTH:-}" == neo4j/* ]]; then
         neo4j-admin dbms set-initial-password "${password}"
 fi
 
+# Setting a custom log directory because using /var/log is bugged on Cloud Run. Probably because it is used as a standardized google logs directory.
 mkdir -p /traceabilityViewer/logs
 chown neo4j:neo4j /traceabilityViewer/logs
 chmod 777 /traceabilityViewer/logs
-
 sed -i 's/server\.directories\.logs=\/var\/log\/neo4j/server\.directories\.logs=\/traceabilityViewer\/logs/g'  /etc/neo4j/neo4j.conf
-echo "starting neo4j service..."
+
+
 service neo4j start
-echo "neo4j services started"
 
 sleep 3
 counter=0
@@ -36,6 +36,9 @@ do
   fi
 done
 
+echo "here"
+cat ${JSON_EXPORT}
+echo "here2"
 echo "neo4j service healthy, starting database sync"
 echo "Importing database..."
 sh -c "python3 manage.py runscript create_database"
