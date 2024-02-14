@@ -301,5 +301,5 @@ You will be redirected to the hight of the newest error.
 - Errors could be popping up, you need to close it before you can go further. That way the user can't miss it.
 - Faster rendering; open to suggestions
 - Instead of disabling the button when submitted, stop the previous request when another submit is done.
-- A node that needs a layer but the group is not specified, better to place it on the same hight as the first node that is connected to it.
+- A node that has no group and thus belongs to the group `others`, is now centered at height. Better would be to position this node on the same height as the first node that is connected to it.
 - Reset button when in a filter.
