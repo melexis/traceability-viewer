@@ -2,7 +2,7 @@
 
 ## Table of Contents
 
-- [Getting Started](#GettingStarted)
+- [Getting Started](#Getting-Started)
 - [Configuration](#Configuration)
   - [traceability_export](#traceability_export)
   - [html_documentation_root](#html_documentation_root)
