@@ -13,12 +13,15 @@ if [[ "${NEO4J_AUTH:-}" == neo4j/* ]]; then
         chown neo4j:neo4j /data/dbms
         mkdir -p /var/log/neo4j
         chown neo4j:neo4j /var/log/neo4j
+        touch /var/log/neo4j/neo4j.log
+        chown neo4j:neo4j /var/log/neo4j/neo4j.log
+        chmod 777 /var/log/neo4j/neo4j.log
 
         neo4j-admin dbms set-initial-password "${password}"
 fi
-whoami
-su neo4j -c 'service neo4j start'
-
+echo "starting neo4j service..."
+service neo4j start
+echo "neo4j services started"
 
 sleep 3
 counter=0
