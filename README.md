@@ -223,11 +223,13 @@ When clicking a link of the legend, this link will disappear. When clicking agai
 
 #### Selecting a Node
 
-When clicking a node, this node will be selected and the info will be visible in the top left corner.
+You can click on a node to select it. Additional info about the node will be displayed in the top left corner and
+two additional buttons pop up:
+
+- [Highlight Connecting Nodes](####Highlight-Connected-Nodes)
+- [Add/Show Connecting Nodes](####Add/Show-Connecting-Nodes)
 
 ![select node](images/select_node.png)
-
-The image shows the info of the selected node. There are two more buttons showed as well. These two buttons pop up when a node is selected. These will be explained in [highlight connecting nodes](####highlight_connecting_nodes) and [Add/show connecting nodes](####add/show_connecting_nodes).
 
 #### Hovering a Node
 
