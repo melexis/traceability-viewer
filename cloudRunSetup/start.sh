@@ -31,7 +31,6 @@ do
 done
 
 echo "neo4j service healthy, starting database sync"
-export JSON_EXPORT="/json_bucket/${PACKAGE_TAG}/traceability_export.json"
 echo "Importing database..."
 sh -c "python3 manage.py runscript create_database"
 echo "Database import complete"
