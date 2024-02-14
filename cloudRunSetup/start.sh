@@ -14,7 +14,7 @@ if [[ "${NEO4J_AUTH:-}" == neo4j/* ]]; then
         neo4j-admin dbms set-initial-password "${password}"
 fi
 
-mkdir -p traceabilityViewer/logs
+mkdir -p /traceabilityViewer/logs
 chown neo4j:neo4j /traceabilityViewer/logs
 chmod 777 /traceabilityViewer/logs
 
