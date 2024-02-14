@@ -305,7 +305,6 @@ def get_data_with_cypher_query(cypher_query):
                             f"Expected Node or Relationship type to be returned from the query; "
                             f"got {type(element)}"
                         )
-
             else:
                 raise TypeError(
                     f"Expected Node or Relationship type to be returned from the query; " f"got {type(element)}"
