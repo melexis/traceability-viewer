@@ -75,7 +75,7 @@ Our Sphinx plugin [mlx.traceability](https://melexis.github.io/sphinx-traceabili
 > [!NOTE]
 > `html_documentation_root` is not a required configuration parameter.
 
-The html root to the documentation of that item. This can also be the path to a local html folder.
+The root of the the HTML project documentation; either a pathname or a URL.
 
 This is only workable when you use the exported JSON of the [traceability-plugin](https://melexis.github.io/sphinx-traceability-extension/configuration.html#export-to-json).
 
