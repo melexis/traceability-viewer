@@ -169,26 +169,9 @@ A dictionary where the key is the backwards relationship and the value the forwa
 > [!NOTE]
 > `visualised_properties` is an optional configuration parameter.
 
-The properies of the clicked node that need to be visualised in the as info about that node.
-
-If the `visualised_properties` and [`html_documentation_root`](#html_documentation_root) are not defined , it automatically adds following code to the configuration file.
-
-```
-visualised_properties:
-    - name
-```
-
-If [`html_documentation_root`](#html_documentation_root) is defined it automatically adds following code instead of the previous one.
-
-```
-visualised_properties:
-    - name
-    - document
-```
-
-If [`html_documentation_root`](#html_documentation_root) and `visualised_properties` are defined but `document` is not in the list, it automatically adds `document` to the end of the list.
-
-If `visualised_properties` is defined but `name` is missing, it automatically adds `name` to the end of the list
+A list of all item properties to display after selecting a node. By default, its name/ID will be displayed, and,
+in case [`html_documentation_root`](#html_documentation_root) has been configured,
+the link to the item definition in your project documentation,.
 
 
 # Usage
