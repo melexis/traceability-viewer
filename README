@@ -94,7 +94,7 @@ The configuration takes the form of a YAML file. The [config.yml](config.yml) is
 ## html_documentation_root
 
 > [!NOTE]
-> `html_documentation_root` is not a required configuration parameter.
+> `html_documentation_root` is an optional configuration parameter.
 
 The root of the the HTML project documentation; either a pathname or a URL.
 
@@ -128,7 +128,7 @@ The order of the layers defines the layer's position. The top and bottom layers 
 ## item_colors
 
 > [!NOTE]
-> `item_colors` is not a required configuration parameter, but keep in mind that when it is not specified, all nodes will be black (`others`).
+> `item_colors` is an optional configuration parameter, but keep in mind that when it is not specified, all nodes will be black (`others`).
 
 A dictionary where the key is a regular expression and the value is the desired color of the node. The regular expression is used to [match](https://docs.python.org/3/library/re.html#re.match) (the beginning of) the name of a node with that particalor regular expression.
 The color can be an existing [color name](https://www.w3schools.com/tags/ref_colornames.asp) or a [code](https://www.w3schools.com/colors/colors_picker.asp) (hex, rgb or hsl).
@@ -144,7 +144,7 @@ If `item_colors` is defined but `others` isn't, it automatically adds `others: b
 ## link_colors
 
 > [!NOTE]
-> `link_colors` is not a required configuration parameter, but keep in mind that when it is not specified, all relationships between nodes will be black (`others`).
+> `link_colors` is an optional configuration parameter, but keep in mind that when it is not specified, all relationships between nodes will be black (`others`).
 
 A dictionary where the key is the name of relationship type and the value is the desired color of the relationship.
 The color can be an existing [color name](https://www.w3schools.com/tags/ref_colornames.asp) or a [code](https://www.w3schools.com/colors/colors_picker.asp) (hex, rgb or hsl).
@@ -167,7 +167,7 @@ A dictionary where the key is the backwards relationship and the value the forwa
 ## visualised_properties
 
 > [!NOTE]
-> `visualised_properties` is not a required configuration parameter.
+> `visualised_properties` is an optional configuration parameter.
 
 The properies of the clicked node that need to be visualised in the as info about that node.
 
