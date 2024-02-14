@@ -294,7 +294,7 @@ There are three buttons for zooming, respectively zoom in, zoom out and zoom til
 
 ### Errors
 
-When an error occurs you get a notification at the top of the page as shown in following example where an invalid Cypher query is submitted:
+When an error occurs, a notification pops up at the top of the page. In the example below, an invalid Cypher query was submitted:
 
 ![error](images/error.png)
 
