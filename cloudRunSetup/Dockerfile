@@ -30,7 +30,8 @@ RUN pip3 install --upgrade pip && \
     echo 'deb https://debian.neo4j.com stable 5' | tee -a /etc/apt/sources.list.d/neo4j.list && \
     apt-get update && \
     apt-get install -y neo4j=1:5.16.0 && \
-    mkdir -p /var/log/neo4j && chmod 777 /var/log/neo4j
+    mkdir -p /var/log/neo4j && chmod 777 /var/log/neo4j && \
+    touch /var/log/neo4j/neo4j.log && chmod /var/log/neo4j/neo4j.log
 
 WORKDIR /traceabilityViewer
 
