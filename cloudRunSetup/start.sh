@@ -10,11 +10,14 @@ if [[ "${NEO4J_AUTH:-}" == neo4j/* ]]; then
         # running set-initial-password as root will create subfolders to /data as root, causing startup to fail when neo4j can't read or write the /data/dbms folder
         # creating the folder first will avoid that
         mkdir -p /data/dbms
-        chown "${userid}":"${groupid}" /data/dbms
+        chown neo4j:neo4j /data/dbms
+        mkdir -p /var/log/neo4j
+        chown neo4j:neo4j /var/log/neo4j
 
         neo4j-admin dbms set-initial-password "${password}"
 fi
-service neo4j start --verbose
+whoami
+su neo4j -c 'service neo4j start'
 
 
 sleep 3
