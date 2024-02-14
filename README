@@ -307,8 +307,8 @@ If the error is not closed and another error occurs, all errors will be listed a
 
 # Bugs
 
-1. When showing the labels/names of the nodes, there is allways one node that turns black.
-1. When using the input fields, the autocompletion list will always look at the last part of the sentence, so when adding something in the middle the autocompletion will stay the same (focused on the last part).
+1. When showing the labels/names of the nodes, there is always one node that turns black.
+1. When using the input fields, the autocompletion list will always look at the last part of the sentence. So, when adding something in the middle, the autocompletion does not adapt.
 
 
 # Features
