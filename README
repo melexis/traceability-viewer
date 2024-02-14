@@ -40,11 +40,13 @@ It's originally designed to use the JSON database of our traceability plugin as 
 
 # Getting Started
 
-First, you need to install docker compose: https://docs.docker.com/compose/install/linux/#install-the-plugin-manually
+We use the tool Docker Compose to define and share multi-container applications. This tool makes use of a `docker-compose.yml` file. The `.env` file is meant to store and define environment variables, which are used in the `docker-compose.yml` file and in Python scripts.
+
+First, you need to [install Docker Compose](https://docs.docker.com/compose/install/linux/#install-the-plugin-manually).
 
 <!-- https://docs.docker.com/engine/reference/commandline/compose_up/ -->
 
-After installation, copy the JSON file that contains the data to the project folder and copy the `.env.example` to `.env`.
+After installation, copy the JSON file that contains the data to the project folder and copy the `.env.example` to `.env`. These environment variables requires modification.
 ```
 # copy traceability_export.json file to project folder
 cp /path/to/traceability_export.json .
