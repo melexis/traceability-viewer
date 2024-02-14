@@ -11,14 +11,14 @@ if [[ "${NEO4J_AUTH:-}" == neo4j/* ]]; then
         # creating the folder first will avoid that
         mkdir -p /data/dbms
         chown neo4j:neo4j /data/dbms
-        mkdir -p /var/log/neo4j
-        chown neo4j:neo4j /var/log/neo4j
-        touch /var/log/neo4j/neo4j.log
-        chown neo4j:neo4j /var/log/neo4j/neo4j.log
-        chmod 777 /var/log/neo4j/neo4j.log
-
         neo4j-admin dbms set-initial-password "${password}"
 fi
+
+mkdir -p traceabilityViewer/logs
+chown neo4j:neo4j /traceabilityViewer/logs
+chmod 777 /traceabilityViewer/logs
+
+sed -i 's/server\.directories\.logs=\/var\/log\/neo4j/server\.directories\.logs=\/traceabilityViewer\/logs/g'  /etc/neo4j/neo4j.conf
 echo "starting neo4j service..."
 service neo4j start
 echo "neo4j services started"
