@@ -6,21 +6,6 @@ if [ ! -f ${JSON_EXPORT} ]; then
     exit 1
 fi
 
-# Wait until the service is redeployed with the CLOUDRUN_SERVICE_URL variable
-counter=0
-while [[ -z "${CLOUDRUN_SERVICE_URL}" ]];
-do
-  echo "CLOUDRUN_SERVICE_URL not available yet...retry number ${counter} out of 5"
-  increment=3
-  counter=$((counter + increment))
-  sleep 3
-  if [ $counter == 5 ]; then
-    echo "CLOUDRUN_SERVICE_URL not available, exiting after 5 retries"
-    exit 1
-  fi
-done
-
-
 # Set the neo4j-admin initial password
 if [[ "${NEO4J_AUTH:-}" == neo4j/* ]]; then
         password="${NEO4J_AUTH#neo4j/}"
@@ -50,7 +35,7 @@ sleep 3
 counter=0
 while ! [ $(wget -q --spider "http://${IP_ADDRESS}:7474"; echo $?) == 0 ];
 do
-  increment=3
+  increment=1
   counter=$((counter + increment))
   sleep 3
   if [ $counter == 5 ]; then
@@ -63,5 +48,7 @@ echo "neo4j service healthy, starting database sync"
 echo "Importing database..."
 sh -c "python3 manage.py runscript create_database"
 echo "Database import complete"
-echo "Running Django on: ${IP_ADDRESS}:8000"
-sh -c "python3 manage.py runserver ${IP_ADDRESS}:8000"
+
+echo "Running Django with Gunicorn on: ${IP_ADDRESS}:8000"
+#sh -c "python3 manage.py runserver ${IP_ADDRESS}:8000"
+sh -c "gunicorn --bind :${PORT} --workers 2 --threads 8 --env DJANGO_SETTINGS_MODULE=traceabilityViewer.settings traceabilityViewer.wsgi"
