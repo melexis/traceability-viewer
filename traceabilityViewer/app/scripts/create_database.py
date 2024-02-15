@@ -4,7 +4,8 @@ import os
 import re
 import json
 from string import Template
-from pathlib import Path, PurePath
+from pathlib import Path
+from urllib.parse import urljoin
 from ruamel.yaml import YAML
 from neomodel import db, clear_neo4j_database, remove_all_labels, install_labels
 from app.models import DocumentItem, Rel
@@ -178,12 +179,10 @@ def run():
         url = ""
         if properties.get("document") and configuration.get("html_documentation_root") != "":
             document = properties["document"]
-            url += str(PurePath(configuration["html_documentation_root"]).joinpath(f"{document}.html#{source}"))
+            url += str(urljoin(configuration["html_documentation_root"], f"{document}.html#{source}"))
         source_object = node_objects[source]
         source_object.properties = json.dumps(properties)
         source_object.url = url
-        print(configuration["html_documentation_root"])
-        print(url)
         # source_object.attributes = attributes
 
         for link, targets in targets_per_relationship.items():
