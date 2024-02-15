@@ -182,6 +182,8 @@ def run():
         source_object = node_objects[source]
         source_object.properties = json.dumps(properties)
         source_object.url = url
+        print(configuration["html_documentation_root"])
+        print(url)
         # source_object.attributes = attributes
 
         for link, targets in targets_per_relationship.items():
