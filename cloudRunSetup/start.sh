@@ -1,5 +1,27 @@
 #!/bin/bash
 
+# Check if the traceability export exists
+if [ ! -f ${JSON_EXPORT} ]; then
+    echo "Error: Traceability export not found for Tag ${PACKAGE_TAG}"
+    exit 1
+fi
+
+# Wait until the service is redeployed with the CLOUDRUN_SERVICE_URL variable
+counter=0
+while [[ -z "${CLOUDRUN_SERVICE_URL}" ]];
+do
+  echo "CLOUDRUN_SERVICE_URL not available yet...retry number ${counter} out of 5"
+  increment=3
+  counter=$((counter + increment))
+  sleep 3
+  if [ $counter == 5 ]; then
+    echo "CLOUDRUN_SERVICE_URL not available, exiting after 5 retries"
+    exit 1
+  fi
+done
+
+
+# Set the neo4j-admin initial password
 if [[ "${NEO4J_AUTH:-}" == neo4j/* ]]; then
         password="${NEO4J_AUTH#neo4j/}"
         if [ "${password}" == "neo4j" ]; then
@@ -23,6 +45,7 @@ sed -i 's/server\.directories\.logs=\/var\/log\/neo4j/server\.directories\.logs=
 
 service neo4j start
 
+# Wait until the neo4j service is up
 sleep 3
 counter=0
 while ! [ $(wget -q --spider "http://${IP_ADDRESS}:7474"; echo $?) == 0 ];
@@ -35,12 +58,6 @@ do
     exit 1
   fi
 done
-
-if [ ! -f ${JSON_EXPORT} ]; then
-    echo "Error: Traceability export not found for Tag ${PACKAGE_TAG}"
-    exit 1
-fi
- 
 
 echo "neo4j service healthy, starting database sync"
 echo "Importing database..."
