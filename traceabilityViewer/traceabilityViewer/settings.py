@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 from neomodel import config
 import os
+from urllib.parse import urlparse
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,12 +28,18 @@ SECRET_KEY = "django-insecure-9@1+y@2v04x9t4r=ih5-%j7ueh(84j6($3tt6js&pd%ozl91du
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
+CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
+if CLOUDRUN_SERVICE_URL:
+    ALLOWED_HOSTS = [urlparse(CLOUDRUN_SERVICE_URL).netloc]
+    CSRF_TRUSTED_ORIGINS = [CLOUDRUN_SERVICE_URL]
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-# config.DATABASE_URL = "bolt://neo4j:password@localhost:7687"
-# config.DATABASE_URL = "bolt://neo4j:password@neo4j_db:7687"
-# NEO4J_BOLT_URL="bolt://neo4j:password@neo4j_db:7687"
-config.DATABASE_URL = os.getenv("NEO4J_BOLT_URL")
+    config.DATABASE_URL = os.getenv("NEO4J_BOLT_URL")
+else:
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
+    config.DATABASE_URL = "bolt://neo4j:password@neo4j_db:7687"
+
 
 # Application definition
 INSTALLED_APPS = [
