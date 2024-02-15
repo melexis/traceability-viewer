@@ -59,6 +59,9 @@ Lastly, use docker compose to start the application.
 docker compose up --build --remove-orphans
 ```
 
+After a successful build, you can start the traceability viewer at port `8000` on the defined `IP_ADDRESS`.
+If you use `0.0.0.0` as `IP_ADDRESS`, it`s 0.0.0.0:8000
+
 ## JSON Database
 
 Our Sphinx plugin [mlx.traceability](https://melexis.github.io/sphinx-traceability-extension/index.html) can be configured to
