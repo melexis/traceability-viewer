@@ -36,9 +36,12 @@ do
   fi
 done
 
-echo "here"
-cat ${JSON_EXPORT}
-echo "here2"
+if [ ! -f ${JSON_EXPORT} ]; then
+    echo "Error: Traceability export not found for Tag ${PACKAGE_TAG}"
+    exit 1
+fi
+ 
+
 echo "neo4j service healthy, starting database sync"
 echo "Importing database..."
 sh -c "python3 manage.py runscript create_database"
