@@ -24,7 +24,7 @@ EXPOSE 8000
 
 RUN pip3 install --upgrade pip && \ 
     pip3 install -r /tmp/py-requirements.txt && \
-    pip3 install gunicorn \
+    pip3 install gunicorn && \
     apt update && \
     apt install -y wget gnupg && \
     wget -O - https://debian.neo4j.com/neotechnology.gpg.key | apt-key add - && \
