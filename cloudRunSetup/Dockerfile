@@ -9,7 +9,6 @@ ENV dbms.connector.bolt.advertised_address 7687
 ENV IP_ADDRESS 0.0.0.0
 ENV CONFIG_FILE /traceabilityViewer/config.yml
 ENV NEO4J_BOLT_URL bolt://neo4j:password@localhost:7687
-ENV BASE_URL https://mybaseurl
 ENV NEO4J_HOME /var/lib/neo4j
 
 ENV PYTHONBUFFERED 1
