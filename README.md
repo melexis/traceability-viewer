@@ -33,9 +33,14 @@
 
 # Overview
 
-The traceability visualizes a collection of traceable items in a network graph. This allows the user to gain a better understanding of the traceability between the different items. The network can be layered or force-directed. This and more options are [configurable](#configuration).
+This traceability-viewer, a standalone tool, visualizes a collection of traceable documentation items in a network graph.
+This allows the user to gain a better understanding of the relationships between different items.
+Each node in the network graph represents an item, and can be grouped in layers, based on its identifier,
+or force-directed. This and more options are [configurable](#configuration).
 
-It's originally designed to use the JSON database of our traceability plugin as input but it can also be used with other JSON databases as well. The minimum required JSON database is given in [this section](#json-database).
+It was originally designed to use the JSON database exported by our
+[Sphinx traceability plugin](https://github.com/melexis/sphinx-traceability-extension) as input
+but any JSON database can work if it meets the minimum requirements, explained in [this section](#json-database).
 
 
 # Getting Started
@@ -297,7 +302,8 @@ If the error is not closed and another error occurs, all errors will be listed a
 
 1. When showing the labels/names of the nodes, there is always one node that turns black.
 1. When using the input fields, the autocompletion does not add the selected word at the right place, when adding something in the middle.
-1. When data is obtained via a Cypher query, some links are not visible. When clicking the eye-icon, these nodes that are connected are visible but the links aren't. You can solve it by clicking on the `Add/show connecting nodes` button.
+1. When data is obtained via a Cypher query, some links are not visible. When clicking on the eye-icon, connected
+   nodes are visible but the links are not. You can solve it by clicking on the `Add/show connecting nodes` button.
 
 
 # Planned Features
