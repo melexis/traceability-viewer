@@ -8,6 +8,7 @@ from pathlib import Path, PurePath
 from ruamel.yaml import YAML
 from neomodel import db, clear_neo4j_database, remove_all_labels, install_labels
 from app.models import DocumentItem, Rel
+import decouple
 
 remove_all_labels()
 install_labels(DocumentItem)
@@ -131,7 +132,7 @@ def run():
         groups_list = list(configuration["layers"]) + list(configuration["layers"].values())
         unique_groups = list(dict.fromkeys(groups_list))
     data = {}
-    path = os.environ.get("JSON_EXPORT")
+    path = decouple.config("JSON_EXPORT")
     print(path)
     if path is None:
         raise ValueError(
