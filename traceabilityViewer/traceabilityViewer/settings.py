@@ -22,12 +22,12 @@ config.DATABASE_URL = config("DATABASE_URL")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = config('DEBUG', default=False, cast=bool)
+
 # SECURITY WARNING: keep the secret key used in production secret!
 config.encoding = "cp1251"
 SECRET_KEY = config("SECRET_KEY")
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 
