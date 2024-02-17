@@ -62,8 +62,8 @@ chmod 740 /etc/neo4j/neo4j.conf
 echo "Checking if database dumps exist..."
 if [[ -f "${BUCKET_DIR}/db_dumps/neo4j.dump" && -f "${BUCKET_DIR}/db_dumps/system.dump" ]]; then
     echo "Database dumps exist. Loading dumps..."
-    neo4j-admin database load neo4j --overwrite-destination=true --from-path=${BUCKET_DIR}/db_dumps
     neo4j-admin database load system --overwrite-destination=true --from-path=${BUCKET_DIR}/db_dumps
+    neo4j-admin database load neo4j --overwrite-destination=true --from-path=${BUCKET_DIR}/db_dumps
 else
     echo "Database dumps do not exist."
     echo "Importing JSON database..."
@@ -75,8 +75,8 @@ else
     echo "Dumping Databases..."
     service neo4j stop 
     mkdir ${BUCKET_DIR}/db_dumps
-    neo4j-admin database dump neo4j --to-path=${BUCKET_DIR}/db_dumps
     neo4j-admin database dump system --to-path=${BUCKET_DIR}/db_dumps
+    neo4j-admin database dump neo4j --to-path=${BUCKET_DIR}/db_dumps
     echo "Database dumps complete"
 fi
 
