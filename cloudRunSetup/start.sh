@@ -1,9 +1,11 @@
 #!/bin/bash
 
 # Check if the traceability export exists
-if [ ! -f ${JSON_EXPORT} ]; then
+if [ ! -f "${BUCKET_DIR}/${JSON_NAME}" ]; then
     echo "Error: Traceability export not found for Tag ${PACKAGE_TAG}"
     exit 1
+else
+    export JSON_EXPORT="${BUCKET_DIR}/${JSON_NAME}"
 fi
 
 # Set the neo4j-admin initial password
@@ -45,9 +47,20 @@ do
 done
 
 echo "neo4j service healthy, starting database sync"
-echo "Importing database..."
-sh -c "python3 manage.py runscript create_database"
-echo "Database import complete"
+echo "Checking if database dump exists..."
+if [ -d "${BUCKET_DIR}/db_dump" ]; then
+    echo "Database dump exists. Loading dump..."
+    neo4j-admin database load --expand-commands system --from-path="${BUCKET_DIR}/db_dump" && neo4j-admin database load --expand-commands neo4j --from-path="${BUCKET_DIR}/db_dump"
+else
+    echo "Database dump does not exist."
+    echo "Importing database..."
+    # The next command uses the $JSON_EXPORT variable
+    sh -c "python3 manage.py runscript create_database"
+    echo "Database import complete"
+    echo "Dumping Database..."
+    neo4j-admin database dump --expand-commands system --to-path="${BUCKET_DIR}/db_dump" && neo4j-admin database dump --expand-commands neo4j --to-path="${BUCKET_DIR}/db_dump"
+    echo "Database Dump complete"
+
 
 echo "Running Django with Gunicorn on: ${IP_ADDRESS}:8000"
 #sh -c "python3 manage.py runserver ${IP_ADDRESS}:8000"
