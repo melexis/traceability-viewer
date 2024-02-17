@@ -6,7 +6,6 @@ wait_neo4j () {
   counter=0
   while ! [ $(wget -q --spider "http://${IP_ADDRESS}:7474"; echo $?) == 0 ];
   do
-    wget "http://${IP_ADDRESS}:7474"
     increment=1
     counter=$((counter + increment))
     sleep 3
@@ -16,6 +15,32 @@ wait_neo4j () {
     fi
   done
 
+}
+
+# Define a function to start the neo4j service
+start_neo4j () {
+  # Set the neo4j-admin initial password
+  if [[ "${NEO4J_AUTH:-}" == neo4j/* ]]; then
+          password="${NEO4J_AUTH#neo4j/}"
+          if [ "${password}" == "neo4j" ]; then
+              echo >&2 "Invalid value for password. It cannot be 'neo4j', which is the default."
+              exit 1
+          fi
+
+          # running set-initial-password as root will create subfolders to /data as root, causing startup to fail when neo4j can't read or write the /data/dbms folder
+          # creating the folder first will avoid that
+          mkdir -p /data/dbms
+          chown neo4j:neo4j /data/dbms
+          neo4j-admin dbms set-initial-password "${password}"
+  fi
+
+  # Setting a custom log directory because using /var/log is bugged on Cloud Run. Probably because it is used as a standardized google logs directory.
+  mkdir -p /traceabilityViewer/logs
+  chown neo4j:neo4j /traceabilityViewer/logs
+  chmod 777 /traceabilityViewer/logs
+  sed -i 's/server\.directories\.logs=\/var\/log\/neo4j/server\.directories\.logs=\/traceabilityViewer\/logs/g'  /etc/neo4j/neo4j.conf
+  chmod 740 /etc/neo4j/neo4j.conf
+  service neo4j start
 }
 
 
@@ -37,29 +62,6 @@ if [ -z ${CLOUDRUN_SERVICE_URL} ]; then
 fi
 
 
-# Set the neo4j-admin initial password
-if [[ "${NEO4J_AUTH:-}" == neo4j/* ]]; then
-        password="${NEO4J_AUTH#neo4j/}"
-        if [ "${password}" == "neo4j" ]; then
-            echo >&2 "Invalid value for password. It cannot be 'neo4j', which is the default."
-            exit 1
-        fi
-
-        # running set-initial-password as root will create subfolders to /data as root, causing startup to fail when neo4j can't read or write the /data/dbms folder
-        # creating the folder first will avoid that
-        mkdir -p /data/dbms
-        chown neo4j:neo4j /data/dbms
-        neo4j-admin dbms set-initial-password "${password}"
-fi
-
-# Setting a custom log directory because using /var/log is bugged on Cloud Run. Probably because it is used as a standardized google logs directory.
-mkdir -p /traceabilityViewer/logs
-chown neo4j:neo4j /traceabilityViewer/logs
-chmod 777 /traceabilityViewer/logs
-sed -i 's/server\.directories\.logs=\/var\/log\/neo4j/server\.directories\.logs=\/traceabilityViewer\/logs/g'  /etc/neo4j/neo4j.conf
-chmod 740 /etc/neo4j/neo4j.conf
-
-
 echo "Checking if database dumps exist..."
 if [[ -f "${BUCKET_DIR}/db_dumps/neo4j.dump" && -f "${BUCKET_DIR}/db_dumps/system.dump" ]]; then
     echo "Database dumps exist. Loading dumps..."
@@ -68,7 +70,7 @@ if [[ -f "${BUCKET_DIR}/db_dumps/neo4j.dump" && -f "${BUCKET_DIR}/db_dumps/syste
 else
     echo "Database dumps do not exist."
     echo "Importing JSON database..."
-    service neo4j start
+    start_neo4j
     wait_neo4j
     # The next command uses the $JSON_EXPORT variable
     sh -c "python3 manage.py runscript create_database"
@@ -81,7 +83,7 @@ else
     echo "Database dumps complete"
 fi
 
-service neo4j start
+start_neo4j
 wait_neo4j
 echo "neo4j service healthy, starting Django..."
 
