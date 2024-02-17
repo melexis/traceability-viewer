@@ -84,6 +84,8 @@ else
 fi
 
 start_neo4j
+sleep 10
+find /traceabilityViewer/logs -type f -exec cat {} \;
 wait_neo4j
 echo "neo4j service healthy, starting Django..."
 
