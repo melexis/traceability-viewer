@@ -26,7 +26,7 @@ RUN pip3 install --upgrade pip && \
     pip3 install -r /tmp/py-requirements.txt && \
     pip3 install gunicorn && \
     apt update && \
-    apt install -y wget gnupg && \
+    apt install -y wget gnupg netcat && \
     wget -O - https://debian.neo4j.com/neotechnology.gpg.key | apt-key add - && \
     echo 'deb https://debian.neo4j.com stable 5' | tee -a /etc/apt/sources.list.d/neo4j.list && \
     apt-get update && \
