@@ -9,8 +9,8 @@ wait_neo4j () {
     increment=1
     counter=$((counter + increment))
     sleep 3
-    if [ $counter == 10 ]; then
-      echo "neo4j service not healthy, exiting after 10 retries"
+    if [ $counter == 30 ]; then
+      echo "neo4j service not healthy, exiting after 30 retries"
       exit 1
     fi
   done
