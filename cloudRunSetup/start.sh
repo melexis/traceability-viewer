@@ -6,11 +6,12 @@ wait_neo4j () {
   counter=0
   while ! [ $(wget -q --spider "http://${IP_ADDRESS}:7474"; echo $?) == 0 ];
   do
+    wget "http://${IP_ADDRESS}:7474"
     increment=1
     counter=$((counter + increment))
     sleep 3
-    if [ $counter == 30 ]; then
-      echo "neo4j service not healthy, exiting after 30 retries"
+    if [ $counter == 5 ]; then
+      echo "neo4j service not healthy, exiting after 5 retries"
       exit 1
     fi
   done
