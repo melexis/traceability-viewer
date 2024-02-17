@@ -60,7 +60,7 @@ else
     echo "Dumping Database..."
     neo4j-admin database dump --expand-commands system --to-path="${BUCKET_DIR}/db_dump" && neo4j-admin database dump --expand-commands neo4j --to-path="${BUCKET_DIR}/db_dump"
     echo "Database Dump complete"
-
+fi
 
 echo "Running Django with Gunicorn on: ${IP_ADDRESS}:8000"
 #sh -c "python3 manage.py runserver ${IP_ADDRESS}:8000"
