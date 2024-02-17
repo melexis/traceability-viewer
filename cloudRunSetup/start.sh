@@ -65,8 +65,8 @@ fi
 echo "Checking if database dumps exist..."
 if [[ -f "${BUCKET_DIR}/db_dumps/neo4j.dump" && -f "${BUCKET_DIR}/db_dumps/system.dump" ]]; then
     echo "Database dumps exist. Loading dumps..."
-    neo4j-admin database load system --overwrite-destination=true --from-path=${BUCKET_DIR}/db_dumps
-    neo4j-admin database load neo4j --overwrite-destination=true --from-path=${BUCKET_DIR}/db_dumps
+    su -c "neo4j-admin database load system --overwrite-destination=true --from-path=${BUCKET_DIR}/db_dumps" neo4j
+    su -c "neo4j-admin database load neo4j --overwrite-destination=true --from-path=${BUCKET_DIR}/db_dumps" neo4j
 else
     echo "Database dumps do not exist."
     echo "Importing JSON database..."
@@ -84,8 +84,7 @@ else
 fi
 
 start_neo4j
-sleep 10
-find /traceabilityViewer/logs -type f -exec cat {} \;
+#find /traceabilityViewer/logs -type f -exec cat {} \;
 wait_neo4j
 echo "neo4j service healthy, starting Django..."
 
