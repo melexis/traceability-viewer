@@ -28,7 +28,7 @@ mkdir -p /traceabilityViewer/logs
 chown neo4j:neo4j /traceabilityViewer/logs
 chmod 777 /traceabilityViewer/logs
 sed -i 's/server\.directories\.logs=\/var\/log\/neo4j/server\.directories\.logs=\/traceabilityViewer\/logs/g'  /etc/neo4j/neo4j.conf
-
+chmod 740 /etc/neo4j/neo4j.conf
 
 service neo4j start
 
@@ -45,6 +45,16 @@ do
     exit 1
   fi
 done
+
+
+# If CLOUDRUN_SERVICE_URL has not been set yet, launch Django without importing the database and wait for the pod to be updated
+if [ -z ${CLOUDRUN_SERVICE_URL} ]; then
+    echo "CLOUDRUN_SERVICE_URL not set...waiting for update"
+    while true; do
+        # Listen for incoming connections on port 8000
+        (echo -ne "HTTP/1.1 200 OK\r\nContent-Length: 12\r\n\r\nWaiting...!") | nc -l -p 8000 -q 1
+    done
+fi
 
 echo "neo4j service healthy, starting database sync"
 echo "Checking if database dump exists..."
