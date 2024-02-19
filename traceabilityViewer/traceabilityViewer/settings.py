@@ -31,15 +31,15 @@ DEBUG = True
 ### Check if CLOUDRUN_SERVICE_URL is set and configure/optimize Django for Cloud Run
 CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
 if CLOUDRUN_SERVICE_URL:
-    ## Set allowed hosts, CSRF and SSL configuration
+    # Set allowed hosts, CSRF and SSL configuration
     ALLOWED_HOSTS = [urlparse(CLOUDRUN_SERVICE_URL).netloc]
     CSRF_TRUSTED_ORIGINS = [CLOUDRUN_SERVICE_URL]
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    ## Set the neo4j database url
+    # Set the neo4j database url
     config.DATABASE_URL = os.getenv("NEO4J_BOLT_URL")
 
-    ## Set the Filesystem Cache
+    # Set the Filesystem Cache
     CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
