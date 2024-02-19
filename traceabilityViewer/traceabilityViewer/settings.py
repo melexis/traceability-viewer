@@ -47,7 +47,7 @@ if CLOUDRUN_SERVICE_URL:
             "default": {
                 "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
                 "LOCATION": cache_dir,
-                "TIMEOUT": 0
+                "TIMEOUT": None
             }
         }
 else:
