@@ -41,13 +41,14 @@ if CLOUDRUN_SERVICE_URL:
 
     # Set the Filesystem Cache
     cache_dir = f'{os.getenv("BUCKET_DIR")}/django_cache'
-    os.mkdir(cache_dir)
+    if not os.path.exists(cache_dir): 
+        os.mkdir(cache_dir)
     CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-        "LOCATION": cache_dir,
-    }
-}
+            "default": {
+                "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+                "LOCATION": cache_dir,
+            }
+        }
 else:
     ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
     config.DATABASE_URL = "bolt://neo4j:password@neo4j_db:7687"
