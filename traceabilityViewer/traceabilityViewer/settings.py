@@ -36,6 +36,7 @@ if CLOUDRUN_SERVICE_URL:
     CSRF_TRUSTED_ORIGINS = [CLOUDRUN_SERVICE_URL]
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
     # Set the neo4j database url
     config.DATABASE_URL = os.getenv("NEO4J_BOLT_URL")
 
