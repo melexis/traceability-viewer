@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-9@1+y@2v04x9t4r=ih5-%j7ueh(84j6($3tt6js&pd%ozl91du
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-### Check if CLOUDRUN_SERVICE_URL is set and configure/optimize Django for Cloud Run
+### Check if CLOUDRUN_SERVICE_URL is set and configure Django for Cloud Run
 CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
 if CLOUDRUN_SERVICE_URL:
     # Set allowed hosts, CSRF and SSL configuration
