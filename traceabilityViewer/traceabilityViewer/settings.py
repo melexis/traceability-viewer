@@ -42,7 +42,7 @@ if CLOUDRUN_SERVICE_URL:
     # Set the Filesystem Cache
     cache_dir = f'{os.getenv("BUCKET_DIR")}/django_cache'
     if not os.path.exists(cache_dir): 
-        os.mkdir(cache_dir)
+        os.makedirs(cache_dir, exist_ok=True)
     CACHES = {
             "default": {
                 "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
