@@ -40,10 +40,12 @@ if CLOUDRUN_SERVICE_URL:
     config.DATABASE_URL = os.getenv("NEO4J_BOLT_URL")
 
     # Set the Filesystem Cache
+    cache_dir = f'{os.getenv("BUCKET_DIR")}/django_cache'
+    os.mkdir(cache_dir)
     CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-        "LOCATION": "${BUCKET_DIR}/django_cache",
+        "LOCATION": cache_dir,
     }
 }
 else:
