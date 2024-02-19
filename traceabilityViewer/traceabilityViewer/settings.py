@@ -28,14 +28,24 @@ SECRET_KEY = "django-insecure-9@1+y@2v04x9t4r=ih5-%j7ueh(84j6($3tt6js&pd%ozl91du
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+### Check if CLOUDRUN_SERVICE_URL is set and configure/optimize Django for Cloud Run
 CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
 if CLOUDRUN_SERVICE_URL:
+    ## Set allowed hosts, CSRF and SSL configuration
     ALLOWED_HOSTS = [urlparse(CLOUDRUN_SERVICE_URL).netloc]
     CSRF_TRUSTED_ORIGINS = [CLOUDRUN_SERVICE_URL]
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
+    ## Set the neo4j database url
     config.DATABASE_URL = os.getenv("NEO4J_BOLT_URL")
+
+    ## Set the Filesystem Cache
+    CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": "${BUCKET_DIR}/django_cache",
+    }
+}
 else:
     ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
     config.DATABASE_URL = "bolt://neo4j:password@neo4j_db:7687"
