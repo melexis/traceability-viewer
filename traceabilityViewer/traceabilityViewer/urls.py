@@ -18,10 +18,16 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+import os
+
+### Check if CLOUDRUN_SERVICE_URL is set and configure Django for Cloud Run
+CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
+if CLOUDRUN_SERVICE_URL is None:
+    CLOUDRUN_SERVICE_URL = ""
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("", include("app.urls")),
+    path(CLOUDRUN_SERVICE_URL, include("app.urls")),
     path("favicon.ico", RedirectView.as_view(url="app/static/images/favicon.ico")),
 ]
 urlpatterns += staticfiles_urlpatterns() 
