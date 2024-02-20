@@ -51,7 +51,7 @@ First, you need to [install Docker Compose](https://docs.docker.com/compose/inst
 
 <!-- https://docs.docker.com/engine/reference/commandline/compose_up/ -->
 
-After installation, copy the JSON file that contains the data to the project folder and copy the `.env.example` to `.env`. These environment variables requires modification.
+After installation, copy the JSON database file to this project's folder, copy the `.env.example` to `.env` and customize it.
 ```
 # copy traceability_export.json file to project folder
 cp /path/to/traceability_export.json .
