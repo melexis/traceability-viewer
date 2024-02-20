@@ -313,3 +313,4 @@ If the error is not closed and another error occurs, all errors will be listed a
 - Instead of disabling the button when submitted, stop the previous request when another submit is done.
 - A node that has no group and thus belongs to the group `others`, is now centered at height. Better would be to position this node on the same height as the first node that is connected to it.
 - Add a reset button to remove/undo the active filter.
+- Add the possibility to exclude items from the JSON database with a regular expressions that match their name. For example, exclude all items that start with `MLX`.
