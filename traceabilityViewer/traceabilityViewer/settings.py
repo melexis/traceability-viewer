@@ -93,10 +93,8 @@ MIDDLEWARE = [
 
 # Key in `CACHES` dict
 CACHE_MIDDLEWARE_ALIAS = 'default'
-
 # Additional prefix for cache keys
 CACHE_MIDDLEWARE_KEY_PREFIX = ''
-
 # Cache key TTL in seconds
 CACHE_MIDDLEWARE_SECONDS = 1209600
 
