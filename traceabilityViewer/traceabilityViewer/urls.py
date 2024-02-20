@@ -28,8 +28,8 @@ else:
     PACKAGE_TAG = f'{PACKAGE_TAG}/'
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path(f'{PACKAGE_TAG}admin/', admin.site.urls),
     path(PACKAGE_TAG, include("app.urls")),
-    path("favicon.ico", RedirectView.as_view(url="app/static/images/favicon.ico")),
+    path(f'{PACKAGE_TAG}favicon.ico', RedirectView.as_view(url="app/static/images/favicon.ico")),
 ]
 urlpatterns += staticfiles_urlpatterns() 
