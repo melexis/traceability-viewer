@@ -160,14 +160,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-### Check if CLOUDRUN_SERVICE_URL is set and configure Django for Cloud Run
-CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
-if CLOUDRUN_SERVICE_URL is None:
-    PACKAGE_TAG = ""
-else:
-    PACKAGE_TAG = f'{os.getenv("PACKAGE_TAG")}/'
 
-STATIC_URL = f'{PACKAGE_TAG}static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "app/static"]
 
 # Default primary key field type
