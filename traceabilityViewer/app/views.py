@@ -64,7 +64,7 @@ def index(request):
     if CLOUDRUN_SERVICE_URL is None:
         PACKAGE_TAG = ""
     else:
-        PACKAGE_TAG = f'{os.getenv("PACKAGE_TAG")}/'
+        PACKAGE_TAG = f'{os.getenv("PACKAGE_TAG")}'
     """The page index page will be loaded when starting the app"""
     # create_database()
     return render(request, "app/index.html", {
