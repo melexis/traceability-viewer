@@ -167,7 +167,7 @@ if CLOUDRUN_SERVICE_URL is None:
 else:
     PACKAGE_TAG = f'{os.getenv("PACKAGE_TAG")}/'
 
-STATIC_URL = f'/{PACKAGE_TAG}static/'
+STATIC_URL = f'{PACKAGE_TAG}static/'
 STATICFILES_DIRS = [BASE_DIR / "app/static"]
 
 # Default primary key field type
