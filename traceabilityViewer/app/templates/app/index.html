@@ -23,7 +23,9 @@
         </div>
         <!-- Import App -->
         <script src="{% static 'main.js' %}"></script>
-        <script src="{% static 'components/traceabilityViewer.js' %}"></script>
+        <script src="{% static 'components/traceabilityViewer.js' %}">
+            var PACKAGE_TAG = "{{PACKAGE_TAG}}";
+        </script>
         <script src="{% static 'components/filter.js' %}"></script>
         <script src="{% static 'components/autocomplete.js' %}"></script>
         <script src="{% static 'components/graphviz.js' %}"></script>

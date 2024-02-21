@@ -4,6 +4,7 @@ import cProfile, pstats, io
 from pstats import SortKey
 import logging
 import traceback
+import os
 
 from ruamel.yaml import YAML
 from pathlib import Path
@@ -59,9 +60,16 @@ def error_handling(title):
 
 
 def index(request):
+    CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
+    if CLOUDRUN_SERVICE_URL is None:
+        PACKAGE_TAG = ""
+    else:
+        PACKAGE_TAG = f'{os.getenv("PACKAGE_TAG")}/'
     """The page index page will be loaded when starting the app"""
     # create_database()
-    return render(request, "app/index.html")
+    return render(request, "app/index.html", {
+        'PACKAGE_TAG': PACKAGE_TAG
+    })
 
 
 @cache_page(None)
