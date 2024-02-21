@@ -27,7 +27,7 @@ if CLOUDRUN_SERVICE_URL is None:
     PACKAGE_TAG = ""
 else:
     PACKAGE_TAG = f'{os.getenv("PACKAGE_TAG")}/'
-
+PACKAGE_TAG = ""
 urlpatterns = [
     path(f'{PACKAGE_TAG}admin/', admin.site.urls),
     path(PACKAGE_TAG, include("app.urls")),

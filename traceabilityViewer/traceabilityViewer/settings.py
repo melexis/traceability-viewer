@@ -168,6 +168,7 @@ else:
     PACKAGE_TAG = f'{os.getenv("PACKAGE_TAG")}/'
 
 STATIC_URL = f'{PACKAGE_TAG}static/'
+STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "app/static"]
 
 # Default primary key field type
