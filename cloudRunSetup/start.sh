@@ -90,4 +90,5 @@ echo "neo4j service healthy, starting Django..."
 
 echo "Running Django with Gunicorn on: ${IP_ADDRESS}:8000"
 #sh -c "python3 manage.py runserver ${IP_ADDRESS}:8000"
+sh -c "python3 manage.py collectstatic"
 sh -c "gunicorn --bind :${PORT} --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} --timeout ${GUNICORN_TIMEOUT} --env DJANGO_SETTINGS_MODULE=traceabilityViewer.settings --env SCRIPT_NAME=/${PACKAGE_TAG} traceabilityViewer.wsgi"

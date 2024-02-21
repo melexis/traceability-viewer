@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-9@1+y@2v04x9t4r=ih5-%j7ueh(84j6($3tt6js&pd%ozl91du"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ### Check if CLOUDRUN_SERVICE_URL is set and configure Django for Cloud Run
 CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
@@ -58,6 +58,7 @@ else:
 
 # Application definition
 INSTALLED_APPS = [
+    "whitenoise.runserver_nostatic",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -82,6 +83,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
     "django.middleware.cache.UpdateCacheMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -97,6 +99,12 @@ CACHE_MIDDLEWARE_KEY_PREFIX = ''
 # Cache key TTL in seconds
 CACHE_MIDDLEWARE_SECONDS = 1209600
 
+STORAGES = {
+    # ...
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 ROOT_URLCONF = "traceabilityViewer.urls"
 
@@ -166,9 +174,10 @@ if CLOUDRUN_SERVICE_URL is None:
     PACKAGE_TAG = ""
 else:
     PACKAGE_TAG = f'{os.getenv("PACKAGE_TAG")}/'
-PACKAGE_TAG=""
 STATIC_URL = f'{PACKAGE_TAG}static/'
 STATICFILES_DIRS = [BASE_DIR / "app/static"]
+WHITENOISE_STATIC_PREFIX = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
