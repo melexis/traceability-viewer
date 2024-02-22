@@ -2,8 +2,8 @@ setuptools==58.2.0
 neomodel==5.1.2
 django-neomodel==0.1.1
 ruamel.yaml==0.18.2
-# docker-compose==1.29.2
-django>=4.0,<5.0 
+django>=4.0,<5.0
 djangorestframework==3.14.0
 django-extensions==3.2.3
 whitenoise==6.6.0
+python-decouple==3.8

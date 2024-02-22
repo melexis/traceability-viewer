@@ -14,23 +14,21 @@ from pathlib import Path
 from neomodel import config
 import os
 from urllib.parse import urlparse
+import decouple
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
+### Check if CLOUDRUN_SERVICE_URL is set to configure Django for Cloud Run
+CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-9@1+y@2v04x9t4r=ih5-%j7ueh(84j6($3tt6js&pd%ozl91du"
+config.encoding = "cp1251"
+SECRET_KEY = decouple.config("SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
-### Check if CLOUDRUN_SERVICE_URL is set and configure Django for Cloud Run
-CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
+### Configure Django for Cloud Run
 if CLOUDRUN_SERVICE_URL:
+    DEBUG = False
     # Set allowed hosts, CSRF and SSL configuration
     ALLOWED_HOSTS = [urlparse(CLOUDRUN_SERVICE_URL).netloc]
     CSRF_TRUSTED_ORIGINS = [CLOUDRUN_SERVICE_URL]
@@ -52,8 +50,11 @@ if CLOUDRUN_SERVICE_URL:
             }
         }
 else:
+    ### Configure Django for local deployment
+    DEBUG = decouple.config('DEBUG', default=False, cast=bool)
     ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
-    config.DATABASE_URL = "bolt://neo4j:password@neo4j_db:7687"
+    config.DATABASE_URL = decouple.config("DATABASE_URL")
+
 
 
 # Application definition
@@ -100,7 +101,6 @@ CACHE_MIDDLEWARE_KEY_PREFIX = ''
 CACHE_MIDDLEWARE_SECONDS = 1209600
 
 STORAGES = {
-    # ...
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
@@ -168,8 +168,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-### Check if CLOUDRUN_SERVICE_URL is set and configure Django for Cloud Run
-CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
+
 if CLOUDRUN_SERVICE_URL is None:
     PACKAGE_TAG = ""
 else:
