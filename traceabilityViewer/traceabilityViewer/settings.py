@@ -24,10 +24,10 @@ CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 config.encoding = "cp1251"
-SECRET_KEY = decouple.config("SECRET_KEY")
 
 ### Configure Django for Cloud Run
 if CLOUDRUN_SERVICE_URL:
+    SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
     DEBUG = False
     # Set allowed hosts, CSRF and SSL configuration
     ALLOWED_HOSTS = [urlparse(CLOUDRUN_SERVICE_URL).netloc]
@@ -51,6 +51,7 @@ if CLOUDRUN_SERVICE_URL:
         }
 else:
     ### Configure Django for local deployment
+    SECRET_KEY = decouple.config("SECRET_KEY")
     DEBUG = decouple.config('DEBUG', default=False, cast=bool)
     ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
     config.DATABASE_URL = decouple.config("DATABASE_URL")
