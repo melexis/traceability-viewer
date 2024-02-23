@@ -28,8 +28,7 @@ config.encoding = "cp1251"
 ### Configure Django for Cloud Run
 if CLOUDRUN_SERVICE_URL:
     SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
-    #DEBUG = False
-    DEBUG = True
+    DEBUG = False
     # Set allowed hosts, CSRF and SSL configuration
     ALLOWED_HOSTS = [urlparse(CLOUDRUN_SERVICE_URL).netloc]
     CSRF_TRUSTED_ORIGINS = [CLOUDRUN_SERVICE_URL]
