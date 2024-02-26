@@ -46,7 +46,7 @@ start_neo4j () {
 
 # Check if the traceability export exists
 if [ ! -f "${BUCKET_DIR}/${JSON_NAME}" ]; then
-    echo "Error: Traceability export not found for Tag ${PACKAGE_TAG}"
+    echo "Error: Traceability export not found for Tag ${PACKAGE_TAG}! Expected ${BUCKET_DIR}/${JSON_NAME}"
     exit 1
 else
     export JSON_EXPORT="${BUCKET_DIR}/${JSON_NAME}"
