@@ -17,9 +17,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
+import os
 
+### Check if CLOUDRUN_SERVICE_URL is set and configure Django for Cloud Run
+CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
+if CLOUDRUN_SERVICE_URL is None:
+    PACKAGE_TAG = ""
+else:
+    PACKAGE_TAG = f'{os.getenv("PACKAGE_TAG")}/'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include("app.urls")),
-    path("favicon.ico", RedirectView.as_view(url="app/static/images/favicon.ico")),
+    path(f'{PACKAGE_TAG}favicon.ico', RedirectView.as_view(url=f'{PACKAGE_TAG}app/static/images/favicon.ico')),
 ]
