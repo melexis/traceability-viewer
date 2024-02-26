@@ -22,7 +22,7 @@ services:
       - .env
 
   neo4j_db:
-    image: neo4j:5.7.0
+    image: neo4j:5.15.0
     volumes:
       - neo4j_db:/data
     environment:
