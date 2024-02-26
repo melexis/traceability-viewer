@@ -301,15 +301,19 @@ If the error is not closed and another error occurs, all errors will be listed a
 # Bugs
 
 1. When showing the labels/names of the nodes, there is always one node that turns black.
-1. When using the input fields, the autocompletion does not add the selected word at the right place, when adding something in the middle.
-1. When data is obtained via a Cypher query, some links are not visible. When clicking on the eye-icon, connected nodes are visible but the links are not. You can solve it by clicking on the `Add/show connecting nodes` button.
-
+1. When using the input fields, the autocompletion does not add the selected word at the right place,
+when adding something in the middle.
+1. When data is obtained via a Cypher query, some links are not visible.
+When clicking on the eye-icon, connected nodes are visible but the links are not.
+You can solve it by clicking on the `Add/show connecting nodes` button.
 
 # Planned Features
 
 - Errors could be popping up, you need to close it before you can go further. That way the user can't miss it.
 - Faster rendering; open to suggestions
 - Instead of disabling the button when submitted, stop the previous request when another submit is done.
-- A node that has no group and thus belongs to the group `others`, is now centered at height. Better would be to position this node on the same height as the first node that is connected to it.
+- A node that has no group and thus belongs to the group `others`, is now centered at height.
+Better would be to position this node on the same height as the first node that is connected to it.
 - Add a reset button to remove/undo the active filter.
-- Add the possibility to exclude items from the JSON database with a regular expressions that match their name. For example, exclude all items that start with `MLX`.
+- Add the possibility to exclude items from the JSON database with a regular expressions that match their name.
+For example, exclude all items that start with `MLX`.
