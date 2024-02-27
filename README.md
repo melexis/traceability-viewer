@@ -306,6 +306,7 @@ when adding something in the middle.
 1. When data is obtained via a Cypher query, some links are not visible.
 When clicking on the eye-icon, connected nodes are visible but the links are not.
 You can solve it by clicking on the `Add/show connecting nodes` button.
+1. Hiding a group after selecting a node from that same group, the info of that node is still there.
 
 # Planned Features
 
