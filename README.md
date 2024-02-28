@@ -270,11 +270,13 @@ The button with the eye-icon highlights all nodes that are directly connected to
 
 When the button **Add/show connecting nodes** is clicked, the nodes connecting to the selected node will be obtained. It will add new nodes or links, if there are any.
 
-Before pushing the button:
 ![before adding](images/before_adding.png)
 
-After pushing the button:
+_before pushing the button_
+
 ![add connecting nodes](images/add_connecting_nodes.png)
+
+_after pushing the button_
 
 ### Node labels
 
