@@ -326,3 +326,6 @@ Better would be to position this node on the same height as the first node that 
 For example, exclude all items that start with `MLX`.
 - A filter button that has no data remains disabled.
 It would be better to make the button available with the info that there is no match with that particular filter group.
+- Add a spinner in the tab when something is loading.
+For example, you request a large set of data via a Cypher query.
+That way you can do something else while waiting and look when the loading is done.
