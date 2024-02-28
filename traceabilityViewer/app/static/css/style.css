@@ -45,6 +45,7 @@ div#tooltip {
 
 #info {
   opacity: 0.90;
+  max-width: 500px;
 }
 
 #info:hover {
