@@ -1,0 +1,63 @@
+html_documentation_root: ${BASE_URL}/${PRODUCT}/${PACKAGE_TAG}/${LAYER}/html/
+
+layered: true
+
+# Order is important!
+layers:
+  SYSRQT: (SW|MSDE)(QTEST|INSPECTION)
+  SWRQT: (SW|MSDE)(QTEST|INSPECTION)
+  SWARCH: SWITEST
+  SWDESIGN: SWUTEST
+
+item_colors:
+  SYSRQT: '#fc851c'
+  SWRQT: '#FF33CC'
+  SWARCH: '#7777FF'
+  SWDESIGN: '#cf5402'
+  SWQTEST: '#00FF00'
+  SWITEST: '#00FF00'
+  SWUTEST: '#00FF00'
+  MSDE: yellow
+  SWINSPECTION: MediumSeaGreen
+  MLX: purple
+  others: black
+
+link_colors:
+  impacts_on: indigo
+  fulfilled_by: violet
+  realized_by: teal
+  validated_by: thistle
+  reported_by: skyblue
+  configurable_by: purple
+  passed_by: green
+  failed_by: red
+  skipped_by: orange
+  is_attribute_of: palegreen
+  ext_polarion_reference: navy
+  ext_polarion_revision: lightslategrey
+  ext_jira_reference: khaki
+  ext_robotframeworklog: aquamarine
+  raised_by: brown
+  guaranteed_by: darkgreen
+  others: black
+
+backwards_relationships:
+  depends_on: impacts_on
+  fulfills: fulfilled_by
+  realizes: realized_by
+  validates: validated_by
+  reports_for: reported_by
+  configures: configurable_by
+  passes: passed_by
+  fails: failed_by
+  skipped: skipped_by
+  has_attribute: is_attribute_of
+  raises: raised_by
+  guarantees: guaranteed_by
+
+visualised_properties:
+  - name
+  - caption
+  - document
+  - line
+  - attributes

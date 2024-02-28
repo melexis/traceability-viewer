@@ -1,0 +1,47 @@
+version: "3.9"
+services:
+  app:
+    build:
+      context: .
+      args:
+        CONFIG_FILE: ${CONFIG_FILE}
+        JSON_EXPORT: ${JSON_EXPORT}
+    ports:
+      - "8000:8000"
+    expose:
+      - 8000
+    depends_on:
+      neo4j_db:
+        condition: service_healthy
+    links:
+      - neo4j_db
+    command: >
+      sh -c "/py/bin/python3 manage.py runscript create_database &&
+      /py/bin/python3 manage.py runserver ${IP_ADDRESS}:8000"
+    env_file:
+      - .env
+
+  neo4j_db:
+    image: neo4j:5.15.0
+    volumes:
+      - neo4j_db:/data
+    environment:
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      - NEO4J_AUTH=neo4j/password
+      - dbms.connector.bolt.listen_address=:7687
+      - dbms.connector.bolt.advertised_address=:7687
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    expose:
+      - 7474
+      - 7687
+    healthcheck:
+      test: wget http://${IP_ADDRESS}:7474 || exit 1
+      interval: 1s
+      timeout: 10s
+      retries: 20
+      start_period: 3s
+
+volumes:
+  neo4j_db:
