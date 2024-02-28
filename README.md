@@ -106,6 +106,9 @@ The configuration takes the form of a YAML file. The [config.yml](config.yml) is
 > [!NOTE]
 > `html_documentation_root` is an optional configuration parameter.
 
+> [!IMPORTANT]
+> Make sure the pathname or URL of `html_documentation_root` ends with a `/`.
+
 The root of the the HTML project documentation; either a pathname or a URL.
 
 This configuration parameter can only be used if [the JSON database](#json-database) contains a ``"document"`` attribute with the relative path to the reST file in which the item is defined,
