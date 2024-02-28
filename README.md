@@ -268,7 +268,7 @@ The button with the eye-icon highlights all nodes that are directly connected to
 
 ### Add/Show Connecting Nodes
 
-When the button **Add/show connecting nodes** is clicked, the nodes connecting to the selected node will be obtained. It will add new nodes or links, if there are any.
+When you selected a node and click the button **Add/show connecting nodes**, all nodes that are connected to it are obtained and displayed, if there are any.
 
 ![before adding](images/before_adding.png)
 
