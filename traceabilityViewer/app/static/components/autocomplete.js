@@ -54,6 +54,7 @@ app.component("autocomplete", {
   setup(props, { emit }) {
     var fullInput = Vue.ref("");
     var search = Vue.ref("");
+    var pointer = 0
     var isOpen = Vue.ref(false);
     var current = Vue.ref(0);
     var isFocussed = Vue.ref(false);
@@ -110,7 +111,7 @@ app.component("autocomplete", {
       if (isOpen.value && current.value >= 0) {
         selectedValue = Object.keys(matches.value)[current.value];
         if (props.sentenceAllowed) {
-          fullInput.value = fullInput.value.replace(search.value,selectedValue);
+          fullInput.value = replace(selectedValue);
         } else {
           fullInput.value = selectedValue;
         }
@@ -125,10 +126,8 @@ app.component("autocomplete", {
     function tab() {
       if (isOpen.value && current.value >= 0) {
         selectedValue = Object.keys(matches.value)[current.value];
-        console.log(selectedValue)
-        console.log(search.value)
         if (props.sentenceAllowed) {
-          fullInput.value = fullInput.value.replace(search.value,selectedValue);
+          fullInput.value = replace(selectedValue);
         } else {
           fullInput.value = selectedValue;
         }
@@ -208,10 +207,12 @@ app.component("autocomplete", {
         fullInput.value = event.target.value;
         if ( 0 > event.target.selectionStart + correctionNumber ||  event.target.selectionStart + correctionNumber > fullInput.value.length){
           fullInput.value = event.target.value;
-          findSearchValue(event.target.selectionStart)
+          self.pointer = event.target.selectionStart
+          findSearchValue()
         }
         else {
-          findSearchValue(event.target.selectionStart + correctionNumber)
+          self.pointer = event.target.selectionStart + correctionNumber
+          findSearchValue()
         }
       } else {
         fullInput.value = event.target.value;
@@ -219,13 +220,33 @@ app.component("autocomplete", {
       }
     }
 
-    function findSearchValue(pointer){
-      const n = fullInput.value.substring(pointer).match(/^[a-zA-Z0-9-_'"]+/)
-      const p = fullInput.value.substring(0, pointer).match(/[a-zA-Z0-9-_'"]+$/)
+    function findSearchValue(){
+      // substring from pointer till the end
+      const n = fullInput.value.substring(self.pointer).match(/^[\w\d\-_'"]+/)
+      // substring from begin till pointer
+      const p = fullInput.value.substring(0, self.pointer).match(/[\w\d\-_'"]+$/)
       if(!p && !n) {
         search.value = ""
       }
       search.value = (p || '') + (n || '')
+    }
+
+    function replace(selectedValue){
+      endIndex = fullInput.value.substring(self.pointer).indexOf(' ');
+      startIndex = fullInput.value.substring(0, self.pointer).lastIndexOf(' ');
+      // correct when pointer is at the end
+      if (endIndex == -1){
+        endIndex = 0
+      }
+      // correct when pointer is at the beginning
+      if (startIndex == -1){
+        startIndex = 0
+      }
+
+      return [fullInput.value.substring(0, startIndex),
+                      selectedValue,
+                      fullInput.value.substring(self.pointer + endIndex)
+                     ].join(" ").replaceAll(/\s+/g," ");
     }
 
     return {
