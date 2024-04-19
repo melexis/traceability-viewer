@@ -1,0 +1,15 @@
+*venv
+__pycache__
+
+run.sh
+**/db.sqlite3
+
+*.env
+
+traceabilityViewer/config.yml
+
+*.json
+
+.pre-commit-config.yaml
+
+stat*.txt

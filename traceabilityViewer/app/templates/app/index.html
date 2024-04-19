@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <!-- Meta -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!-- Favicon -->
+        <link rel="icon" type="image/ico" href="{% static 'images/favicon.ico' %}"/>
+
+        <!-- Scripts -->
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Stylesheet -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    </head>
+    <body class="m-2">
+        <div id="app">
+        </div>
+        <!-- Import App -->
+        <script src="{% static 'main.js' %}"></script>
+        <!-- Define PACKAGE_TAG before loading traceabilityViewer.js -->
+        <script>
+            var PACKAGE_TAG = "{{PACKAGE_TAG}}";
+        </script>
+        <script src="{% static 'components/traceabilityViewer.js' %}"></script>
+        <script src="{% static 'components/filter.js' %}"></script>
+        <script src="{% static 'components/autocomplete.js' %}"></script>
+        <script src="{% static 'components/graphviz.js' %}"></script>
+        <script src="{% static 'components/legend.js' %}"></script>
+        <script src="{% static 'components/alert.js' %}"></script>
+        <!-- Mount App -->
+        <script>
+            app.mount('#app')
+        </script>
+    </body>
+</html>
