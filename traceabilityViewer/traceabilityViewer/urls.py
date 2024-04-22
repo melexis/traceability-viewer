@@ -22,11 +22,11 @@ import os
 ### Check if CLOUDRUN_SERVICE_URL is set and configure Django for Cloud Run
 CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
 if CLOUDRUN_SERVICE_URL is None:
-    PACKAGE_TAG = ""
+    UPSTREAM_BRANCH = ""
 else:
-    PACKAGE_TAG = f'{os.getenv("PACKAGE_TAG")}/'
+    UPSTREAM_BRANCH = f'{os.getenv("UPSTREAM_BRANCH")}/'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include("app.urls")),
-    path(f'{PACKAGE_TAG}favicon.ico', RedirectView.as_view(url=f'{PACKAGE_TAG}app/static/images/favicon.ico')),
+    path(f'{UPSTREAM_BRANCH}favicon.ico', RedirectView.as_view(url=f'{UPSTREAM_BRANCH}app/static/images/favicon.ico')),
 ]

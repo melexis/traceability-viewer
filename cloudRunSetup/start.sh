@@ -46,7 +46,7 @@ start_neo4j () {
 
 # Check if the traceability export exists
 if [ ! -f "${BUCKET_DIR}/${JSON_NAME}" ]; then
-    echo "Error: Traceability export not found for Tag ${PACKAGE_TAG}! Expected ${BUCKET_DIR}/${JSON_NAME}"
+    echo "Error: Traceability export not found for Tag ${UPSTREAM_BRANCH}! Expected ${BUCKET_DIR}/${JSON_NAME}"
     exit 1
 else
     export JSON_EXPORT="${BUCKET_DIR}/${JSON_NAME}"
@@ -76,7 +76,7 @@ else
     sh -c "python3 manage.py runscript create_database"
     echo "JSON Database import complete"
     echo "Dumping Databases..."
-    service neo4j stop 
+    service neo4j stop
     mkdir ${BUCKET_DIR}/db_dumps
     neo4j-admin database dump system --to-path=${BUCKET_DIR}/db_dumps
     neo4j-admin database dump neo4j --to-path=${BUCKET_DIR}/db_dumps
@@ -91,4 +91,4 @@ echo "neo4j service healthy, starting Django..."
 echo "Running Django with Gunicorn on: ${IP_ADDRESS}:8000"
 #sh -c "python3 manage.py runserver ${IP_ADDRESS}:8000"
 sh -c "python3 manage.py collectstatic"
-sh -c "gunicorn --bind :${PORT} --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} --timeout ${GUNICORN_TIMEOUT} --env DJANGO_SETTINGS_MODULE=traceabilityViewer.settings --env SCRIPT_NAME=/${PACKAGE_TAG} traceabilityViewer.wsgi"
+sh -c "gunicorn --bind :${PORT} --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} --timeout ${GUNICORN_TIMEOUT} --env DJANGO_SETTINGS_MODULE=traceabilityViewer.settings --env SCRIPT_NAME=/${UPSTREAM_BRANCH} traceabilityViewer.wsgi"
