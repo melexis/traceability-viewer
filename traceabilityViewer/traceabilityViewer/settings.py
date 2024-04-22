@@ -40,7 +40,7 @@ if CLOUDRUN_SERVICE_URL:
 
     # Set the Filesystem Cache
     cache_dir = f'{os.getenv("BUCKET_DIR")}/django_cache'
-    if not os.path.exists(cache_dir):
+    if not os.path.exists(cache_dir): 
         os.makedirs(cache_dir, exist_ok=True)
     CACHES = {
             "default": {
@@ -171,10 +171,10 @@ USE_TZ = True
 
 
 if CLOUDRUN_SERVICE_URL is None:
-    UPSTREAM_BRANCH = ""
+    PACKAGE_TAG = ""
 else:
-    UPSTREAM_BRANCH = f'{os.getenv("UPSTREAM_BRANCH")}/'
-STATIC_URL = f'{UPSTREAM_BRANCH}static/'
+    PACKAGE_TAG = f'{os.getenv("PACKAGE_TAG")}/'
+STATIC_URL = f'{PACKAGE_TAG}static/'
 STATICFILES_DIRS = [BASE_DIR / "app/static"]
 WHITENOISE_STATIC_PREFIX = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"

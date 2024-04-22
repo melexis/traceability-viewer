@@ -17,14 +17,14 @@ Finally, it launches the start.sh script as its main command.
 1. The script checks of the expected JSON Data exists
 2. The script checks if CLOUDRUN_SERVICE_URL has been set. If not, it waits indefinitely. This is done because during development, the CLOUDRUN_SERVICE_URL is not equal to the tool's normal URL (traceview.melexis.com), and it is not available immediately. It only becomes available after updating the cloud run deployment with a subsequent gcloud command.
 3. It starts the Neo4j Database, and waits until it is available.
-4. It checks if Neo4j database dumps exist in the GCP Bucket for the respective UPSTREAM_BRANCH. If yes, it loads them in the Neo4j Database. If not, it uses the python script **create_database.py** available through Django to load the JSON Data in the Neo4j Database. Then, it dumps it in the GCP bucket so that it will be available for subsequent runs.\
+4. It checks if Neo4j database dumps exist in the GCP Bucket for the respective PACKAGE_TAG. If yes, it loads them in the Neo4j Database. If not, it uses the python script **create_database.py** available through Django to load the JSON Data in the Neo4j Database. Then, it dumps it in the GCP bucket so that it will be available for subsequent runs.\
 This has shown to greatly reduce the 'cold start' time for the biggest available Datasets, from ~90 to ~30 seconds.
 5. It runs Django's collectstatic method to correctly manage static files.
 6. Finally, it launches Django through Gunicorn.
 
 #### Neo4j Database
 The Neo4j Database is launched on startup within the pod. It communicates with Django by exposing http://0000:7474 inside the pod.\
-On startup, it checks if Database Dumps exist in the GCP Bucket based on the UPSTREAM_BRANCH, and if so loads them. If not, Django populates the database by using the create_database script, and then Neo4j creates the dumps.\
+On startup, it checks if Database Dumps exist in the GCP Bucket based on the PACKAGE_TAG, and if so loads them. If not, Django populates the database by using the create_database script, and then Neo4j creates the dumps.\
 The data loaded in the Databse is generally small (~4MB for one of the largest JSON Data sets), and the CPU load and Memory it consumes in the Pod are negligible compared to Django.\
 The Database logs are written in **/traceabilityViewer/logs**, but they are not exposed anywhere by default.
 

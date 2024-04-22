@@ -62,13 +62,13 @@ def error_handling(title):
 def index(request):
     CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
     if CLOUDRUN_SERVICE_URL is None:
-        UPSTREAM_BRANCH = ""
+        PACKAGE_TAG = ""
     else:
-        UPSTREAM_BRANCH = f'/{os.getenv("UPSTREAM_BRANCH")}'
+        PACKAGE_TAG = f'/{os.getenv("PACKAGE_TAG")}'
     """The page index page will be loaded when starting the app"""
     # create_database()
     return render(request, "app/index.html", {
-        'UPSTREAM_BRANCH': UPSTREAM_BRANCH
+        'PACKAGE_TAG': PACKAGE_TAG
     })
 
 

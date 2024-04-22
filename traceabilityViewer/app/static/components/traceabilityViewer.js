@@ -1,7 +1,7 @@
 function dataRequest(request) {
   return (
     axios
-      .get(UPSTREAM_BRANCH + request)
+      .get(PACKAGE_TAG + request)
   );
 }
 
