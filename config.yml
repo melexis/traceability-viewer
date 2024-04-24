@@ -1,4 +1,4 @@
-html_documentation_root: ${BASE_URL}/${PRODUCT}/${PACKAGE_TAG}/${LAYER}/html/
+html_documentation_root: ${BASE_URL}/${PRODUCT}/${UPSTREAM_BRANCH}/${LAYER}/html/
 
 layered: true
 
