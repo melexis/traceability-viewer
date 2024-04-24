@@ -207,11 +207,11 @@ app.component("autocomplete", {
         fullInput.value = event.target.value;
         if ( 0 > event.target.selectionStart + correctionNumber ||  event.target.selectionStart + correctionNumber > fullInput.value.length){
           fullInput.value = event.target.value;
-          self.pointer = event.target.selectionStart
+          pointer = event.target.selectionStart
           findSearchValue()
         }
         else {
-          self.pointer = event.target.selectionStart + correctionNumber
+          pointer = event.target.selectionStart + correctionNumber
           findSearchValue()
         }
       } else {
@@ -222,9 +222,9 @@ app.component("autocomplete", {
 
     function findSearchValue(){
       // substring from pointer till the end
-      const n = fullInput.value.substring(self.pointer).match(/^[\w\d\-_'"]+/)
+      const n = fullInput.value.substring(pointer).match(/^[\w\d\-_'"]+/)
       // substring from begin till pointer
-      const p = fullInput.value.substring(0, self.pointer).match(/[\w\d\-_'"]+$/)
+      const p = fullInput.value.substring(0, pointer).match(/[\w\d\-_'"]+$/)
       if(!p && !n) {
         search.value = ""
       }
@@ -232,8 +232,8 @@ app.component("autocomplete", {
     }
 
     function replace(selectedValue){
-      endIndex = fullInput.value.substring(self.pointer).indexOf(' ');
-      startIndex = fullInput.value.substring(0, self.pointer).lastIndexOf(' ');
+      endIndex = fullInput.value.substring(pointer).indexOf(' ');
+      startIndex = fullInput.value.substring(0, pointer).lastIndexOf(' ');
       // correct when pointer is at the end
       if (endIndex == -1){
         endIndex = 0
@@ -245,7 +245,7 @@ app.component("autocomplete", {
 
       return [fullInput.value.substring(0, startIndex),
                       selectedValue,
-                      fullInput.value.substring(self.pointer + endIndex)
+                      fullInput.value.substring(pointer + endIndex)
                      ].join(" ").replaceAll(/\s+/g," ");
     }
 
