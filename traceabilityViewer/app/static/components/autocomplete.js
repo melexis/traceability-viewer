@@ -103,18 +103,24 @@ app.component("autocomplete", {
     function startFocus() {
       isFocussed.value = true;
     }
+
     function stopFocus() {
       isFocussed.value = false;
     }
+
+    function replace_with_selected_value(){
+      selectedValue = Object.keys(matches.value)[current.value];
+      if (props.sentenceAllowed) {
+        fullInput.value = replace(selectedValue);
+      } else {
+        fullInput.value = selectedValue;
+      }
+    }
+
     // When enter pressed on the input
     function enter() {
       if (isOpen.value && current.value >= 0) {
-        selectedValue = Object.keys(matches.value)[current.value];
-        if (props.sentenceAllowed) {
-          fullInput.value = replace(selectedValue);
-        } else {
-          fullInput.value = selectedValue;
-        }
+        replace_with_selected_value();
       } else {
         submitted();
       }
@@ -125,12 +131,7 @@ app.component("autocomplete", {
     // When tab pressed on the input
     function tab() {
       if (isOpen.value && current.value >= 0) {
-        selectedValue = Object.keys(matches.value)[current.value];
-        if (props.sentenceAllowed) {
-          fullInput.value = replace(selectedValue);
-        } else {
-          fullInput.value = selectedValue;
-        }
+        replace_with_selected_value();
       }
       current.value = 0;
       isOpen.value = false;
