@@ -108,8 +108,8 @@ app.component("autocomplete", {
       isFocussed.value = false;
     }
 
-    function replace_with_selected_value(){
-      selectedValue = Object.keys(matches.value)[current.value];
+    function replace_with_selected_value(index){
+      selectedValue = Object.keys(matches.value)[index];
       if (props.sentenceAllowed) {
         fullInput.value = replace(selectedValue);
       } else {
@@ -120,7 +120,7 @@ app.component("autocomplete", {
     // When enter pressed on the input
     function enter() {
       if (isOpen.value && current.value >= 0) {
-        replace_with_selected_value();
+        replace_with_selected_value(current.value);
       } else {
         submitted();
       }
@@ -131,7 +131,7 @@ app.component("autocomplete", {
     // When tab pressed on the input
     function tab() {
       if (isOpen.value && current.value >= 0) {
-        replace_with_selected_value();
+        replace_with_selected_value(current.value);
       }
       current.value = 0;
       isOpen.value = false;
@@ -154,12 +154,7 @@ app.component("autocomplete", {
 
     // When one of the suggestion is clicked
     function suggestionClick(index) {
-      selectedValue = Object.keys(matches.value)[current.value];
-      if (props.sentenceAllowed) {
-        fullInput.value = fullInput.value.replace(search.value,selectedValue);
-      } else {
-        fullInput.value = selectedValue;
-      }
+      replace_with_selected_value(index)
       current.value = 0;
       isOpen.value = false;
     }
