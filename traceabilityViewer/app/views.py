@@ -160,7 +160,8 @@ def autocomplete(request):
     links and words that are often used in a Cypher query. The second one is for the search input field.
     This contains all the node IDs where the group is a main group of the V model (not the group "Others").
     """
-    query_keywords = ["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN"]
+    query_keywords = ["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN", "layer_group:", ".layer_group",
+                      ".legend_group", "legend_group:", ".name", "name:"]
     link_types = configuration["backwards_relationships"].values()
 
     if "layers" in configuration:

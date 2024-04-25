@@ -141,7 +141,9 @@ app.component("traceability-viewer", {
 
       autocompleteData = await dataRequest("/autocomplete");
       words.value = autocompleteData.data.words;
-      words.value.push(...autocompleteData.data.searchIds);
+      for (searchId of autocompleteData.data.searchIds){
+        words.value.push(`'${searchId}'`);
+      }
       searchIds.value = autocompleteData.data.searchIds;
 
       loading.value = false;
