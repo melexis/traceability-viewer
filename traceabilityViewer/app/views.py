@@ -280,6 +280,7 @@ def get_data_with_cypher_query(cypher_query):
     elif any(word in query_words for word in invalidWords):
         raise ValueError("SET, CREATE, DELETE, MERGE and REMOVE cannot be used!")
     nodes = set()
+    node_objects = []
     links = set()
     results, _ = db.cypher_query(cypher_query, resolve_objects=True)
     for result in results:
@@ -287,12 +288,14 @@ def get_data_with_cypher_query(cypher_query):
             if isinstance(element, DocumentItem):
                 node = element.node_data
                 nodes.add(node)
+                node_objects.append(element)
 
             elif isinstance(element, Rel):
                 link = element.link_data
                 links.add(link)
                 for node_name in [link.source, link.target]:
                     node = DocumentItem.nodes.get(name=node_name)
+                    node_objects.append(node)
                     node = node.node_data
                     nodes.add(node)
 
@@ -301,11 +304,13 @@ def get_data_with_cypher_query(cypher_query):
                     if isinstance(path_element, DocumentItem):
                         node = path_element.node_data
                         nodes.add(node)
+                        node_objects.append(path_element)
                     elif isinstance(path_element, Rel):
                         link = path_element.link_data
                         links.add(link)
                         for node_name in [link.source, link.target]:
                             node = DocumentItem.nodes.get(name=node_name)
+                            node_objects.append(node)
                             node = node.node_data
                             nodes.add(node)
                     else:
@@ -317,4 +322,9 @@ def get_data_with_cypher_query(cypher_query):
                 raise TypeError(
                     f"Expected Node or Relationship type to be returned from the query; " f"got {type(element)}"
                 )
+    node_names = [node.name for node in node_objects]
+    for node in node_objects:
+        for link in node.links:
+            if link.source in node_names and link.target in node_names:
+                links.add(link)
     return nodes, links

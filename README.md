@@ -307,9 +307,6 @@ If the error is not closed and another error occurs, all errors will be listed a
 
 1. When showing the labels/names of the nodes, there is always one node that turns black.
 1. You need to finish the Cypher Query with a space, otherwise the autocomplete remains visible.
-1. When data is obtained via a Cypher query, some links are not visible.
-When clicking on the eye-icon, connected nodes are visible but the links are not.
-You can solve it by clicking on the `Add/show connecting nodes` button.
 1. When hiding a group while a node of that group was selected, the info of that node remains visible.
 
 # Planned Features
