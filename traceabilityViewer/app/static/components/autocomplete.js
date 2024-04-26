@@ -56,7 +56,7 @@ app.component("autocomplete", {
     var search = Vue.ref("");
     var pointer = 0
     var isOpen = Vue.ref(false);
-    var current = Vue.ref(0);
+    var current = Vue.ref(-1);
     var isFocussed = Vue.ref(false);
     var isDisabled = Vue.ref(false)
 
@@ -96,7 +96,7 @@ app.component("autocomplete", {
       if (Object.keys(matches.value).length > 0 && isOpen.value && isFocussed.value) {
         return true;
       }
-      current.value = 0;
+      current.value = -1;
       return false;
     });
 
@@ -139,7 +139,7 @@ app.component("autocomplete", {
 
     // When up pressed while suggestions are open
     function up() {
-      if (current.value > 0) current.value--;
+      if (current.value >= 0) current.value--;
     }
 
     // When up pressed while suggestions are open
