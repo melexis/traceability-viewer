@@ -124,7 +124,7 @@ app.component("autocomplete", {
       } else {
         submitted();
       }
-      current.value = 0;
+      current.value = -1;
       isOpen.value = false;
     }
 
@@ -133,7 +133,7 @@ app.component("autocomplete", {
       if (isOpen.value && current.value >= 0) {
         replace_with_selected_value(current.value);
       }
-      current.value = 0;
+      current.value = -1;
       isOpen.value = false;
     }
 
@@ -155,7 +155,7 @@ app.component("autocomplete", {
     // When one of the suggestion is clicked
     function suggestionClick(index) {
       replace_with_selected_value(index)
-      current.value = 0;
+      current.value = -1;
       isOpen.value = false;
     }
 
