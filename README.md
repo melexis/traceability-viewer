@@ -303,10 +303,6 @@ You can show the error by clicking **Show error message**:
 You can close the error by clicking **X**.
 If the error is not closed and another error occurs, all errors will be listed at the top of the page.
 
-# Bugs
-
-1. When showing the labels/names of the nodes, there is always one node that turns black.
-
 # Planned Features
 
 - Errors could be popping up, you need to close it before you can go further. That way the user can't miss it.
