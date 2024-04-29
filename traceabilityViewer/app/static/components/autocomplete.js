@@ -32,6 +32,7 @@ app.component("autocomplete", {
                 :key="suggestion"
                 @click="suggestionClick(index)"
                 v-html="innerhtml"
+                :id="suggestion"
             >
             </li>
         </ul>
@@ -139,12 +140,22 @@ app.component("autocomplete", {
 
     // When up pressed while suggestions are open
     function up() {
-      if (current.value >= 0) current.value--;
+      if (current.value >= 0) {
+        current.value--;
+        if (current.value >= 0) {
+          word = Object.keys(matches.value)[current.value]
+          document.getElementById(word).scrollIntoView(false)
+        }
+      }
     }
 
     // When up pressed while suggestions are open
     function down() {
-      if (current.value < Object.keys(matches.value).length - 1) current.value++;
+      if (current.value < Object.keys(matches.value).length - 1) {
+        current.value++;
+        word = Object.keys(matches.value)[current.value]
+        document.getElementById(word).scrollIntoView(false)
+      }
     }
 
     // For highlighting element
