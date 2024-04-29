@@ -279,13 +279,13 @@ app.component("graphviz", {
      * @param {Array} hiddenItems The array of the hidden items
      */
     function updateHiddenGroups(hiddenItems) {
-      // Draw edges
       nodes.value.forEach((node) => {
         node.hide = false;
-        if (
-          node["legend_group"] == "others" &&
-          hiddenItems.includes("others")
-        ) {
+        if (node["name"] == selectedNodeName.value){
+          selectedNodeName.value = "";
+          selectedNode.value = null;
+        }
+        if (hiddenItems.includes("others") && node["legend_group"] == "others") {
           node.hide = true;
         } else {
           for (hiddenGroup of hiddenItems) {
