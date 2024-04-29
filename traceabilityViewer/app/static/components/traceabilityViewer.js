@@ -43,32 +43,36 @@ app.component("traceability-viewer", {
     <!-- Input Fields -->
     <div v-if="activeGroup==='home'">
         <br>
-        <label
-          data-bs-toggle="tooltip"
-          data-bs-title="SET, CREATE, DELETE, MERGE and REMOVE cannot be used!"
-        >
-          Cypher query:
-        </label>
-        <autocomplete
-            :suggestions="words"
-            :sentenceAllowed="true"
-            @loading="changeLoading"
-            @onSubmit="changeData"
-            @onAlert="onAlert"
-        >
-        </autocomplete>
-        <label
-          data-bs-toggle="tooltip"
-          data-bs-title="Enter the name of a node to search for."
-        >Search: </label>
-        <autocomplete
-            :suggestions="searchIds"
-            :sentenceAllowed="false"
-            @loading="changeLoading"
-            @onSubmit="changeData"
-            @onAlert="onAlert"
-        >
-        </autocomplete>
+        <div>
+          <label
+            data-bs-toggle="tooltip"
+            data-bs-title="SET, CREATE, DELETE, MERGE and REMOVE cannot be used!"
+          >
+            Cypher query:
+          </label>
+          <autocomplete
+              :suggestions="words"
+              :sentenceAllowed="true"
+              @loading="changeLoading"
+              @onSubmit="changeData"
+              @onAlert="onAlert"
+          >
+          </autocomplete>
+        </div>
+        <div>
+          <label
+            data-bs-toggle="tooltip"
+            data-bs-title="Enter the name of a node to search for."
+          >Search: </label>
+          <autocomplete
+              :suggestions="searchIds"
+              :sentenceAllowed="false"
+              @loading="changeLoading"
+              @onSubmit="changeData"
+              @onAlert="onAlert"
+          >
+          </autocomplete>
+        </div>
     </div>
     <graphviz
       :loading="loading"

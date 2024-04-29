@@ -36,8 +36,8 @@ app.component("autocomplete", {
             >
             </li>
         </ul>
-        <button @click="submitted" class="btn mt-1 mb-1 btn-primary" :disabled="isDisabled">Submit</button>
-    </div>
+      </div>
+      <button @click="submitted" class="btn mt-1 mb-1 btn-primary" :disabled="isDisabled">Submit</button>
     `,
   props: {
     suggestions: {

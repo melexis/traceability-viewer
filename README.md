@@ -306,7 +306,6 @@ If the error is not closed and another error occurs, all errors will be listed a
 # Bugs
 
 1. When showing the labels/names of the nodes, there is always one node that turns black.
-1. You need to finish the Cypher Query with a space, otherwise the autocomplete remains visible.
 1. When hiding a group while a node of that group was selected, the info of that node remains visible.
 
 # Planned Features
