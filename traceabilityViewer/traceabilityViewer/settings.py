@@ -10,10 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-from pathlib import Path
-from neomodel import config
 import os
+from pathlib import Path
 from urllib.parse import urlparse
+
+from neomodel import config
 import decouple
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.

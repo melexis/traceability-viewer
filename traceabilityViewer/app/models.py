@@ -17,6 +17,7 @@ class Rel(StructuredRel):
 
     @cached_property
     def link_data(self):
+        """Link: the link data"""
         return Link(source=self.start_node().name, target=self.end_node().name, type=self.type, color=self.color)
 
 

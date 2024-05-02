@@ -1,13 +1,13 @@
 """Django views"""
 
-import cProfile, pstats, io
-from pstats import SortKey
+# import cProfile, pstats, io
+# from pstats import SortKey
 import logging
 import traceback
 import os
+from pathlib import Path
 
 from ruamel.yaml import YAML
-from pathlib import Path
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -37,6 +37,8 @@ if "layers" in configuration:
 
 
 def error_handling(title):
+    """error handling decorator function"""
+
     def decorator(func):
         def inner_function(*args, **kwargs):
             try:
@@ -62,20 +64,20 @@ def error_handling(title):
 
 
 def index(request):
-    CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")
+    """The index page will be loaded when starting the app"""
+    CLOUDRUN_SERVICE_URL = os.getenv("CLOUDRUN_SERVICE_URL")  # pylint: disable=invalid-name
     if CLOUDRUN_SERVICE_URL is None:
-        PACKAGE_TAG = ""
+        PACKAGE_TAG = ""  # pylint: disable=invalid-name
     else:
-        PACKAGE_TAG = f'/{os.getenv("PACKAGE_TAG")}'
-    """The page index page will be loaded when starting the app"""
-    # create_database()
+        PACKAGE_TAG = f'/{os.getenv("PACKAGE_TAG")}'  # pylint: disable=invalid-name
+
     return render(request, "app/index.html", {"PACKAGE_TAG": PACKAGE_TAG})
 
 
 @cache_page(None)
 @api_view(["GET"])
 @error_handling(title="An error occured in the data initialization of the home button.")
-def initialize(request):
+def initialize(_request):
     """Initialize data for the 'home' button"""
     nodes_made = []
     nodes = []
@@ -98,7 +100,7 @@ def initialize(request):
 @cache_page(None)
 @api_view(["GET"])
 @error_handling(title="An error occured in the data initialization of a filter button.")
-def filter_group(request, filtergroup):
+def filter_group(_request, filtergroup):
     """Get the data according to the filter"""
     # pr = cProfile.Profile()
     # pr.enable()
@@ -112,7 +114,7 @@ def filter_group(request, filtergroup):
     # serializers.serialize() of django does not apply here.
     # This is meant for models.Models of Django. These have an attribute '_meta'.
 
-    definition = dict(node_class=DocumentItem, direction=match.EITHER, relation_type=None, model=Rel)
+    definition = {"node_class": DocumentItem, "direction": match.EITHER, "relation_type": None, "model": Rel}
     traversal_nodes = Traversal(all_filter_nodes, DocumentItem.__label__, definition).all()
     all_source_nodes = all_filter_nodes.all()
 
@@ -137,6 +139,15 @@ def filter_group(request, filtergroup):
 
 
 def filter_links(links, node_names):
+    """Filter the links
+
+    Args:
+        links (set): The set of links
+        node_names (list[str]): The names of the nodes
+
+    Yields:
+        dict: The link
+    """
     for link in links:
         if getattr(link, "target") in node_names:
             yield link._asdict()
@@ -144,18 +155,17 @@ def filter_links(links, node_names):
 
 @api_view(["GET"])
 @error_handling(title="An error occured when loading the configuration and groups.")
-def config(request):
+def config(_request):
     """Get the configuration"""
     if "layers" in configuration:
         return Response(data={"config": configuration, "groups": unique_groups})
-    else:
-        return Response(data={"config": configuration, "groups": configuration.get("item_colors", {}).keys()})
+    return Response(data={"config": configuration, "groups": configuration.get("item_colors", {}).keys()})
 
 
 @cache_page(None)
 @api_view(["GET"])
 @error_handling(title="An error occured when loading the autocompletion words.")
-def autocomplete(request):
+def autocomplete(_request):
     """
     Request autocompletion words. One is for the query input field that contains all node IDs,
     links and words that are often used in a Cypher query. The second one is for the search input field.
@@ -185,7 +195,7 @@ def autocomplete(request):
 
 @api_view(["GET"])
 @error_handling(title="An error occured when specifying the y-scale of nodes.")
-def layers(request):
+def layers(_request):
     """Request the y values depending on the layers in the configuration file."""
     y_scale = {}
 
@@ -207,7 +217,7 @@ def layers(request):
 
 @api_view(["GET"])
 @error_handling(title="Please enter a valid cypher query.")
-def query(request, cypher_query):
+def query(_request, cypher_query):
     """Return the result of nodes and links depending on the query."""
     nodes, links = get_data_with_cypher_query(cypher_query)
     serialized_nodes = [node._asdict() for node in nodes]
@@ -224,7 +234,7 @@ def search_nodes_recursively(source_node, groups, nodes, links, traversal_count)
         nodes (dict): The nodes that consist of the requested node, where the target nodes are added every cycle
         links (set): A list of all the links between source and target nodes.
     """
-    definition = dict(node_class=DocumentItem, direction=match.EITHER, relation_type=None, model=Rel)
+    definition = {"node_class": DocumentItem, "direction": match.EITHER, "relation_type": None, "model": Rel}
     traversal_nodes = Traversal(source_node, DocumentItem.__label__, definition)
     target_nodes = traversal_nodes.all()
     if target_nodes:
@@ -249,19 +259,19 @@ def search_nodes_recursively(source_node, groups, nodes, links, traversal_count)
                 nodes[target_node.name] = target_node.node_data._asdict()
                 nodes_next_traversal.append(target_node)
 
-        for source_node in nodes_next_traversal:
-            search_nodes_recursively(source_node, groups, nodes, links, traversal_count)
+        for source in nodes_next_traversal:
+            search_nodes_recursively(source, groups, nodes, links, traversal_count)
 
 
 @api_view(["GET"])
 @error_handling(title="An error occured while getting data of the node name equal to search input.")
-def search(request, node_name):
+def search(_request, node_name):
     """Return the connected nodes or the layers that are connected to the node with the requested node name."""
     if node_name == "":
-        ValueError(f"Invalid name. The search field is empty. The valid names are {search_ids}")
+        raise ValueError(f"Invalid name. The search field is empty. The valid names are {search_ids}")
     if node_name not in search_ids:
-        ValueError(f"Invalid name. The valid names are {search_ids}")
-    nodes = dict()
+        raise ValueError(f"Invalid name. The valid names are {search_ids}")
+    nodes = {}
     links = set()
     source_node = DocumentItem.nodes.get(name=node_name)
     search_node = source_node.node_data._asdict()
@@ -277,7 +287,7 @@ def search(request, node_name):
 
 @api_view(["GET"])
 @error_handling(title="An error occured while getting the connected nodes of the requested node name.")
-def search_connected_nodes(request, node_name):
+def search_connected_nodes(_request, node_name):
     """Return the connected nodes of the requested node name."""
     nodes, links = get_data_with_cypher_query(f"MATCH (n)-[r]-(m) where n.name = '{node_name}' return n,r,m")
     serialized_nodes = [node._asdict() for node in nodes]
@@ -286,12 +296,27 @@ def search_connected_nodes(request, node_name):
 
 
 def get_data_with_cypher_query(cypher_query):
-    invalidWords = ["SET", "CREATE", "DELETE", "MERGE", "REMOVE"]
+    """Get nodes and links from cypher query
+
+    Args:
+        cypher_query (str): The cypher query
+
+    Raises:
+        ValueError: The input is empty. Please enter a Cypher query.
+        ValueError: SET, CREATE, DELETE, MERGE and REMOVE cannot be used!
+        TypeError: Expected Node or Relationship type to be returned from the query
+        TypeError: Expected Node or Relationship type to be returned from the query
+
+    Returns:
+        set(dict): The nodes
+        set(dict): The links
+    """
+    invalid_words = ["SET", "CREATE", "DELETE", "MERGE", "REMOVE"]
     query_words = cypher_query.split()
     query_words = [word.upper() for word in query_words]
     if cypher_query == "":
         raise ValueError("The input is empty. Please enter a Cypher query.")
-    elif any(word in query_words for word in invalidWords):
+    if any(word in query_words for word in invalid_words):
         raise ValueError("SET, CREATE, DELETE, MERGE and REMOVE cannot be used!")
     nodes = set()
     node_objects = []
