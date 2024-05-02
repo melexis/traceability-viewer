@@ -23,5 +23,5 @@ div#tooltip {
 
 .list-group{
   max-height: 300px;
-  overflow:scroll;
+  overflow: scroll;
 }
