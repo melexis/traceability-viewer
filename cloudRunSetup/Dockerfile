@@ -22,7 +22,7 @@ COPY start.sh /traceabilityViewer/start.sh
 
 EXPOSE 8000
 
-RUN pip3 install --upgrade pip && \ 
+RUN pip3 install --upgrade pip && \
     pip3 install -r /tmp/py-requirements.txt && \
     pip3 install gunicorn && \
     apt update && \

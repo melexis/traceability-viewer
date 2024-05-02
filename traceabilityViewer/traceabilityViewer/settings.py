@@ -40,22 +40,21 @@ if CLOUDRUN_SERVICE_URL:
 
     # Set the Filesystem Cache
     cache_dir = f'{os.getenv("BUCKET_DIR")}/django_cache'
-    if not os.path.exists(cache_dir): 
+    if not os.path.exists(cache_dir):
         os.makedirs(cache_dir, exist_ok=True)
     CACHES = {
-            "default": {
-                "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-                "LOCATION": cache_dir,
-                "TIMEOUT": None
-            }
+        "default": {
+            "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+            "LOCATION": cache_dir,
+            "TIMEOUT": None,
         }
+    }
 else:
     ### Configure Django for local deployment
     SECRET_KEY = decouple.config("SECRET_KEY")
-    DEBUG = decouple.config('DEBUG', default=False, cast=bool)
+    DEBUG = decouple.config("DEBUG", default=False, cast=bool)
     ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
     config.DATABASE_URL = decouple.config("DATABASE_URL")
-
 
 
 # Application definition
@@ -92,12 +91,12 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django.middleware.cache.FetchFromCacheMiddleware"
+    "django.middleware.cache.FetchFromCacheMiddleware",
 ]
 # Key in `CACHES` dict
-CACHE_MIDDLEWARE_ALIAS = 'default'
+CACHE_MIDDLEWARE_ALIAS = "default"
 # Additional prefix for cache keys
-CACHE_MIDDLEWARE_KEY_PREFIX = ''
+CACHE_MIDDLEWARE_KEY_PREFIX = ""
 # Cache key TTL in seconds
 CACHE_MIDDLEWARE_SECONDS = 1209600
 
@@ -132,7 +131,6 @@ __VUE_PROD_DEVTOOLS__ = True
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 
 
 # Password validation
@@ -174,9 +172,9 @@ if CLOUDRUN_SERVICE_URL is None:
     PACKAGE_TAG = ""
 else:
     PACKAGE_TAG = f'{os.getenv("PACKAGE_TAG")}/'
-STATIC_URL = f'{PACKAGE_TAG}static/'
+STATIC_URL = f"{PACKAGE_TAG}static/"
 STATICFILES_DIRS = [BASE_DIR / "app/static"]
-WHITENOISE_STATIC_PREFIX = 'static/'
+WHITENOISE_STATIC_PREFIX = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type

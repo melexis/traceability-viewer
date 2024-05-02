@@ -26,7 +26,7 @@ if CLOUDRUN_SERVICE_URL is None:
 else:
     PACKAGE_TAG = f'{os.getenv("PACKAGE_TAG")}/'
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
     path("", include("app.urls")),
-    path(f'{PACKAGE_TAG}favicon.ico', RedirectView.as_view(url=f'{PACKAGE_TAG}app/static/images/favicon.ico')),
+    path(f"{PACKAGE_TAG}favicon.ico", RedirectView.as_view(url=f"{PACKAGE_TAG}app/static/images/favicon.ico")),
 ]

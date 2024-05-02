@@ -55,7 +55,9 @@ def error_handling(title):
                     data["message"] += f"\n{traceback.format_exc()}"
 
                 return Response(status=error_status, data=data)
+
         return inner_function
+
     return decorator
 
 
@@ -67,9 +69,7 @@ def index(request):
         PACKAGE_TAG = f'/{os.getenv("PACKAGE_TAG")}'
     """The page index page will be loaded when starting the app"""
     # create_database()
-    return render(request, "app/index.html", {
-        'PACKAGE_TAG': PACKAGE_TAG
-    })
+    return render(request, "app/index.html", {"PACKAGE_TAG": PACKAGE_TAG})
 
 
 @cache_page(None)
@@ -135,9 +135,10 @@ def filter_group(request, filtergroup):
 
     return Response(data={"nodes": iter(serialized_nodes_per_name.values()), "links": list(filtered_links_as_dict)})
 
+
 def filter_links(links, node_names):
     for link in links:
-        if getattr(link,"target") in node_names:
+        if getattr(link, "target") in node_names:
             yield link._asdict()
 
 
@@ -160,8 +161,19 @@ def autocomplete(request):
     links and words that are often used in a Cypher query. The second one is for the search input field.
     This contains all the node IDs where the group is a main group of the V model (not the group "Others").
     """
-    query_keywords = ["MATCH", "STARTS WITH", "CONTAINS", "WHERE", "RETURN", "layer_group:", ".layer_group",
-                      ".legend_group", "legend_group:", ".name", "name:"]
+    query_keywords = [
+        "MATCH",
+        "STARTS WITH",
+        "CONTAINS",
+        "WHERE",
+        "RETURN",
+        "layer_group:",
+        ".layer_group",
+        ".legend_group",
+        "legend_group:",
+        ".name",
+        "name:",
+    ]
     link_types = configuration["backwards_relationships"].values()
 
     if "layers" in configuration:
@@ -193,7 +205,7 @@ def layers(request):
     return Response(data=y_scale)
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @error_handling(title="Please enter a valid cypher query.")
 def query(request, cypher_query):
     """Return the result of nodes and links depending on the query."""
@@ -241,7 +253,7 @@ def search_nodes_recursively(source_node, groups, nodes, links, traversal_count)
             search_nodes_recursively(source_node, groups, nodes, links, traversal_count)
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @error_handling(title="An error occured while getting data of the node name equal to search input.")
 def search(request, node_name):
     """Return the connected nodes or the layers that are connected to the node with the requested node name."""
@@ -255,14 +267,15 @@ def search(request, node_name):
     search_node = source_node.node_data._asdict()
     links.update(source_node.links)
     nodes[source_node.name] = search_node
-    groups =  {0: set(), 1: set()}
+    groups = {0: set(), 1: set()}
     search_nodes_recursively(source_node, groups, nodes, links, 0)
     filtered_links_as_dict = filter_links(links, nodes.keys())
-    return Response(data={"nodes": iter(nodes.values()), "links": list(filtered_links_as_dict), "searchNode": search_node})
+    return Response(
+        data={"nodes": iter(nodes.values()), "links": list(filtered_links_as_dict), "searchNode": search_node}
+    )
 
 
-
-@api_view(['GET'])
+@api_view(["GET"])
 @error_handling(title="An error occured while getting the connected nodes of the requested node name.")
 def search_connected_nodes(request, node_name):
     """Return the connected nodes of the requested node name."""
@@ -316,12 +329,11 @@ def get_data_with_cypher_query(cypher_query):
                             nodes.add(node)
                     else:
                         raise TypeError(
-                            f"Expected Node or Relationship type to be returned from the query; "
-                            f"got {type(element)}"
+                            f"Expected Node or Relationship type to be returned from the query; got {type(element)}"
                         )
             else:
                 raise TypeError(
-                    f"Expected Node or Relationship type to be returned from the query; " f"got {type(element)}"
+                    f"Expected Node or Relationship type to be returned from the query; got {type(element)}"
                 )
     node_names = [node.name for node in node_objects]
     for node in node_objects:
