@@ -8,6 +8,7 @@ from neomodel import StructuredNode, StringProperty, RelationshipTo, StructuredR
 Link = namedtuple("Link", "source target type color")
 Node = namedtuple("Node", "name properties url layer_group legend_group color hide")
 
+
 class Rel(StructuredRel):
     """Class that represents the relationships between the nodes in the database"""
 
@@ -16,12 +17,8 @@ class Rel(StructuredRel):
 
     @cached_property
     def link_data(self):
-        return Link(
-            source=self.start_node().name,
-            target=self.end_node().name,
-            type=self.type,
-            color=self.color
-        )
+        """Link: the link data"""
+        return Link(source=self.start_node().name, target=self.end_node().name, type=self.type, color=self.color)
 
 
 class DocumentItem(StructuredNode):
@@ -46,7 +43,8 @@ class DocumentItem(StructuredNode):
                 source=relation.start_node().name,
                 target=relation.end_node().name,
                 type=relation.type,
-                color=relation.color)
+                color=relation.color,
+            )
             links.add(link)
         return links
 
@@ -62,4 +60,3 @@ class DocumentItem(StructuredNode):
             color=self.color,
             hide=self.hide,
         )
-

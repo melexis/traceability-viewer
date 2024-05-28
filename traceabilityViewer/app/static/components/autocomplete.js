@@ -32,11 +32,12 @@ app.component("autocomplete", {
                 :key="suggestion"
                 @click="suggestionClick(index)"
                 v-html="innerhtml"
+                :id="suggestion"
             >
             </li>
         </ul>
-        <button @click="submitted" class="btn mt-1 mb-1 btn-primary" :disabled="isDisabled">Submit</button>
-    </div>
+      </div>
+      <button @click="submitted" class="btn mt-1 mb-1 btn-primary" :disabled="isDisabled">Submit</button>
     `,
   props: {
     suggestions: {
@@ -54,8 +55,9 @@ app.component("autocomplete", {
   setup(props, { emit }) {
     var fullInput = Vue.ref("");
     var search = Vue.ref("");
+    var pointer = 0
     var isOpen = Vue.ref(false);
-    var current = Vue.ref(0);
+    var current = Vue.ref(-1);
     var isFocussed = Vue.ref(false);
     var isDisabled = Vue.ref(false)
 
@@ -67,8 +69,8 @@ app.component("autocomplete", {
 
       matchedStartingWith = {}
       OrderedMatchedItems = {}
-      var pattern = new RegExp(search.value.replace(/['"]/g,""), "gi");
-      for (word of props.suggestions){
+      var pattern = new RegExp(search.value.replace(/['"]/g, ""), "gi");
+      for (word of props.suggestions) {
         let stylesMatchedItem = ""
         let wordUpperCase = word.toUpperCase();
         /* check if the word starts with the same letters as the value of the input field */
@@ -76,14 +78,14 @@ app.component("autocomplete", {
         if (word.toUpperCase().startsWith(search.value.toUpperCase())) {
           newItem = Object()
           stylesMatchedItem = wordUpperCase.replaceAll(search.value.toUpperCase(), "<strong>"
-                                                       + search.value.toUpperCase() + "</strong>");
+            + search.value.toUpperCase() + "</strong>");
           newItem[word] = stylesMatchedItem;
           OrderedMatchedItems = Object.assign(newItem, OrderedMatchedItems);
         }
         /* check if the item contains the value of the input field somewhere else, and add them at the end of the list */
         else if (pattern.test(word)) {
           stylesMatchedItem = wordUpperCase.replaceAll(search.value.toUpperCase(), "<strong>"
-                                                       + search.value.toUpperCase() + "</strong>");
+            + search.value.toUpperCase() + "</strong>");
           OrderedMatchedItems[word] = stylesMatchedItem
         }
       }
@@ -95,56 +97,65 @@ app.component("autocomplete", {
       if (Object.keys(matches.value).length > 0 && isOpen.value && isFocussed.value) {
         return true;
       }
-      current.value = 0;
+      current.value = -1;
       return false;
     });
 
     function startFocus() {
       isFocussed.value = true;
     }
+
     function stopFocus() {
       isFocussed.value = false;
     }
+
+    function replace_with_selected_value(index) {
+      selectedValue = Object.keys(matches.value)[index];
+      if (props.sentenceAllowed) {
+        fullInput.value = replace(selectedValue);
+      } else {
+        fullInput.value = selectedValue;
+      }
+    }
+
     // When enter pressed on the input
     function enter() {
       if (isOpen.value && current.value >= 0) {
-        selectedValue = Object.keys(matches.value)[current.value];
-        if (props.sentenceAllowed) {
-          fullInput.value = fullInput.value.replace(search.value,selectedValue);
-        } else {
-          fullInput.value = selectedValue;
-        }
+        replace_with_selected_value(current.value);
       } else {
         submitted();
       }
-      current.value = 0;
+      current.value = -1;
       isOpen.value = false;
     }
 
     // When tab pressed on the input
     function tab() {
       if (isOpen.value && current.value >= 0) {
-        selectedValue = Object.keys(matches.value)[current.value];
-        console.log(selectedValue)
-        console.log(search.value)
-        if (props.sentenceAllowed) {
-          fullInput.value = fullInput.value.replace(search.value,selectedValue);
-        } else {
-          fullInput.value = selectedValue;
-        }
+        replace_with_selected_value(current.value);
       }
-      current.value = 0;
+      current.value = -1;
       isOpen.value = false;
     }
 
     // When up pressed while suggestions are open
     function up() {
-      if (current.value > 0) current.value--;
+      if (current.value >= 0) {
+        current.value--;
+        if (current.value >= 0) {
+          word = Object.keys(matches.value)[current.value]
+          document.getElementById(word).scrollIntoView(false)
+        }
+      }
     }
 
     // When up pressed while suggestions are open
     function down() {
-      if (current.value < Object.keys(matches.value).length - 1) current.value++;
+      if (current.value < Object.keys(matches.value).length - 1) {
+        current.value++;
+        word = Object.keys(matches.value)[current.value]
+        document.getElementById(word).scrollIntoView(false)
+      }
     }
 
     // For highlighting element
@@ -154,13 +165,8 @@ app.component("autocomplete", {
 
     // When one of the suggestion is clicked
     function suggestionClick(index) {
-      selectedValue = Object.keys(matches.value)[current.value];
-      if (props.sentenceAllowed) {
-        fullInput.value = fullInput.value.replace(search.value,selectedValue);
-      } else {
-        fullInput.value = selectedValue;
-      }
-      current.value = 0;
+      replace_with_selected_value(index)
+      current.value = -1;
       isOpen.value = false;
     }
 
@@ -181,7 +187,7 @@ app.component("autocomplete", {
         // search ID
         endpoint = "/search/";
       }
-      if (endpoint){
+      if (endpoint) {
         try {
           data = await dataRequest(endpoint + fullInput.value);
           emit("onSubmit", data.data);
@@ -190,7 +196,7 @@ app.component("autocomplete", {
         } catch (error) {
           emit("loading", false);
           isDisabled.value = false;
-          if (error.response.status != 400){
+          if (error.response.status != 400) {
             var wnd = window.open("", "_blank");
             wnd.document.write(error.response.data);
           }
@@ -202,16 +208,18 @@ app.component("autocomplete", {
     }
 
     // When the input changes
-    function change(event, correctionNumber){
+    function change(event, correctionNumber) {
       isOpen.value = true;
       if (props.sentenceAllowed) {
         fullInput.value = event.target.value;
-        if ( 0 > event.target.selectionStart + correctionNumber ||  event.target.selectionStart + correctionNumber > fullInput.value.length){
+        if (0 > event.target.selectionStart + correctionNumber || event.target.selectionStart + correctionNumber > fullInput.value.length) {
           fullInput.value = event.target.value;
-          findSearchValue(event.target.selectionStart)
+          pointer = event.target.selectionStart
+          findSearchValue()
         }
         else {
-          findSearchValue(event.target.selectionStart + correctionNumber)
+          pointer = event.target.selectionStart + correctionNumber
+          findSearchValue()
         }
       } else {
         fullInput.value = event.target.value;
@@ -219,13 +227,32 @@ app.component("autocomplete", {
       }
     }
 
-    function findSearchValue(pointer){
-      const n = fullInput.value.substring(pointer).match(/^[a-zA-Z0-9-_'"]+/)
-      const p = fullInput.value.substring(0, pointer).match(/[a-zA-Z0-9-_'"]+$/)
-      if(!p && !n) {
+    function findSearchValue() {
+      // substring from pointer till the end
+      const n = fullInput.value.substring(pointer).match(/^[\w\d\-_'"]+/)
+      // substring from begin till pointer
+      const p = fullInput.value.substring(0, pointer).match(/[\w\d\-_'"]+$/)
+      if (!p && !n) {
         search.value = ""
       }
       search.value = (p || '') + (n || '')
+    }
+
+    function replace(selectedValue) {
+      endIndex = fullInput.value.substring(pointer).indexOf(' ');
+      startIndex = fullInput.value.substring(0, pointer).lastIndexOf(' ');
+      // correct when pointer is at the end
+      if (endIndex == -1) {
+        endIndex = 0
+      }
+      // correct when pointer is at the beginning
+      if (startIndex == -1) {
+        startIndex = 0
+      }
+
+      beginText = fullInput.value.substring(0, startIndex)
+      endText = fullInput.value.substring(pointer + endIndex)
+      return [beginText, selectedValue, endText].join(" ").replaceAll(/\s+/g, " ");
     }
 
     return {

@@ -16,4 +16,3 @@ RUN python -m venv /py && \
     /py/bin/pip3 install --upgrade pip && \
     /py/bin/pip3 install -r /tmp/py-requirements.txt && \
     rm -rf /tmp
-

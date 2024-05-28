@@ -136,9 +136,7 @@ def run():
     path = decouple.config("JSON_EXPORT")
     print(path)
     if path is None:
-        raise ValueError(
-            f"There is no 'JSON_EXPORT' environment variable declared."
-        )
+        raise ValueError("There is no 'JSON_EXPORT' environment variable declared.")
     with open(path, encoding="utf-8") as json_file:
         data = json.load(json_file)
     clear_neo4j_database(db, clear_constraints=True, clear_indexes=True)
@@ -151,9 +149,7 @@ def run():
                 f"If this item has no targets, please make sure you give an empty dictionary as value of 'targets'."
             )
         if "name" not in item:
-            raise ValueError(
-                f"The required key 'name' is missing for item {item}. This needs to be unique."
-            )
+            raise ValueError(f"The required key 'name' is missing for item {item}. This needs to be unique.")
         if "document" not in item and configuration.get("html_documentation_root"):
             raise ValueError(
                 f"'html_documentation_root' is defined in the configuration, "
@@ -168,7 +164,7 @@ def run():
                 properties[prop] = item[prop]
 
         if source not in node_objects:
-            if "layered":
+            if configuration["layered"]:
                 source_layer_group = define_group(source, unique_groups)
             source_legend_group, source_color = get_legend_group_and_color(configuration["item_colors"], source)
             node_objects[source] = DocumentItem(
@@ -192,7 +188,7 @@ def run():
             link_color = define_linkcolor(configuration["link_colors"], link)
             for target in targets:
                 if target not in node_objects:
-                    if "layered":
+                    if configuration["layered"]:
                         target_layer_group = define_group(target, unique_groups)
                     target_legend_group, target_color = get_legend_group_and_color(configuration["item_colors"], target)
                     node_objects[target] = DocumentItem(

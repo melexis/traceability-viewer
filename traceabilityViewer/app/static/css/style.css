@@ -20,3 +20,8 @@ div#tooltip {
 #info:hover {
   opacity: 1;
 }
+
+.list-group{
+  max-height: 300px;
+  overflow: scroll;
+}

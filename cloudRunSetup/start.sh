@@ -76,7 +76,7 @@ else
     sh -c "python3 manage.py runscript create_database"
     echo "JSON Database import complete"
     echo "Dumping Databases..."
-    service neo4j stop 
+    service neo4j stop
     mkdir ${BUCKET_DIR}/db_dumps
     neo4j-admin database dump system --to-path=${BUCKET_DIR}/db_dumps
     neo4j-admin database dump neo4j --to-path=${BUCKET_DIR}/db_dumps

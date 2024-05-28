@@ -279,13 +279,13 @@ app.component("graphviz", {
      * @param {Array} hiddenItems The array of the hidden items
      */
     function updateHiddenGroups(hiddenItems) {
-      // Draw edges
       nodes.value.forEach((node) => {
         node.hide = false;
-        if (
-          node["legend_group"] == "others" &&
-          hiddenItems.includes("others")
-        ) {
+        if (node["name"] == selectedNodeName.value){
+          selectedNodeName.value = "";
+          selectedNode.value = null;
+        }
+        if (hiddenItems.includes("others") && node["legend_group"] == "others") {
           node.hide = true;
         } else {
           for (hiddenGroup of hiddenItems) {
@@ -365,11 +365,7 @@ app.component("graphviz", {
 
       // Draw edges
       links.value.forEach((link) => {
-        if (
-          !hiddenLinks.value.includes(link.type) &&
-          !link.source.hide &&
-          !link.target.hide
-        ) {
+        if (!hiddenLinks.value.includes(link.type) && !link.source.hide && !link.target.hide) {
           if (toggle.value) {
             if (
               link.source.name == selectedNodeName.value ||
@@ -395,6 +391,9 @@ app.component("graphviz", {
             ) {
               ctx.value.globalAlpha = 1;
               drawNode(node);
+              if (d3.select("#text").property("checked")) {
+                showLabel(node);
+              }
             } else {
               ctx.value.globalAlpha = 0.05;
               drawNode(node);
@@ -402,32 +401,14 @@ app.component("graphviz", {
           } else {
             ctx.value.globalAlpha = 1;
             drawNode(node);
+            if (d3.select("#text").property("checked")) {
+              showLabel(node);
+            }
           }
         }
       });
 
-      showLabels();
-
       ctx.value.restore();
-    }
-
-    function showLabels() {
-      if (d3.select("#text").property("checked")) {
-        nodes.value.forEach((node) => {
-          if (!node.hide) {
-            if (toggle.value) {
-              if (
-                linkedByIndex[selectedNodeName.value + "," + node.name] ||
-                linkedByIndex[node.name + "," + selectedNodeName.value]
-              ) {
-                showLabel(node);
-              }
-            } else {
-              showLabel(node);
-            }
-          }
-        });
-      }
     }
 
     /**
@@ -435,6 +416,7 @@ app.component("graphviz", {
      * @param {object} node The node where the name needs to be visible
      */
     function showLabel(node) {
+      ctx.value.beginPath();
       ctx.value.globalAlpha = 1;
       ctx.value.font = "bolt 7pt Verdana";
       ctx.value.fillStyle = "black";
@@ -870,7 +852,6 @@ app.component("graphviz", {
       updateHiddenLinks,
       showConnectedNodes,
       searchConnectedNodes,
-      showLabels,
     };
   }
 });
