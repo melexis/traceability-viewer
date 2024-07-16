@@ -1,4 +1,4 @@
-setuptools==65.5.1
+setuptools==70.0.0
 neomodel==5.1.2
 django-neomodel==0.1.1
 ruamel.yaml==0.18.2
