@@ -16,7 +16,7 @@ from rest_framework import status
 from django.views.decorators.cache import cache_page
 from django.shortcuts import render
 
-from neomodel import db, NeomodelPath, Traversal, match_q
+from neomodel import db, NeomodelPath, Traversal, EITHER
 from neo4j.exceptions import CypherSyntaxError
 
 # from traceabilityViewer.scripts.create_database import unique_groups, configuration
@@ -114,7 +114,7 @@ def filter_group(_request, filtergroup):
     # serializers.serialize() of django does not apply here.
     # This is meant for models.Models of Django. These have an attribute '_meta'.
 
-    definition = {"node_class": DocumentItem, "direction": match_q.EITHER, "relation_type": None, "model": Rel}
+    definition = {"node_class": DocumentItem, "direction": EITHER, "relation_type": None, "model": Rel}
     traversal_nodes = Traversal(all_filter_nodes, DocumentItem.__label__, definition).all()
     all_source_nodes = all_filter_nodes.all()
 
@@ -234,7 +234,7 @@ def search_nodes_recursively(source_node, groups, nodes, links, traversal_count)
         nodes (dict): The nodes that consist of the requested node, where the target nodes are added every cycle
         links (set): A list of all the links between source and target nodes.
     """
-    definition = {"node_class": DocumentItem, "direction": match_q.EITHER, "relation_type": None, "model": Rel}
+    definition = {"node_class": DocumentItem, "direction": EITHER, "relation_type": None, "model": Rel}
     traversal_nodes = Traversal(source_node, DocumentItem.__label__, definition)
     target_nodes = traversal_nodes.all()
     if target_nodes:
