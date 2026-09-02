@@ -76,29 +76,6 @@ def index(request):
 
 @cache_page(None)
 @api_view(["GET"])
-@error_handling(title="An error occured in the data initialization of the home button.")
-def initialize(_request):
-    """Initialize data for the 'home' button"""
-    nodes_made = []
-    nodes = []
-    links = []
-    items = DocumentItem.nodes.all()
-    for item in items:
-        node = item.node_data
-        if node["name"] not in nodes_made:
-            nodes.append(node)
-            nodes_made.append(node["name"])
-        for rel in node["relations"]:
-            links.append(rel)
-            target = DocumentItem.nodes.get(name=rel["target"]).node_data
-            if target["name"] not in nodes_made:
-                nodes_made.append(target["name"])
-                nodes.append(target)
-    return Response(data={"nodes": nodes, "links": links})
-
-
-@cache_page(None)
-@api_view(["GET"])
 @error_handling(title="An error occured in the data initialization of a filter button.")
 def filter_group(_request, filtergroup):
     """Get the data according to the filter"""
